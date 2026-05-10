@@ -9,12 +9,12 @@ This guide deploys a self-hosted OpenWork Cloud stack on one Ubuntu VM using:
 
 Recommended public hostnames:
 
-1. `app.<your-domain>` -> Den web app
-2. `api.<your-domain>` -> Den API
+1. `openwork.aitech-services.com` -> Den web app
+2. `api-openwork.aitech-services.com` -> Den API
 
 Optional later (only if you migrate to Daytona):
 
-1. `workers.<your-domain>` -> Den worker proxy
+1. `workers.aitech-services.com` -> Den worker proxy
 
 ## 0. What You Will Deploy
 
@@ -39,8 +39,8 @@ On your Ubuntu VM:
 1. Ubuntu 22.04+ with sudo access
 2. Domain managed by Cloudflare DNS
 3. DNS hostnames ready:
-   - `app.<domain>`
-   - `api.<domain>`
+   - `openwork.aitech-services.com`
+   - `api-openwork.aitech-services.com`
 4. Outbound internet allowed from VM
 
 Firewall notes:
@@ -139,12 +139,15 @@ echo "$DB_ENC_KEY"
 Edit `deployment/cloud/.env.cloud` and set:
 
 1. Domains and URLs:
-   - `APP_DOMAIN`, `API_DOMAIN`
-   - `APP_PUBLIC_URL`, `API_PUBLIC_URL`
+   - `APP_DOMAIN=openwork.aitech-services.com`
+   - `API_DOMAIN=api-openwork.aitech-services.com`
+   - `APP_PUBLIC_URL=https://openwork.aitech-services.com`
+   - `API_PUBLIC_URL=https://api-openwork.aitech-services.com`
 2. `MYSQL_ROOT_PASSWORD`
 3. `BETTER_AUTH_SECRET` (use `AUTH_SECRET`)
 4. `DEN_DB_ENCRYPTION_KEY` (use `DB_ENC_KEY`)
-5. `CORS_ORIGINS` and `DEN_BETTER_AUTH_TRUSTED_ORIGINS` (example `https://app.example.com`)
+5. `CORS_ORIGINS` and `DEN_BETTER_AUTH_TRUSTED_ORIGINS`:
+   - `https://openwork.aitech-services.com`
 6. Keep stub mode:
    - `PROVISIONER_MODE=stub`
    - Optional `WORKER_URL_TEMPLATE` (placeholder URL format)
@@ -164,8 +167,8 @@ sudo cp deployment/cloud/nginx-openwork.conf.example /etc/nginx/sites-available/
 
 Edit `/etc/nginx/sites-available/openwork.conf` and replace:
 
-1. `app.example.com`
-2. `api.example.com`
+1. `app.example.com` -> `openwork.aitech-services.com`
+2. `api.example.com` -> `api-openwork.aitech-services.com`
 
 Enable site and reload:
 
@@ -177,17 +180,27 @@ sudo systemctl restart nginx
 sudo systemctl status nginx --no-pager
 ```
 
-## 8. Create Cloudflare Tunnel
+## 8. Create Cloudflare Tunnel And DNS Records
 
 Create the tunnel in Cloudflare Zero Trust:
 
 1. Go to Cloudflare Dashboard -> Zero Trust -> Networks -> Tunnels.
 2. Create tunnel (type: `cloudflared`).
 3. Add public hostnames:
-   - `app.<your-domain>` -> `http://localhost:8080`
-   - `api.<your-domain>` -> `http://localhost:8080`
+   - `openwork.aitech-services.com` -> `http://localhost:8080`
+   - `api-openwork.aitech-services.com` -> `http://localhost:8080`
 4. Copy Linux connector install command with token:
    - `cloudflared service install <TUNNEL_TOKEN>`
+
+Cloudflare will create DNS records automatically when you add those public hostnames. Verify in Cloudflare DNS:
+
+1. `openwork` CNAME -> `<tunnel-id>.cfargotunnel.com` (proxied)
+2. `api-openwork` CNAME -> `<tunnel-id>.cfargotunnel.com` (proxied)
+
+If records are missing, create them manually in Cloudflare DNS:
+
+1. Type: `CNAME`, Name: `openwork`, Target: `<tunnel-id>.cfargotunnel.com`, Proxy: on
+2. Type: `CNAME`, Name: `api-openwork`, Target: `<tunnel-id>.cfargotunnel.com`, Proxy: on
 
 Run on VM:
 
@@ -202,6 +215,15 @@ Tail tunnel logs:
 ```bash
 sudo journalctl -u cloudflared -f
 ```
+
+DNS check from terminal:
+
+```bash
+dig +short openwork.aitech-services.com
+dig +short api-openwork.aitech-services.com
+```
+
+Expected: both resolve through Cloudflare (typically to proxied Cloudflare addresses).
 
 ## 9. Start Cloud Stack
 
@@ -243,15 +265,15 @@ curl -fsS http://127.0.0.1:3005/api/den/health
 From VM via Nginx host routing:
 
 ```bash
-curl -fsS -H "Host: api.<your-domain>" http://127.0.0.1:8080/health
-curl -fsS -H "Host: app.<your-domain>" http://127.0.0.1:8080/api/den/health
+curl -fsS -H "Host: api-openwork.aitech-services.com" http://127.0.0.1:8080/health
+curl -fsS -H "Host: openwork.aitech-services.com" http://127.0.0.1:8080/api/den/health
 ```
 
 From your laptop/public internet:
 
 ```bash
-curl -fsS https://api.<your-domain>/health
-curl -I https://app.<your-domain>
+curl -fsS https://api-openwork.aitech-services.com/health
+curl -I https://openwork.aitech-services.com
 ```
 
 Expected:
@@ -263,7 +285,7 @@ Expected:
 
 Open:
 
-1. `https://app.<your-domain>`
+1. `https://openwork.aitech-services.com`
 
 Auth notes:
 
@@ -353,7 +375,7 @@ cat /opt/openwork/den-backup.sql | docker compose \
 3. Worker launch does not become healthy in stub mode:
    - This is expected with `PROVISIONER_MODE=stub` because no real cloud worker provider is configured.
 4. OAuth callback mismatch:
-   - Ensure callback URL is `https://app.<your-domain>/api/auth/callback/<provider>`.
+   - Ensure callback URL is `https://openwork.aitech-services.com/api/auth/callback/<provider>`.
 
 ## 16. Optional: Migrate To Daytona Later
 
@@ -371,7 +393,7 @@ export DAYTONA_TARGET="<your-daytona-target>"
 ```
 
 4. Uncomment workers server block in `deployment/cloud/nginx-openwork.conf.example` and apply to Nginx config.
-5. Add tunnel hostname `workers.<your-domain>` -> `http://localhost:8080`.
+5. Add tunnel hostname `workers.aitech-services.com` -> `http://localhost:8080`.
 6. Start with Daytona profile enabled:
 
 ```bash

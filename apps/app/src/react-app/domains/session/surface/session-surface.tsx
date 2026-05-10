@@ -395,8 +395,11 @@ export function SessionSurface(props: SessionSurfaceProps) {
   const liveStatus = statusState ?? snapshot?.status ?? IDLE_STATUS;
   const chatStreaming = sending || liveStatus.type === "busy" || liveStatus.type === "retry";
   const renderedMessages = useMemo(
-    () => deriveRenderedSessionMessages({ transcriptState, snapshot, includeLiveOnlyMessages: chatStreaming }),
-    [chatStreaming, snapshot, transcriptState],
+    // Keep live-only messages even after the run flips to idle. The server
+    // snapshot can lag by a tick at completion, and dropping live-only tails
+    // causes the latest prompt/reply to disappear until a later refetch.
+    () => deriveRenderedSessionMessages({ transcriptState, snapshot, includeLiveOnlyMessages: true }),
+    [snapshot, transcriptState],
   );
   const pendingSessionLoad = !snapshot && snapshotQuery.isLoading && renderedMessages.length === 0;
   const assistantOutputAfterAwaitStart = useMemo(() => {

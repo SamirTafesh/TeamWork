@@ -181,6 +181,12 @@ pnpm build:ui
 pnpm test:e2e
 ```
 
+## Deployment Guides
+
+- Local LAN server (shared host): [docs/local-server-lan-deployment-guide.md](./docs/local-server-lan-deployment-guide.md)
+- Team host from source: [docs/team-setup-sharing-guide.md](./docs/team-setup-sharing-guide.md)
+- Cloud VM (Ubuntu + nginx + Cloudflare Tunnel): [docs/cloud-ubuntu-setup-guide.md](./docs/cloud-ubuntu-setup-guide.md)
+
 ## Troubleshooting
 
 If you need to report a desktop or session bug, open Settings -> Debug and export both the runtime debug report and developer logs before filing an issue.

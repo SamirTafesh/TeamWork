@@ -1,0 +1,17 @@
+# Replace domains before use.
+
+app.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:3005
+}
+
+api.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:8788
+}
+
+workers.example.com {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:8789
+}
+

@@ -8,6 +8,89 @@
       ]
     }
   },
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama Local",
+      "options": {
+        "baseURL": "http://192.168.68.210:8080/v1"
+      },
+      "models": {
+        "qwen-coder-agent": {
+          "name": "qwen3-coder:30b",
+          "options": {
+            "num_ctx": 64000
+          }
+        },
+        "qwen3-coder:30b": {
+          "name": "qwen3-coder:30b",
+          "options": {
+            "num_ctx": 64000
+          }
+        },
+        "qwen3-coder-next:latest": {
+          "name": "qwen3-coder-next:latest",
+          "options": {
+            "num_ctx": 64000
+          }
+        },
+        "qwen3-next:latest": {
+          "name": "qwen3-next:latest",
+          "options": {
+            "num_ctx": 64000
+          }
+        },
+        "gpt-oss:20b": {
+          "name": "gpt-oss:20b",
+          "options": {
+            "num_ctx": 32000
+          }
+        },
+        "deepseek-r1:32b": {
+          "name": "deepseek-r1:32b",
+          "options": {
+            "num_ctx": 32000
+          }
+        },
+        "gemma4:latest": {
+          "name": "gemma4:latest",
+          "options": {
+            "num_ctx": 128000
+          }
+        },
+        "qwen2.5-coder:0.5b": {
+          "name": "qwen2.5-coder:0.5b",
+          "options": {
+            "num_ctx": 32000
+          }
+        },
+        "qwen2.5-coder:1.5b": {
+          "name": "qwen2.5-coder:1.5b",
+          "options": {
+            "num_ctx": 32000
+          }
+        },
+        "qwen2.5-coder:3b": {
+          "name": "qwen2.5-coder:3b",
+          "options": {
+            "num_ctx": 32000
+          }
+        },
+        "Qwen3.6-35B-A3B-Q4_K_M": {
+          "name": "Qwen3.6-35B-A3B-Q4_K_M",
+          "options": {
+            "num_ctx": 262144
+          }
+        },
+        "Qwen3.6-35B-A3B-UD-Q4_K_XL": {
+          "name": "Qwen3.6-35B-A3B-UD-Q4_K_XL",
+          "options": {
+            "num_ctx": 262144
+          }
+        }
+      }
+    }
+  },
   "model": "openai/gpt-5.2-codex",
   "plugin": [
     "opencode-scheduler"

@@ -369,6 +369,7 @@ export function SessionRoute() {
 
   const { markRouteReady: markBootRouteReady } = useBootState();
   const [loading, setLoading] = useState(true);
+  const [initialRouteLoadComplete, setInitialRouteLoadComplete] = useState(false);
   const [client, setClient] = useState<OpenworkServerClient | null>(null);
   const [baseUrl, setBaseUrl] = useState("");
   const [token, setToken] = useState("");
@@ -389,6 +390,8 @@ export function SessionRoute() {
   const remoteWorkspaceCheckRunCounterRef = useRef(0);
   const sessionsByWorkspaceIdRef = useRef<Record<string, any[]>>({});
   const startupRetryTimerRef = useRef<number | null>(null);
+  const initialRouteLoadCompleteRef = useRef(false);
+  const sessionVisibilityEventKeyRef = useRef("");
   const [retryingWorkspaceIds, setRetryingWorkspaceIds] = useState<string[]>([]);
   const launchActivatedWorkspaceIdsRef = useRef(new Set<string>());
   const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
@@ -548,17 +551,36 @@ export function SessionRoute() {
   );
 
   const refreshRouteState = useCallback(async () => {
+    const refreshStartedAt = Date.now();
+    const initialLoadWasComplete = initialRouteLoadCompleteRef.current;
     // Dedupe: if a refresh is already running, skip this call. Fast workspace
     // switches used to fire 5-6 overlapping refreshRouteState() calls which
     // each fetched workspaces + sessions for every workspace. That workload
     // multiplied quickly on the event loop and caused the UI to freeze.
-    if (refreshInFlightRef.current) return;
+    if (refreshInFlightRef.current) {
+      recordInspectorEvent("route.refresh.skipped", {
+        reason: "in_flight",
+        routeWorkspaceId: routeWorkspaceId || null,
+        selectedWorkspaceId: selectedWorkspaceId || null,
+        selectedSessionId,
+      });
+      return;
+    }
+    recordInspectorEvent("route.refresh.start", {
+      routeWorkspaceId: routeWorkspaceId || null,
+      selectedWorkspaceId: selectedWorkspaceId || null,
+      selectedSessionId,
+      initialRouteLoadComplete: initialLoadWasComplete,
+    });
     refreshInFlightRef.current = true;
     setLoading(true);
     setRouteError(null);
     let desktopList = null as Awaited<ReturnType<typeof workspaceBootstrap>> | null;
     let desktopWorkspaces = workspacesRef.current;
     let routeReadyAfterRefresh = true;
+    let refreshResult: "ok" | "no_connection" | "error" = "ok";
+    let refreshErrorMessage: string | null = null;
+    let refreshSelectedWorkspaceId: string | null = null;
     try {
       if (isDesktopRuntime()) {
         try {
@@ -579,6 +601,7 @@ export function SessionRoute() {
       const { normalizedBaseUrl, resolvedToken, resolvedHostToken, hostInfo } = await resolveOpenworkConnection();
       setOpenworkServerHostInfoState(hostInfo);
       if (!normalizedBaseUrl || !resolvedToken) {
+        refreshResult = "no_connection";
         setClient(null);
         setBaseUrl("");
         setToken("");
@@ -625,6 +648,7 @@ export function SessionRoute() {
         );
         if (match?.workspaceId) nextWorkspaceId = match.workspaceId;
       }
+      refreshSelectedWorkspaceId = nextWorkspaceId || null;
 
       setClient(openworkClient);
       setBaseUrl(normalizedBaseUrl);
@@ -676,6 +700,8 @@ export function SessionRoute() {
       }
     } catch (error) {
       const message = describeRouteError(error);
+      refreshResult = "error";
+      refreshErrorMessage = message;
       console.error("[session-route] refreshRouteState failed", error);
       recordInspectorEvent("route.refresh.error", {
         route: "session",
@@ -692,14 +718,30 @@ export function SessionRoute() {
     } finally {
       setLoading(false);
       refreshInFlightRef.current = false;
+      // Only the very first route hydration should block the transcript area.
+      // Subsequent refreshes (settings events, visibility resume, etc.) must
+      // not blank an active running session.
+      if (!initialRouteLoadCompleteRef.current) {
+        initialRouteLoadCompleteRef.current = true;
+        setInitialRouteLoadComplete(true);
+      }
       // Tell the boot overlay the first route data load has completed so
       // the overlay dismisses after BOTH the desktop boot and the workspace
       // list/sessions are ready.
       if (routeReadyAfterRefresh) {
         markBootRouteReady();
       }
+      recordInspectorEvent("route.refresh.finally", {
+        result: refreshResult,
+        durationMs: Date.now() - refreshStartedAt,
+        initialRouteLoadCompleteBefore: initialLoadWasComplete,
+        initialRouteLoadCompleteAfter: initialRouteLoadCompleteRef.current,
+        selectedWorkspaceId: refreshSelectedWorkspaceId ?? selectedWorkspaceId ?? null,
+        selectedSessionId,
+        error: refreshErrorMessage,
+      });
     }
-  }, [loadWorkspaceSessionsInBackground, markBootRouteReady, routeWorkspaceId, selectedSessionId]);
+  }, [loadWorkspaceSessionsInBackground, markBootRouteReady, routeWorkspaceId, selectedSessionId, selectedWorkspaceId]);
 
   const remoteAccessRestart = useRemoteAccessRestart({
     isEnabled: () => openworkServerSettings.remoteAccessEnabled === true,
@@ -1079,7 +1121,7 @@ export function SessionRoute() {
   })();
   // Boot-level loading blocks the whole UI. Session-list retries only fill the
   // sidebar; they must not gate the composer/New task.
-  const effectiveLoading = loading;
+  const effectiveLoading = !initialRouteLoadComplete && loading;
 
   const opencodeClient = useMemo(
     () =>
@@ -1508,6 +1550,92 @@ export function SessionRoute() {
     selectedWorkspaceId,
     selectedWorkspaceRoot,
     sessionsByWorkspaceId,
+    token,
+  ]);
+
+  useEffect(() => {
+    const surfacePrereqs = {
+      client: Boolean(client),
+      workspaceId: Boolean(selectedWorkspaceId),
+      sessionId: Boolean(selectedSessionId),
+      opencodeBaseUrl: Boolean(opencodeBaseUrl),
+      token: Boolean(token),
+      opencodeClient: Boolean(opencodeClient),
+    };
+    const payload = {
+      selectedWorkspaceId: selectedWorkspaceId || null,
+      selectedSessionId,
+      initialRouteLoadComplete,
+      loading,
+      effectiveLoading,
+      canCreateTask,
+      showPreparingStatus,
+      selectedWorkspaceIsLoading,
+      selectedSessionKnown,
+      routeNotFoundMessage,
+      hasSurface: Boolean(surfaceProps),
+      surfacePrereqs,
+    };
+    const nextKey = JSON.stringify(payload);
+    if (sessionVisibilityEventKeyRef.current === nextKey) return;
+    sessionVisibilityEventKeyRef.current = nextKey;
+    recordInspectorEvent("route.session_visibility.changed", payload);
+  }, [
+    canCreateTask,
+    client,
+    effectiveLoading,
+    initialRouteLoadComplete,
+    loading,
+    opencodeBaseUrl,
+    opencodeClient,
+    routeNotFoundMessage,
+    selectedSessionId,
+    selectedSessionKnown,
+    selectedWorkspaceId,
+    selectedWorkspaceIsLoading,
+    showPreparingStatus,
+    surfaceProps,
+    token,
+  ]);
+
+  useEffect(() => {
+    const dispose = publishInspectorSlice("route_ui", () => ({
+      selectedWorkspaceId: selectedWorkspaceId || null,
+      selectedSessionId,
+      initialRouteLoadComplete,
+      loading,
+      effectiveLoading,
+      canCreateTask,
+      showPreparingStatus,
+      selectedWorkspaceIsLoading,
+      selectedSessionKnown,
+      routeNotFoundMessage,
+      hasSurface: Boolean(surfaceProps),
+      surfacePrereqs: {
+        client: Boolean(client),
+        workspaceId: Boolean(selectedWorkspaceId),
+        sessionId: Boolean(selectedSessionId),
+        opencodeBaseUrl: Boolean(opencodeBaseUrl),
+        token: Boolean(token),
+        opencodeClient: Boolean(opencodeClient),
+      },
+    }));
+    return dispose;
+  }, [
+    canCreateTask,
+    client,
+    effectiveLoading,
+    initialRouteLoadComplete,
+    loading,
+    opencodeBaseUrl,
+    opencodeClient,
+    routeNotFoundMessage,
+    selectedSessionId,
+    selectedSessionKnown,
+    selectedWorkspaceId,
+    selectedWorkspaceIsLoading,
+    showPreparingStatus,
+    surfaceProps,
     token,
   ]);
 

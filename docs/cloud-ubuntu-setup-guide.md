@@ -148,7 +148,20 @@ Edit `deployment/cloud/.env.cloud` and set:
 4. `DEN_DB_ENCRYPTION_KEY` (use `DB_ENC_KEY`)
 5. `CORS_ORIGINS` and `DEN_BETTER_AUTH_TRUSTED_ORIGINS`:
    - `https://openwork.aitech-services.com`
-6. Keep stub mode:
+6. Email provider (required for email/password auth in non-dev mode):
+   - Preferred SMTP config:
+     - `SMTP_HOST=<your-smtp-host>`
+     - `SMTP_PORT=587`
+     - `SMTP_SECURE=false` (set `true` if your SMTP server requires SMTPS)
+     - `SMTP_USER=<smtp-username>` (optional if relay is IP-whitelisted/no-auth)
+     - `SMTP_PASS=<smtp-password>`
+     - `SMTP_FROM="OpenWork <no-reply@aitech-services.com>"`
+     - `SMTP_REPLY_TO=<optional-reply-to-address>`
+   - Optional Loops fallback (only used when SMTP is not configured):
+     - `LOOPS_API_KEY`
+     - `LOOPS_TRANSACTIONAL_ID_DEN_VERIFY_EMAIL`
+     - `LOOPS_TRANSACTIONAL_ID_DEN_ORG_INVITE_EMAIL`
+7. Keep stub mode:
    - `PROVISIONER_MODE=stub`
    - Optional `WORKER_URL_TEMPLATE` (placeholder URL format)
 
@@ -289,11 +302,10 @@ Open:
 
 Auth notes:
 
-1. Email/password flow in non-dev mode requires Loops env vars:
-   - `LOOPS_API_KEY`
-   - `LOOPS_TRANSACTIONAL_ID_DEN_VERIFY_EMAIL`
-   - `LOOPS_TRANSACTIONAL_ID_DEN_ORG_INVITE_EMAIL`
-2. If Loops is not configured, use social auth (GitHub/Google) by setting OAuth vars.
+1. Email/password flow in non-dev mode requires an outbound mail provider:
+   - SMTP (recommended): set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_FROM` (+ `SMTP_USER`/`SMTP_PASS` when auth is required)
+   - Loops fallback: set `LOOPS_API_KEY`, `LOOPS_TRANSACTIONAL_ID_DEN_VERIFY_EMAIL`, `LOOPS_TRANSACTIONAL_ID_DEN_ORG_INVITE_EMAIL`
+2. If no mail provider is configured, use social auth (GitHub/Google) by setting OAuth vars.
 
 ## 12. Enable Auto-Start On Reboot
 
@@ -367,8 +379,8 @@ cat /opt/openwork/den-backup.sql | docker compose \
 
 ## 15. Common Issues
 
-1. `loops_not_configured` on signup:
-   - Configure Loops env vars or use OAuth providers.
+1. `provider_not_configured` on signup:
+   - Configure SMTP vars (recommended) or Loops vars, or use OAuth providers.
 2. Tunnel is healthy but domain returns `502`:
    - Check Nginx is running and listening on `127.0.0.1:8080`.
    - Verify tunnel public hostname target is `http://localhost:8080`.

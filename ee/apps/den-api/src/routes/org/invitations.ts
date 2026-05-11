@@ -27,7 +27,8 @@ const invitationResponseSchema = z.object({
 
 const invitationEmailFailedSchema = z.object({
   error: z.literal("invitation_email_failed"),
-  reason: z.enum(["loops_not_configured", "loops_rejected", "loops_network"]),
+  reason: z.enum(["provider_not_configured", "provider_rejected", "provider_network"]),
+  provider: z.enum(["smtp", "loops", "none"]),
   message: z.string(),
   invitationId: denTypeIdSchema("invitation"),
 }).meta({ ref: "InvitationEmailFailedError" })
@@ -49,7 +50,7 @@ export function registerOrgInvitationRoutes<T extends { Variables: OrgRouteVaria
     describeRoute({
       tags: ["Invitations"],
       summary: "Create organization invitation",
-      description: "Creates or refreshes a pending organization invitation for an email address and sends the invite email. Returns 502 when the invitation row is persisted but the email provider (Loops) failed to send; the client should surface the error and give the user a retry affordance.",
+      description: "Creates or refreshes a pending organization invitation for an email address and sends the invite email. Returns 502 when the invitation row is persisted but the configured email provider failed to send; the client should surface the error and give the user a retry affordance.",
       responses: {
         200: jsonResponse("Existing invitation refreshed successfully.", invitationResponseSchema),
         201: jsonResponse("Invitation created successfully.", invitationResponseSchema),
@@ -58,7 +59,7 @@ export function registerOrgInvitationRoutes<T extends { Variables: OrgRouteVaria
         403: jsonResponse("Only workspace owners and admins can create or resend invitations.", forbiddenSchema),
         404: jsonResponse("The organization could not be found.", notFoundSchema),
         409: jsonResponse("The email address is outside this workspace's allowed domains.", inviteEmailDomainNotAllowedSchema),
-        502: jsonResponse("The invitation was saved but the email provider (Loops) rejected or failed to deliver it. Retry by submitting the same email again.", invitationEmailFailedSchema),
+        502: jsonResponse("The invitation was saved but the configured email provider rejected or failed to deliver it. Retry by submitting the same email again.", invitationEmailFailedSchema),
       },
     }),
     requireUserMiddleware,
@@ -176,12 +177,13 @@ export function registerOrgInvitationRoutes<T extends { Variables: OrgRouteVaria
         return c.json({
           error: "invitation_email_failed" as const,
           reason: error.reason,
+          provider: error.provider,
           message:
-            error.reason === "loops_not_configured"
-              ? "The invitation email provider (Loops) is not configured on this deployment."
-              : error.reason === "loops_network"
-                ? "Could not reach the invitation email provider. The invitation is saved; retry to send again."
-                : `The invitation email provider rejected the send${error.detail ? `: ${error.detail}` : "."}`,
+            error.reason === "provider_not_configured"
+              ? "No outbound email provider is configured. Set SMTP_* (recommended) or Loops env vars."
+              : error.reason === "provider_network"
+                ? `Could not reach the invitation email provider${error.provider !== "none" ? ` (${error.provider})` : ""}. The invitation is saved; retry to send again.`
+                : `The invitation email provider${error.provider !== "none" ? ` (${error.provider})` : ""} rejected the send${error.detail ? `: ${error.detail}` : "."}`,
           invitationId,
         }, 502)
       }

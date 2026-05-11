@@ -10,10 +10,10 @@
  *     node ee/apps/den-api/scripts/smoke-email-failures.mjs
  *
  * Expected output:
- *   [smoke] ok loops_not_configured { reason: 'loops_not_configured', ... }
+ *   [smoke] ok provider_not_configured { reason: 'provider_not_configured', ... }
  *
- * Add `-e LOOPS_API_KEY=bogus -e LOOPS_TRANSACTIONAL_ID_DEN_ORG_INVITE_EMAIL=bogus`
- * to also reach the `loops_rejected` path (Loops returns 401).
+ * Add SMTP or Loops env vars to exercise `provider_rejected` and
+ * `provider_network` paths.
  *
  * Intentionally side-effect free: no DB writes, no auth.
  */
@@ -39,7 +39,7 @@ try {
     process.exit(0)
   }
 
-  console.error("[smoke] FAIL: expected throw when Loops is not configured or rejects")
+  console.error("[smoke] FAIL: expected throw when no mail provider is configured or rejects")
   process.exit(1)
 } catch (error) {
   if (!(error instanceof DenEmailSendError)) {

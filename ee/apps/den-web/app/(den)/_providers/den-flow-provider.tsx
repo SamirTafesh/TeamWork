@@ -446,25 +446,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     setAuthBusy(true);
     setAuthError(null);
     try {
-      const { response, payload } = await requestJson("/api/auth/email-otp/send-verification-otp", {
-        method: "POST",
-        body: JSON.stringify({
-          email: trimmedEmail,
-          type: "email-verification"
-        })
-      });
-
-      if (!response.ok) {
-        setAuthError(getErrorMessage(payload, `Could not resend the code (${response.status}).`));
-        return;
-      }
-
-      setAuthInfo(`We sent a fresh verification code to ${trimmedEmail}.`);
-      appendEvent("info", "Verification code resent", trimmedEmail);
-      trackPosthogEvent("den_signup_verification_sent", {
-        method: "email",
-        email_domain: getEmailDomain(trimmedEmail),
-      });
+      await sendVerificationCode(trimmedEmail, { source: "resend" });
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : "Could not resend the verification code.");
     } finally {
@@ -1036,6 +1018,43 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     return "dashboard" as const;
   }
 
+  async function sendVerificationCode(targetEmail: string, options: { source: "signup" | "resend" }) {
+    const { response, payload } = await requestJson("/api/auth/email-otp/send-verification-otp", {
+      method: "POST",
+      body: JSON.stringify({
+        email: targetEmail,
+        type: "email-verification"
+      })
+    });
+
+    if (!response.ok) {
+      if (options.source === "signup") {
+        setAuthError(
+          getErrorMessage(
+            payload,
+            `Could not send the verification code automatically (${response.status}). Click Resend code to try again.`,
+          ),
+        );
+      } else {
+        setAuthError(getErrorMessage(payload, `Could not resend the code (${response.status}).`));
+      }
+      return false;
+    }
+
+    appendEvent("info", options.source === "signup" ? "Verification code sent" : "Verification code resent", targetEmail);
+    trackPosthogEvent("den_signup_verification_sent", {
+      method: "email",
+      email_domain: getEmailDomain(targetEmail),
+      trigger: options.source
+    });
+
+    if (options.source === "resend") {
+      setAuthInfo(`We sent a fresh verification code to ${targetEmail}.`);
+    }
+
+    return true;
+  }
+
   async function resolveUserLandingRoute() {
     if (!user || desktopAuthRequested) {
       return null;
@@ -1102,12 +1121,11 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
 
       if (authMode === "sign-up" && !token) {
         setUser(null);
-        openVerificationStep(trimmedEmail, `We emailed a 6-digit verification code to ${trimmedEmail}. Enter it below to finish creating your account.`);
-        appendEvent("info", "Verification code sent", trimmedEmail);
-        trackPosthogEvent("den_signup_verification_sent", {
-          method: "email",
-          email_domain: getEmailDomain(trimmedEmail),
-        });
+        openVerificationStep(trimmedEmail, `We are sending a 6-digit verification code to ${trimmedEmail}. Enter it below to finish creating your account.`);
+        const sent = await sendVerificationCode(trimmedEmail, { source: "signup" });
+        if (sent) {
+          setAuthInfo(`We emailed a 6-digit verification code to ${trimmedEmail}. Enter it below to finish creating your account.`);
+        }
         return null;
       }
       return await finalizeEmailPasswordSignIn(authMode, trimmedEmail);

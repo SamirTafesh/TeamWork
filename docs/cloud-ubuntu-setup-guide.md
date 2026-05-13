@@ -1,5 +1,8 @@
 # OpenWork Cloud Setup Guide (Ubuntu VM + Nginx + Cloudflare Tunnel, No Daytona)
 
+After deployment is complete, continue with the product onboarding guide:
+- [OpenWork Cloud User Guide (account, billing, org, providers, skills, sharing)](./openwork-cloud-user-guide.md)
+
 This guide deploys a self-hosted OpenWork Cloud stack on one Ubuntu VM using:
 
 1. `Nginx` as reverse proxy

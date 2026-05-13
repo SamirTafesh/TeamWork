@@ -186,6 +186,7 @@ pnpm test:e2e
 - Local LAN server (shared host): [docs/local-server-lan-deployment-guide.md](./docs/local-server-lan-deployment-guide.md)
 - Team host from source: [docs/team-setup-sharing-guide.md](./docs/team-setup-sharing-guide.md)
 - Cloud VM (Ubuntu + nginx + Cloudflare Tunnel): [docs/cloud-ubuntu-setup-guide.md](./docs/cloud-ubuntu-setup-guide.md)
+- Full product usage guide (account, billing, org, providers, skills, sharing): [docs/openwork-cloud-user-guide.md](./docs/openwork-cloud-user-guide.md)
 
 ## Troubleshooting
 

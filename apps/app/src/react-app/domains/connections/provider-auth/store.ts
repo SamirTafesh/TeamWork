@@ -546,7 +546,7 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
 
     if (previousProviderId && previousProviderId !== localProviderId) {
       updated = removeCloudProviderComment(updated, previousProviderId);
-      const previousEdits = modify(updated, ["provider", previousProviderId], {
+      const previousEdits = modify(updated, ["provider", previousProviderId], undefined, {
         formattingOptions: { insertSpaces: true, tabSize: 2 },
       });
       updated = applyEdits(updated, previousEdits);
@@ -576,7 +576,7 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
       ? raw
       : '{\n  "$schema": "https://opencode.ai/config.json"\n}\n';
     updated = removeCloudProviderComment(updated, providerId);
-    const providerEdits = modify(updated, ["provider", providerId], {
+    const providerEdits = modify(updated, ["provider", providerId], undefined, {
       formattingOptions: { insertSpaces: true, tabSize: 2 },
     });
     updated = applyEdits(updated, providerEdits);

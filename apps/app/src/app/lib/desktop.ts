@@ -33,7 +33,7 @@ import type { WorkspaceList } from "./desktop-types";
 declare global {
   interface Window {
     __TEAMWORK_ELECTRON__?: {
-      invokeDesktop?: (command: string, ...args: unknown[]) => Promise<unknown>;
+      invokeDesktop?: (command: string, ...args: unknown[]) => Promise<any>;
       shell?: {
         openExternal?: (url: string) => Promise<void>;
         relaunch?: () => Promise<void>;
@@ -116,7 +116,7 @@ export function resolveWorkspaceListSelectedId(
 // All bridge methods are implemented via invokeDesktop IPC. The Proxy
 // automatically maps property access to `invokeDesktop(propertyName, ...args)`.
 
-type DesktopBridgeFn = (...args: unknown[]) => Promise<unknown>;
+type DesktopBridgeFn = (...args: unknown[]) => Promise<any>;
 
 const electronBridge: Record<string, DesktopBridgeFn> = {};
 

@@ -2004,7 +2004,7 @@ export function SessionRoute() {
       });
       const createdId = resolveWorkspaceListSelectedId(list) || list.workspaces[list.workspaces.length - 1]?.id || "";
       let targetWorkspaceId = createdId;
-      let targetWorkspace = list.workspaces.find((workspace) => workspace.id === createdId) ?? null;
+      let targetWorkspace = list.workspaces.find((workspace: any) => workspace.id === createdId) ?? null;
       if (createdId) {
         await workspaceSetSelected(createdId).catch(() => undefined);
         await workspaceSetRuntimeActive(createdId).catch(() => undefined);
@@ -2021,7 +2021,7 @@ export function SessionRoute() {
         targetWorkspaceId = serverList
           ? resolveWorkspaceListSelectedId(serverList) || serverList.workspaces[serverList.workspaces.length - 1]?.id || targetWorkspaceId
           : targetWorkspaceId;
-        targetWorkspace = serverList?.workspaces.find((workspace) => workspace.id === targetWorkspaceId) ?? targetWorkspace;
+        targetWorkspace = serverList?.workspaces.find((workspace: any) => workspace.id === targetWorkspaceId) ?? targetWorkspace;
       }
       setCreateWorkspaceOpen(false);
       // Mark onboarding complete so the /welcome redirect never fires again.

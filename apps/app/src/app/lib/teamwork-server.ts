@@ -269,6 +269,55 @@ export type TeamworkInboxUploadResult = {
   bytes: number;
 };
 
+export type TeamworkOpenCodeRouterHealthSnapshot = {
+  config: {
+    groupsEnabled: boolean;
+  };
+  channels: {
+    slack: boolean;
+    telegram: boolean;
+    whatsapp: boolean;
+  };
+  ok: boolean;
+  opencode: {
+    healthy: boolean;
+    url: string;
+    version?: string;
+  };
+  agent?: {
+    loaded?: boolean;
+    selected?: string | null;
+  };
+  activity?: {
+    inboundToday?: number;
+    outboundToday?: number;
+    lastMessageAt?: number | null;
+  };
+  [key: string]: unknown;
+};
+
+export type TeamworkOpenCodeRouterIdentityItem = {
+  id: string;
+  enabled: boolean;
+  running: boolean;
+  access?: "private" | "public";
+  pairingRequired?: boolean;
+  [key: string]: unknown;
+};
+
+export type TeamworkOpenCodeRouterSendResult = {
+  attempted: number;
+  sent: number;
+  ok?: boolean;
+  reason?: string;
+  failures?: Array<{
+    identityId: string;
+    peerId: string;
+    error: string;
+  }>;
+  [key: string]: unknown;
+};
+
 export type TeamworkActor = {
   type: "remote" | "host";
   clientId?: string;
@@ -969,6 +1018,117 @@ export function createTeamworkServerClient(options: { baseUrl: string; token?: s
         method: "POST",
         body: { scope, content },
       }),
+    getOpenCodeRouterHealth: async (workspaceId: string) => {
+      const routerBasePath = `/workspace/${encodeURIComponent(workspaceId)}/opencode-router`;
+      const path = `${routerBasePath}/health`;
+      const url = `${baseUrl}${path}`;
+      const fetchImpl = resolveFetch(url);
+      const response = await fetchWithTimeout(
+        fetchImpl,
+        url,
+        {
+          method: "GET",
+          headers: buildAuthHeaders(token, hostToken),
+        },
+        timeouts.status,
+      );
+      const text = await response.text();
+      let json: Record<string, unknown> | TeamworkOpenCodeRouterHealthSnapshot | null = null;
+      try {
+        json = text ? (JSON.parse(text) as Record<string, unknown>) : null;
+      } catch {
+        json = null;
+      }
+      return { ok: response.ok, status: response.status, json };
+    },
+    getOpenCodeRouterTelegram: (workspaceId: string) =>
+      requestJson<Record<string, unknown>>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/telegram`,
+        { token, hostToken, timeoutMs: timeouts.status },
+      ),
+    getOpenCodeRouterTelegramIdentities: (workspaceId: string) =>
+      requestJson<{ ok: boolean; items: TeamworkOpenCodeRouterIdentityItem[] }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/telegram`,
+        { token, hostToken, timeoutMs: timeouts.status },
+      ),
+    getOpenCodeRouterSlackIdentities: (workspaceId: string) =>
+      requestJson<{ ok: boolean; items: TeamworkOpenCodeRouterIdentityItem[] }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/slack`,
+        { token, hostToken, timeoutMs: timeouts.status },
+      ),
+    upsertOpenCodeRouterTelegramIdentity: (
+      workspaceId: string,
+      payload: { token: string; enabled?: boolean; access?: "private" | "public"; id?: string },
+    ) =>
+      requestJson<{
+        ok: boolean;
+        applied?: boolean;
+        applyError?: string;
+        applyStatus?: number;
+        telegram?: Record<string, unknown>;
+      }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/telegram`,
+        { token, hostToken, method: "POST", body: payload, timeoutMs: timeouts.status },
+      ),
+    deleteOpenCodeRouterTelegramIdentity: (workspaceId: string, identityId: string) =>
+      requestJson<{
+        ok: boolean;
+        applied?: boolean;
+        applyError?: string;
+        applyStatus?: number;
+        telegram?: Record<string, unknown>;
+      }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/telegram/${encodeURIComponent(identityId)}`,
+        { token, hostToken, method: "DELETE", timeoutMs: timeouts.status },
+      ),
+    upsertOpenCodeRouterSlackIdentity: (
+      workspaceId: string,
+      payload: { botToken: string; appToken: string; enabled?: boolean; id?: string },
+    ) =>
+      requestJson<{
+        ok: boolean;
+        applied?: boolean;
+        applyError?: string;
+        applyStatus?: number;
+        slack?: Record<string, unknown>;
+      }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/slack`,
+        { token, hostToken, method: "POST", body: payload, timeoutMs: timeouts.status },
+      ),
+    deleteOpenCodeRouterSlackIdentity: (workspaceId: string, identityId: string) =>
+      requestJson<{
+        ok: boolean;
+        applied?: boolean;
+        applyError?: string;
+        applyStatus?: number;
+        slack?: Record<string, unknown>;
+      }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/identities/slack/${encodeURIComponent(identityId)}`,
+        { token, hostToken, method: "DELETE", timeoutMs: timeouts.status },
+      ),
+    sendOpenCodeRouterMessage: (
+      workspaceId: string,
+      payload: {
+        channel: "telegram" | "slack";
+        text: string;
+        directory?: string;
+        peerId?: string;
+        identityId?: string;
+        autoBind?: boolean;
+      },
+    ) =>
+      requestJson<TeamworkOpenCodeRouterSendResult>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/opencode-router/send`,
+        { token, hostToken, method: "POST", body: payload, timeoutMs: timeouts.status },
+      ),
     listReloadEvents: (workspaceId: string, options?: { since?: number }) => {
       const query = typeof options?.since === "number" ? `?since=${options.since}` : "";
       return requestJson<{ items: TeamworkReloadEvent[]; cursor?: number }>(

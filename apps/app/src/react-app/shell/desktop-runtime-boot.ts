@@ -89,7 +89,7 @@ export function useDesktopRuntimeBoot() {
 
         const selectedId = resolveWorkspaceListSelectedId(list);
         const workspace = selectedId
-          ? list.workspaces.find((w) => w.id === selectedId)
+          ? list.workspaces.find((w: any) => w.id === selectedId)
           : undefined;
         if (!workspace || workspace.workspaceType === "remote") {
           markReady();
@@ -198,9 +198,9 @@ export function useDesktopRuntimeBoot() {
         // No running engine. Tauri now mirrors Electron: engine_start boots
         // teamwork-server and lets that server manage OpenCode.
         const localPaths = list.workspaces
-          .filter((entry) => entry.workspaceType !== "remote")
-          .map((entry) => entry.path?.trim() ?? "")
-          .filter((path): path is string => path.length > 0);
+          .filter((entry: any) => entry.workspaceType !== "remote")
+          .map((entry: any) => entry.path?.trim() ?? "")
+          .filter((path: any): path is string => typeof path === "string" && path.length > 0);
         const workspacePathsFor = (root: string) => {
           const paths = [root];
           for (const path of localPaths) {
@@ -220,7 +220,7 @@ export function useDesktopRuntimeBoot() {
         });
 
         if (!engineStartResult) {
-          const fallback = list.workspaces.find((entry) => {
+          const fallback = list.workspaces.find((entry: any) => {
             const path = entry.path?.trim() ?? "";
             return entry.workspaceType !== "remote" && path && path !== workspaceRoot;
           });

@@ -78,7 +78,7 @@ export function WelcomeRoute() {
           list.workspaces[list.workspaces.length - 1]?.id ||
           "";
         let targetWorkspaceId = createdId;
-        let targetWorkspace = list.workspaces.find((workspace) => workspace.id === createdId) ?? null;
+        let targetWorkspace = list.workspaces.find((workspace: any) => workspace.id === createdId) ?? null;
         let targetSessionId: string | null = null;
         if (createdId) {
           await workspaceSetSelected(createdId).catch(() => undefined);

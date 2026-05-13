@@ -197,10 +197,10 @@ function reconcileSelectedWorkspaceId(
 
   const desktopSelectedId = resolveWorkspaceListSelectedId(desktopList);
   const desktopSelected = desktopSelectedId
-    ? desktopList?.workspaces?.find((workspace) => workspace.id === desktopSelectedId)
+    ? desktopList?.workspaces?.find((workspace: any) => workspace.id === desktopSelectedId)
     : null;
   const currentDesktop = current
-    ? desktopList?.workspaces?.find((workspace) => workspace.id === current)
+    ? desktopList?.workspaces?.find((workspace: any) => workspace.id === current)
     : null;
   const selectedPath = normalizeDirectoryPath((currentDesktop ?? desktopSelected)?.path ?? "");
 
@@ -275,6 +275,7 @@ function parseSettingsPath(pathname: string): {
   switch (head) {
     case "general":
     case "den":
+    case "messaging":
     case "skills":
     case "advanced":
     case "appearance":
@@ -1485,25 +1486,6 @@ export function SettingsRoute() {
             onSendFeedback={() => platform.openLink(buildFeedbackUrl({ entrypoint: "settings" }))}
             onJoinDiscord={() => platform.openLink("https://discord.gg/VEhNQXxYMB")}
             onReportIssue={() => platform.openLink("https://github.com/SamirTafesh/TeamWork/issues/new?template=bug.yml")}
-          />
-        );
-      case "automations":
-        return (
-          <AutomationsView
-            automations={automationsStore}
-            busy={busy}
-            selectedWorkspaceRoot={selectedWorkspaceRoot}
-            createSessionAndOpen={async () => undefined}
-            newTaskDisabled={!opencodeClient}
-            schedulerInstalled={false}
-            canEditPlugins={canWriteWorkspacePlugins}
-            addPlugin={async () => {
-              setRouteError("Scheduler plugin install is not wired into the React settings route yet.");
-            }}
-            reloadWorkspaceEngine={reloadCoordinator.reloadWorkspaceEngine}
-            reloadBusy={false}
-            canReloadWorkspace={reloadCoordinator.canReloadWorkspaceEngine}
-            openLink={(url) => platform.openLink(url)}
           />
         );
       case "skills":

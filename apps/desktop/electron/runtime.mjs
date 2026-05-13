@@ -679,7 +679,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const candidates = [];
     const seen = new Set();
 
-    for (const key of ["TEAMWORK_DOCKER_BIN", "OPENWRK_DOCKER_BIN", "DOCKER_BIN"]) {
+    for (const key of ["TEAMWORK_DOCKER_BIN", "DOCKER_BIN"]) {
       const value = process.env[key]?.trim();
       if (value && !seen.has(value)) {
         seen.add(value);
@@ -767,7 +767,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     return result.stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter((name) => name && (name.startsWith("teamwork-orchestrator-") || name.startsWith("teamwork-dev-") || name.startsWith("openwrk-")))
+      .filter((name) => name && (name.startsWith("teamwork-orchestrator-") || name.startsWith("teamwork-dev-")))
       .sort();
   }
 

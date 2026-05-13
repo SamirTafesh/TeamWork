@@ -1056,7 +1056,6 @@ async function resolveDockerCandidates(): Promise<string[]> {
 
   for (const key of [
     "TEAMWORK_DOCKER_BIN",
-    "OPENWRK_DOCKER_BIN",
     "DOCKER_BIN",
   ]) {
     const value = process.env[key];
@@ -1633,8 +1632,7 @@ function resolveExtraPathEntries(): string[] {
   if (cachedExtraPathEntries) return cachedExtraPathEntries;
 
   const entries: string[] = [];
-  const sidecarOverride =
-    process.env.OPENWRK_SIDECAR_DIR ?? process.env.TEAMWORK_SIDECAR_DIR;
+  const sidecarOverride = process.env.TEAMWORK_SIDECAR_DIR;
   const sidecarCandidates = [
     sidecarOverride,
     dirname(process.execPath),

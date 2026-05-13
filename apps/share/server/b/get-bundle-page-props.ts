@@ -62,7 +62,7 @@ export async function getBundlePageProps({ id, requestLike }: { id: string; requ
     const schemaVersion = bundle.schemaVersion == null ? "unknown" : String(bundle.schemaVersion);
     const typeLabel = humanizeType(bundle.type);
     const preview = buildBundlePreview(bundle);
-    const title = bundle.name || `OpenWork ${typeLabel}`;
+    const title = bundle.name || `TeamWork ${typeLabel}`;
     const description = bundle.description || buildBundleNarrative(bundle);
     const installHint =
       bundle.type === "skill"

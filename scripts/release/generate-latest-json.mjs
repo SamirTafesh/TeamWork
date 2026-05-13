@@ -14,7 +14,7 @@ function normalizeArch(arch) {
 function parseArgs(argv) {
   const options = {
     tag: process.env.RELEASE_TAG || "",
-    repo: process.env.GITHUB_REPOSITORY || "different-ai/openwork",
+    repo: process.env.GITHUB_REPOSITORY || "SamirTafesh/TeamWork",
     output: "latest.json",
     version: process.env.RELEASE_VERSION || "",
   };
@@ -52,9 +52,9 @@ function parseArgs(argv) {
 }
 
 function updaterPlatformKeys(assetName) {
-  if (!assetName.startsWith("openwork-desktop-")) return [];
+  if (!assetName.startsWith("teamwork-desktop-")) return [];
 
-  const stem = assetName.slice("openwork-desktop-".length);
+  const stem = assetName.slice("teamwork-desktop-".length);
 
   if (stem.endsWith(".app.tar.gz")) {
     const match = stem.match(/^([^-]+)-([^.]+)\.app\.tar\.gz$/);
@@ -109,7 +109,7 @@ function authHeaders() {
   const headers = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "openwork-release-latest-json",
+    "User-Agent": "teamwork-release-latest-json",
   };
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
   if (token) {

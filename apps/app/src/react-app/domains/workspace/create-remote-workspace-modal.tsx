@@ -23,9 +23,9 @@ export function CreateRemoteWorkspaceModal(
 ) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [openworkHostUrl, setOpenworkHostUrl] = useState("");
-  const [openworkToken, setOpenworkToken] = useState("");
-  const [openworkTokenVisible, setOpenworkTokenVisible] = useState(false);
+  const [teamworkHostUrl, setTeamworkHostUrl] = useState("");
+  const [teamworkToken, setTeamworkToken] = useState("");
+  const [teamworkTokenVisible, setTeamworkTokenVisible] = useState(false);
   const [directory, setDirectory] = useState("");
   const [displayName, setDisplayName] = useState("");
 
@@ -40,8 +40,8 @@ export function CreateRemoteWorkspaceModal(
 
   const canSubmit = useMemo(() => {
     if (submitting) return false;
-    return openworkHostUrl.trim().length > 0;
-  }, [openworkHostUrl, submitting]);
+    return teamworkHostUrl.trim().length > 0;
+  }, [teamworkHostUrl, submitting]);
 
   useEffect(() => {
     if (!props.open) return;
@@ -52,9 +52,9 @@ export function CreateRemoteWorkspaceModal(
   useEffect(() => {
     if (!props.open) return;
     const defaults = props.initialValues ?? {};
-    setOpenworkHostUrl(defaults.openworkHostUrl?.trim() ?? "");
-    setOpenworkToken(defaults.openworkToken?.trim() ?? "");
-    setOpenworkTokenVisible(false);
+    setTeamworkHostUrl(defaults.teamworkHostUrl?.trim() ?? "");
+    setTeamworkToken(defaults.teamworkToken?.trim() ?? "");
+    setTeamworkTokenVisible(false);
     setDirectory(defaults.directory?.trim() ?? "");
     setDisplayName(defaults.displayName?.trim() ?? "");
   }, [props.initialValues, props.open]);
@@ -83,13 +83,13 @@ export function CreateRemoteWorkspaceModal(
 
       <div className={modalBodyClass}>
         <RemoteWorkspaceFields
-          hostUrl={openworkHostUrl}
-          onHostUrlInput={setOpenworkHostUrl}
-          token={openworkToken}
-          tokenVisible={openworkTokenVisible}
-          onTokenInput={setOpenworkToken}
+          hostUrl={teamworkHostUrl}
+          onHostUrlInput={setTeamworkHostUrl}
+          token={teamworkToken}
+          tokenVisible={teamworkTokenVisible}
+          onTokenInput={setTeamworkToken}
           onToggleTokenVisible={() =>
-            setOpenworkTokenVisible((prev) => !prev)
+            setTeamworkTokenVisible((prev) => !prev)
           }
           displayName={displayName}
           onDisplayNameInput={setDisplayName}
@@ -99,7 +99,7 @@ export function CreateRemoteWorkspaceModal(
           submitting={submitting}
           hostInputRef={inputRef}
           title="Remote server details"
-          description="Use the URL your OpenWork server shared with you. Add a token only if the server needs one."
+          description="Use the URL your TeamWork server shared with you. Add a token only if the server needs one."
         />
       </div>
 
@@ -122,15 +122,15 @@ export function CreateRemoteWorkspaceModal(
             type="button"
             onClick={() =>
               props.onConfirm({
-                openworkHostUrl: openworkHostUrl.trim(),
-                openworkToken: openworkToken.trim(),
+                teamworkHostUrl: teamworkHostUrl.trim(),
+                teamworkToken: teamworkToken.trim(),
                 directory: directory.trim() ? directory.trim() : null,
                 displayName: displayName.trim() ? displayName.trim() : null,
               })
             }
             disabled={!canSubmit}
             title={
-              !openworkHostUrl.trim()
+              !teamworkHostUrl.trim()
                 ? t("dashboard.remote_base_url_required")
                 : undefined
             }

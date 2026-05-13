@@ -29,15 +29,15 @@ const readArg = (name) => {
 };
 
 const hasFlag = (name) => process.argv.slice(2).includes(name);
-const forceBuild = hasFlag("--force") || process.env.OPENWORK_SIDECAR_FORCE_BUILD === "1";
-const sidecarOverride = process.env.OPENWORK_SIDECAR_DIR?.trim() || readArg("--outdir");
+const forceBuild = hasFlag("--force") || process.env.TEAMWORK_SIDECAR_FORCE_BUILD === "1";
+const sidecarOverride = process.env.TEAMWORK_SIDECAR_DIR?.trim() || readArg("--outdir");
 const sidecarDir = sidecarOverride ? resolve(sidecarOverride) : join(__dirname, "..", "src-tauri", "sidecars");
 const constantsPath = resolve(__dirname, "..", "..", "..", "constants.json");
 
 const opencodeGithubRepo = (() => {
   const raw =
     process.env.OPENCODE_GITHUB_REPO?.trim() ||
-    process.env.OPENWORK_OPENCODE_GITHUB_REPO?.trim() ||
+    process.env.TEAMWORK_OPENCODE_GITHUB_REPO?.trim() ||
     "anomalyco/opencode";
   const normalized = raw
     .replace(/^https:\/\/github\.com\//i, "")
@@ -118,21 +118,21 @@ const opencodeTargetPath = opencodeTargetName ? join(sidecarDir, opencodeTargetN
 const opencodeCandidatePath = opencodeTargetPath ?? opencodePath;
 let existingOpencodeVersion = null;
 
-// openwork-server paths
-const openworkServerBaseName = "openwork-server";
-const openworkServerName = isWindowsTarget ? `${openworkServerBaseName}.exe` : openworkServerBaseName;
-const openworkServerPath = join(sidecarDir, openworkServerName);
-const openworkServerBuildName = bunTarget
-  ? `${openworkServerBaseName}-${bunTarget}${bunTarget.includes("windows") ? ".exe" : ""}`
-  : openworkServerName;
-const openworkServerBuildPath = join(sidecarDir, openworkServerBuildName);
-const openworkServerTargetTriple = resolvedTargetTriple;
-const openworkServerTargetName = openworkServerTargetTriple
-  ? `${openworkServerBaseName}-${openworkServerTargetTriple}${openworkServerTargetTriple.includes("windows") ? ".exe" : ""}`
+// teamwork-server paths
+const teamworkServerBaseName = "teamwork-server";
+const teamworkServerName = isWindowsTarget ? `${teamworkServerBaseName}.exe` : teamworkServerBaseName;
+const teamworkServerPath = join(sidecarDir, teamworkServerName);
+const teamworkServerBuildName = bunTarget
+  ? `${teamworkServerBaseName}-${bunTarget}${bunTarget.includes("windows") ? ".exe" : ""}`
+  : teamworkServerName;
+const teamworkServerBuildPath = join(sidecarDir, teamworkServerBuildName);
+const teamworkServerTargetTriple = resolvedTargetTriple;
+const teamworkServerTargetName = teamworkServerTargetTriple
+  ? `${teamworkServerBaseName}-${teamworkServerTargetTriple}${teamworkServerTargetTriple.includes("windows") ? ".exe" : ""}`
   : null;
-const openworkServerTargetPath = openworkServerTargetName ? join(sidecarDir, openworkServerTargetName) : null;
+const teamworkServerTargetPath = teamworkServerTargetName ? join(sidecarDir, teamworkServerTargetName) : null;
 
-const openworkServerDir = resolve(__dirname, "..", "..", "server");
+const teamworkServerDir = resolve(__dirname, "..", "..", "server");
 
 const resolveBuildScript = (dir) => {
   const scriptPath = resolve(dir, "script", "build.ts");
@@ -143,7 +143,7 @@ const resolveBuildScript = (dir) => {
 };
 
 // orchestrator paths
-const orchestratorBaseName = "openwork-orchestrator";
+const orchestratorBaseName = "teamwork-orchestrator";
 const orchestratorName =
   isWindowsTarget ? `${orchestratorBaseName}.exe` : orchestratorBaseName;
 const orchestratorPath = join(sidecarDir, orchestratorName);
@@ -274,9 +274,9 @@ const parseChecksum = (content, assetName) => {
   return null;
 };
 
-// openwork-server is no longer compiled as a sidecar binary — it runs
+// teamwork-server is no longer compiled as a sidecar binary — it runs
 // in-process inside Electron via a direct import of the server library.
-const didBuildOpenworkServer = false;
+const didBuildTeamworkServer = false;
 
 // Server binary copy/sign skipped — runs in-process.
 
@@ -486,15 +486,15 @@ if (existsSync(orchestratorBuildPath)) {
 adHocSignDarwinSidecars([
   opencodePath,
   opencodeTargetPath,
-  // openwork-server runs in-process — no binary to sign.
+  // teamwork-server runs in-process — no binary to sign.
   orchestratorBuildPath,
   orchestratorPath,
   orchestratorTargetPath,
 ]);
 
-const openworkServerVersion = (() => {
+const teamworkServerVersion = (() => {
   try {
-    const raw = readFileSync(resolve(openworkServerDir, "package.json"), "utf8");
+    const raw = readFileSync(resolve(teamworkServerDir, "package.json"), "utf8");
     return String(JSON.parse(raw).version ?? "").trim();
   } catch {
     return null;
@@ -515,11 +515,11 @@ const versions = {
     version: normalizedOpencodeVersion,
     sha256: opencodeCandidatePath && existsSync(opencodeCandidatePath) ? sha256File(opencodeCandidatePath) : null,
   },
-  "openwork-server": {
-    version: openworkServerVersion,
+  "teamwork-server": {
+    version: teamworkServerVersion,
     sha256: "in-process",
   },
-  "openwork-orchestrator": {
+  "teamwork-orchestrator": {
     version: orchestratorVersion,
     sha256: existsSync(orchestratorPath) ? sha256File(orchestratorPath) : null,
   },

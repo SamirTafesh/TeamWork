@@ -6,26 +6,26 @@ import type { JsonObject, ManagedConfigRecord, WorkspaceRecord } from "../databa
 import type { ServerWorkingDirectory } from "../database/working-directory.js";
 import { ensureWorkspaceConfigDir } from "../database/working-directory.js";
 import { RouteError } from "../http.js";
-import { requestRemoteOpenwork, resolveRemoteWorkspaceTarget } from "../adapters/remote-openwork.js";
+import { requestRemoteTeamwork, resolveRemoteWorkspaceTarget } from "../adapters/remote-teamwork.js";
 
-const MANAGED_SKILL_DOMAIN = "openwork-managed";
-const OPENWORK_CONFIG_VERSION = 1;
+const MANAGED_SKILL_DOMAIN = "teamwork-managed";
+const TEAMWORK_CONFIG_VERSION = 1;
 
 type WorkspaceConfigSnapshot = {
   effective: {
     opencode: JsonObject;
-    openwork: JsonObject;
+    teamwork: JsonObject;
   };
   materialized: {
     compatibilityOpencodePath: string | null;
-    compatibilityOpenworkPath: string | null;
+    compatibilityTeamworkPath: string | null;
     configDir: string | null;
     configOpencodePath: string | null;
-    configOpenworkPath: string | null;
+    configTeamworkPath: string | null;
   };
   stored: {
     opencode: JsonObject;
-    openwork: JsonObject;
+    teamwork: JsonObject;
   };
   updatedAt: string;
   workspaceId: string;
@@ -109,9 +109,9 @@ function withoutWorkspaceRoot(folders: string[], workspace: WorkspaceRecord) {
   return folders.filter((folder) => normalizeAuthorizedFolderPath(folder) !== workspaceRoot);
 }
 
-function canonicalizeWorkspaceConfigState(workspace: WorkspaceRecord, config: { openwork: JsonObject; opencode: JsonObject }) {
-  const nextOpenwork = asObject(config.openwork);
-  nextOpenwork.authorizedRoots = withoutWorkspaceRoot(normalizeStringArray(nextOpenwork.authorizedRoots), workspace);
+function canonicalizeWorkspaceConfigState(workspace: WorkspaceRecord, config: { teamwork: JsonObject; opencode: JsonObject }) {
+  const nextTeamwork = asObject(config.teamwork);
+  nextTeamwork.authorizedRoots = withoutWorkspaceRoot(normalizeStringArray(nextTeamwork.authorizedRoots), workspace);
 
   const nextOpencode = asObject(config.opencode);
   const permission = asObject(nextOpencode.permission);
@@ -129,7 +129,7 @@ function canonicalizeWorkspaceConfigState(workspace: WorkspaceRecord, config: { 
   }
 
   return {
-    openwork: nextOpenwork,
+    teamwork: nextTeamwork,
     opencode: nextOpencode,
   };
 }
@@ -315,12 +315,12 @@ export function createConfigMaterializationService(input: {
     return path.join(configDir, "opencode.jsonc");
   }
 
-  function workspaceOpenworkConfigPath(workspace: WorkspaceRecord) {
+  function workspaceTeamworkConfigPath(workspace: WorkspaceRecord) {
     const configDir = workspace.configDir?.trim();
     if (!configDir) {
       throw new RouteError(500, "internal_error", `Workspace ${workspace.id} is missing its config directory.`);
     }
-    return path.join(configDir, ".opencode", "openwork.json");
+    return path.join(configDir, ".opencode", "teamwork.json");
   }
 
   function compatibilityOpencodeConfigPath(workspace: WorkspaceRecord) {
@@ -328,9 +328,9 @@ export function createConfigMaterializationService(input: {
     return dataDir ? path.join(dataDir, "opencode.jsonc") : null;
   }
 
-  function compatibilityOpenworkConfigPath(workspace: WorkspaceRecord) {
+  function compatibilityTeamworkConfigPath(workspace: WorkspaceRecord) {
     const dataDir = workspace.dataDir?.trim();
-    return dataDir ? path.join(dataDir, ".opencode", "openwork.json") : null;
+    return dataDir ? path.join(dataDir, ".opencode", "teamwork.json") : null;
   }
 
   function workspaceSkillRoots(workspace: WorkspaceRecord) {
@@ -354,12 +354,12 @@ export function createConfigMaterializationService(input: {
     return workspace.kind === "local" ? "starter" : "remote";
   }
 
-  function buildDefaultOpenwork(workspace: WorkspaceRecord) {
+  function buildDefaultTeamwork(workspace: WorkspaceRecord) {
     return {
       authorizedRoots: [],
       blueprint: null,
       reload: null,
-      version: OPENWORK_CONFIG_VERSION,
+      version: TEAMWORK_CONFIG_VERSION,
       workspace: {
         configDir: workspace.configDir,
         createdAt: Date.parse(workspace.createdAt) || Date.now(),
@@ -388,16 +388,16 @@ export function createConfigMaterializationService(input: {
   }
 
   function readLegacyWorkspaceState(workspace: WorkspaceRecord) {
-    const openwork =
-      readJsonFile(workspaceOpenworkConfigPath(workspace))
-      ?? (compatibilityOpenworkConfigPath(workspace) ? readJsonFile(compatibilityOpenworkConfigPath(workspace)!) : null)
-      ?? buildDefaultOpenwork(workspace);
+    const teamwork =
+      readJsonFile(workspaceTeamworkConfigPath(workspace))
+      ?? (compatibilityTeamworkConfigPath(workspace) ? readJsonFile(compatibilityTeamworkConfigPath(workspace)!) : null)
+      ?? buildDefaultTeamwork(workspace);
     const opencode =
       readJsoncFile(workspaceOpencodeConfigPath(workspace))
       ?? (compatibilityOpencodeConfigPath(workspace) ? readJsoncFile(compatibilityOpencodeConfigPath(workspace)!) : null)
       ?? buildDefaultOpencode();
     return {
-      openwork: asObject(openwork),
+      teamwork: asObject(teamwork),
       opencode: asObject(opencode),
     };
   }
@@ -412,7 +412,7 @@ export function createConfigMaterializationService(input: {
     const legacy = readLegacyWorkspaceState(workspace);
     const canonical = canonicalizeWorkspaceConfigState(workspace, legacy);
     return input.repositories.workspaceConfigState.upsert({
-      openwork: canonical.openwork,
+      teamwork: canonical.teamwork,
       opencode: canonical.opencode,
       workspaceId: workspace.id,
     });
@@ -507,11 +507,11 @@ export function createConfigMaterializationService(input: {
     upsertManagedRecords(workspace.id, "providerConfigs", recognized.providers);
     absorbManagedSkills(workspace);
     const canonical = canonicalizeWorkspaceConfigState(workspace, {
-      openwork: mergeObjects(buildDefaultOpenwork(workspace), legacy.openwork),
+      teamwork: mergeObjects(buildDefaultTeamwork(workspace), legacy.teamwork),
       opencode: mergeObjects(buildDefaultOpencode(), recognized.base),
     });
     return input.repositories.workspaceConfigState.upsert({
-      openwork: canonical.openwork,
+      teamwork: canonical.teamwork,
       opencode: canonical.opencode,
       workspaceId: workspace.id,
     });
@@ -539,12 +539,12 @@ export function createConfigMaterializationService(input: {
     const workspaceState = ensureWorkspaceConfigState(workspace);
     const serverState = ensureServerConfigState();
     const canonicalState = canonicalizeWorkspaceConfigState(workspace, {
-      openwork: workspaceState.openwork,
+      teamwork: workspaceState.teamwork,
       opencode: workspaceState.opencode,
     });
-    const storedOpenwork = mergeObjects(buildDefaultOpenwork(workspace), canonicalState.openwork);
+    const storedTeamwork = mergeObjects(buildDefaultTeamwork(workspace), canonicalState.teamwork);
     const storedOpencode = mergeObjects(buildDefaultOpencode(), canonicalState.opencode);
-    const effectiveOpenwork = mergeObjects(buildDefaultOpenwork(workspace), storedOpenwork);
+    const effectiveTeamwork = mergeObjects(buildDefaultTeamwork(workspace), storedTeamwork);
     const effectiveOpencode = mergeObjects(asObject(serverState.opencode), storedOpencode);
 
     const mcps = listAssignedRecords(workspace.id, "workspaceMcps", "mcps");
@@ -570,7 +570,7 @@ export function createConfigMaterializationService(input: {
     const permission = asObject(effectiveOpencode.permission);
     const externalDirectory = normalizeExternalDirectory(permission.external_directory);
     const authorizedRoots = withoutWorkspaceRoot(normalizeStringArray([
-      ...normalizeStringArray(effectiveOpenwork.authorizedRoots),
+      ...normalizeStringArray(effectiveTeamwork.authorizedRoots),
       ...externalDirectory.folders,
     ]), workspace);
     const nextExternalDirectory = buildExternalDirectory(authorizedRoots, externalDirectory.hiddenEntries);
@@ -580,23 +580,23 @@ export function createConfigMaterializationService(input: {
       delete permission.external_directory;
     }
     effectiveOpencode.permission = permission;
-    effectiveOpenwork.authorizedRoots = authorizedRoots;
+    effectiveTeamwork.authorizedRoots = authorizedRoots;
 
     return {
       effective: {
         opencode: effectiveOpencode,
-        openwork: effectiveOpenwork,
+        teamwork: effectiveTeamwork,
       },
       materialized: {
         compatibilityOpencodePath: compatibilityOpencodeConfigPath(workspace),
-        compatibilityOpenworkPath: compatibilityOpenworkConfigPath(workspace),
+        compatibilityTeamworkPath: compatibilityTeamworkConfigPath(workspace),
         configDir: workspace.configDir,
         configOpencodePath: workspaceOpencodeConfigPath(workspace),
-        configOpenworkPath: workspaceOpenworkConfigPath(workspace),
+        configTeamworkPath: workspaceTeamworkConfigPath(workspace),
       },
       stored: {
         opencode: storedOpencode,
-        openwork: storedOpenwork,
+        teamwork: storedTeamwork,
       },
       updatedAt: workspaceState.updatedAt,
       workspaceId: workspace.id,
@@ -643,12 +643,12 @@ export function createConfigMaterializationService(input: {
     ensureWorkspaceLocal(workspace);
     const snapshot = computeSnapshot(workspace);
     writeJsonFile(snapshot.materialized.configOpencodePath!, snapshot.effective.opencode);
-    writeJsonFile(snapshot.materialized.configOpenworkPath!, snapshot.effective.openwork);
+    writeJsonFile(snapshot.materialized.configTeamworkPath!, snapshot.effective.teamwork);
     if (snapshot.materialized.compatibilityOpencodePath) {
       writeJsonFile(snapshot.materialized.compatibilityOpencodePath, snapshot.effective.opencode);
     }
-    if (snapshot.materialized.compatibilityOpenworkPath) {
-      writeJsonFile(snapshot.materialized.compatibilityOpenworkPath, snapshot.effective.openwork);
+    if (snapshot.materialized.compatibilityTeamworkPath) {
+      writeJsonFile(snapshot.materialized.compatibilityTeamworkPath, snapshot.effective.teamwork);
     }
     materializeSkills(workspace);
     return snapshot;
@@ -697,7 +697,7 @@ export function createConfigMaterializationService(input: {
       if (workspace.kind === "remote") {
         const server = getRemoteServerOrThrow(workspace);
         const target = resolveRemoteWorkspaceTarget(server, workspace);
-        return requestRemoteOpenwork<WorkspaceConfigSnapshot>({
+        return requestRemoteTeamwork<WorkspaceConfigSnapshot>({
           path: `/workspaces/${encodeURIComponent(target.remoteWorkspaceId)}/config`,
           server,
           timeoutMs: 10_000,
@@ -717,12 +717,12 @@ export function createConfigMaterializationService(input: {
       ].filter((value): value is string => Boolean(value));
     },
 
-    async patchWorkspaceConfig(workspaceId: string, patch: { openwork?: JsonObject; opencode?: JsonObject }) {
+    async patchWorkspaceConfig(workspaceId: string, patch: { teamwork?: JsonObject; opencode?: JsonObject }) {
       const workspace = getWorkspaceOrThrow(workspaceId);
       if (workspace.kind === "remote") {
         const server = getRemoteServerOrThrow(workspace);
         const target = resolveRemoteWorkspaceTarget(server, workspace);
-        return requestRemoteOpenwork<WorkspaceConfigSnapshot>({
+        return requestRemoteTeamwork<WorkspaceConfigSnapshot>({
           body: patch,
           method: "PATCH",
           path: `/workspaces/${encodeURIComponent(target.remoteWorkspaceId)}/config`,
@@ -732,7 +732,7 @@ export function createConfigMaterializationService(input: {
       }
       ensureWorkspaceLocal(workspace);
       const current = ensureWorkspaceConfigState(workspace);
-      const nextOpenwork = patch.openwork ? mergeObjects(current.openwork, asObject(patch.openwork)) : current.openwork;
+      const nextTeamwork = patch.teamwork ? mergeObjects(current.teamwork, asObject(patch.teamwork)) : current.teamwork;
       let nextOpencode = current.opencode;
       if (patch.opencode) {
         const merged = mergeObjects(current.opencode, asObject(patch.opencode));
@@ -743,11 +743,11 @@ export function createConfigMaterializationService(input: {
         nextOpencode = recognized.base;
       }
       const canonical = canonicalizeWorkspaceConfigState(workspace, {
-        openwork: nextOpenwork,
+        teamwork: nextTeamwork,
         opencode: nextOpencode,
       });
       input.repositories.workspaceConfigState.upsert({
-        openwork: canonical.openwork,
+        teamwork: canonical.teamwork,
         opencode: canonical.opencode,
         workspaceId: workspace.id,
       });
@@ -760,7 +760,7 @@ export function createConfigMaterializationService(input: {
         const server = getRemoteServerOrThrow(workspace);
         const target = resolveRemoteWorkspaceTarget(server, workspace);
         const query = `?scope=${encodeURIComponent(scope)}`;
-        return requestRemoteOpenwork<{ content: string; exists: boolean; path: string | null; updatedAt: string }>({
+        return requestRemoteTeamwork<{ content: string; exists: boolean; path: string | null; updatedAt: string }>({
           path: `/workspaces/${encodeURIComponent(target.remoteWorkspaceId)}/config/opencode-raw${query}`,
           server,
           timeoutMs: 10_000,
@@ -803,7 +803,7 @@ export function createConfigMaterializationService(input: {
       if (workspace.kind === "remote") {
         const server = getRemoteServerOrThrow(workspace);
         const target = resolveRemoteWorkspaceTarget(server, workspace);
-        return requestRemoteOpenwork<{ content: string; exists: boolean; path: string | null; updatedAt: string }>({
+        return requestRemoteTeamwork<{ content: string; exists: boolean; path: string | null; updatedAt: string }>({
           body: { content, scope: "project" },
           method: "POST",
           path: `/workspaces/${encodeURIComponent(target.remoteWorkspaceId)}/config/opencode-raw`,
@@ -818,11 +818,11 @@ export function createConfigMaterializationService(input: {
       upsertManagedRecords(workspace.id, "plugins", recognized.plugins);
       upsertManagedRecords(workspace.id, "providerConfigs", recognized.providers);
       const canonical = canonicalizeWorkspaceConfigState(workspace, {
-        openwork: ensureWorkspaceConfigState(workspace).openwork,
+        teamwork: ensureWorkspaceConfigState(workspace).teamwork,
         opencode: recognized.base,
       });
       input.repositories.workspaceConfigState.upsert({
-        openwork: canonical.openwork,
+        teamwork: canonical.teamwork,
         opencode: canonical.opencode,
         workspaceId: workspace.id,
       });

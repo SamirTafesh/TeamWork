@@ -1,8 +1,8 @@
 /**
- * Library entry point for the OpenWork server.
+ * Library entry point for the TeamWork server.
  *
  * ```ts
- * import { startEmbeddedServer } from "openwork-server";
+ * import { startEmbeddedServer } from "teamwork-server";
  *
  * const handle = await startEmbeddedServer({
  *   host: "127.0.0.1",

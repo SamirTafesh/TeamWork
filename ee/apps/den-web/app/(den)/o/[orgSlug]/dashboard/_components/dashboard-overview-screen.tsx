@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { requestJson } from "../../../../_lib/den-flow";
 import { useDenFlow } from "../../../../_providers/den-flow-provider";
 import { useOrgDashboard } from "../_providers/org-dashboard-provider";
@@ -252,7 +252,7 @@ export function DashboardOverviewScreen() {
 
       {/* Breadcrumb */}
       <div className="flex flex-wrap items-center gap-2.5 border-b border-[#e7e9f0] pb-3">
-        <span className="text-[14px] font-semibold tracking-[-0.01em] text-[#07192C]">{activeOrg?.name ?? "OpenWork Cloud"}</span>
+        <span className="text-[14px] font-semibold tracking-[-0.01em] text-[#07192C]">{activeOrg?.name ?? "TeamWork Cloud"}</span>
         <ChevronRight className="h-3.5 w-3.5 text-[#9AA5BA]" />
         <span className="text-[14px] font-medium tracking-[-0.01em] text-[#5A6886]">Usage Insights</span>
       </div>
@@ -263,7 +263,7 @@ export function DashboardOverviewScreen() {
 
       {/* Live org data */}
       <div className="mt-5 grid gap-3.5 md:grid-cols-2">
-        <StatCard icon={<Users className="h-5 w-5 text-[#6F3DFF]" />} title="OpenWork users" value={`${members}`} sub="Current workspace members" tone="violet" />
+        <StatCard icon={<Users className="h-5 w-5 text-[#6F3DFF]" />} title="TeamWork users" value={`${members}`} sub="Current workspace members" tone="violet" />
         <StatCard icon={<Gauge className="h-5 w-5 text-[#1D63FF]" />} title="Pending invites" value={`${pending}`} sub="Awaiting activation" tone="blue" />
       </div>
 
@@ -335,10 +335,10 @@ export function DashboardOverviewScreen() {
       {/* Download CTA */}
       <div className="mt-6 flex items-center justify-between gap-6 rounded-[16px] border border-[#e3e7ee] bg-[#07192C] px-6 py-5">
         <div>
-          <p className="text-[14px] font-medium text-white">Download OpenWork</p>
+          <p className="text-[14px] font-medium text-white">Download TeamWork</p>
           <p className="mt-1 max-w-[480px] text-[13px] leading-[1.55] text-white/60">Run locally for free. Keep data on your machine and move to shared workflows when ready.</p>
         </div>
-        <a href="https://openworklabs.com/download" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[12px] font-medium text-white transition-colors hover:bg-white/10">
+        <a href="https://teamworklabs.com/download" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[12px] font-medium text-white transition-colors hover:bg-white/10">
           <Download className="h-3.5 w-3.5" />Download
         </a>
       </div>

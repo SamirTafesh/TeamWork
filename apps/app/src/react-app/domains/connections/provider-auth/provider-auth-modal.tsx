@@ -630,12 +630,12 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
         : "Use OpenAI's device flow when the local browser callback is unreliable.";
     }
     if (method.type === "oauth") {
-      return "Continue in the browser and let OpenWork finish the connection automatically.";
+      return "Continue in the browser and let TeamWork finish the connection automatically.";
     }
     if (method.type === "cloud") {
       return method.description ?? "Use the provider and credential managed by your organization.";
     }
-    return "Paste a secret key that OpenWork stores locally on this device.";
+    return "Paste a secret key that TeamWork stores locally on this device.";
   };
 
   if (!props.open) return null;
@@ -862,7 +862,7 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                   ) : null}
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-[11px] text-gray-9">
-                      OpenWork will install the provider config and use the credential stored for your org.
+                      TeamWork will install the provider config and use the credential stored for your org.
                     </div>
                     <Button variant="secondary" onClick={handleCloudSubmit} disabled={actionDisabled}>
                       {props.submitting ? "Connecting..." : "Connect provider"}

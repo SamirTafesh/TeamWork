@@ -5,12 +5,12 @@ import { RefreshCcw } from "lucide-react";
 import { readDevLogs } from "../../../../app/lib/dev-log";
 import { readPerfLogs } from "../../../../app/lib/perf-log";
 import {
-  buildOpenworkWorkspaceBaseUrl,
-  parseOpenworkWorkspaceIdFromUrl,
-  type OpenworkServerSettings,
-  type OpenworkServerStatus,
-} from "../../../../app/lib/openwork-server";
-import type { OpenworkServerInfo } from "../../../../app/lib/desktop";
+  buildTeamworkWorkspaceBaseUrl,
+  parseTeamworkWorkspaceIdFromUrl,
+  type TeamworkServerSettings,
+  type TeamworkServerStatus,
+} from "../../../../app/lib/teamwork-server";
+import type { TeamworkServerInfo } from "../../../../app/lib/desktop";
 import { isDesktopRuntime } from "../../../../app/utils";
 import { t } from "../../../../i18n";
 import { Button } from "../../../design-system/button";
@@ -21,16 +21,16 @@ export type ConfigViewProps = {
   clientConnected: boolean;
   anyActiveRuns: boolean;
 
-  openworkServerStatus: OpenworkServerStatus;
-  openworkServerUrl: string;
-  openworkServerSettings: OpenworkServerSettings;
-  openworkServerHostInfo: OpenworkServerInfo | null;
+  teamworkServerStatus: TeamworkServerStatus;
+  teamworkServerUrl: string;
+  teamworkServerSettings: TeamworkServerSettings;
+  teamworkServerHostInfo: TeamworkServerInfo | null;
   runtimeWorkspaceId: string | null;
 
-  updateOpenworkServerSettings: (next: OpenworkServerSettings) => void;
-  resetOpenworkServerSettings: () => void;
-  testOpenworkServerConnection: (
-    next: OpenworkServerSettings,
+  updateTeamworkServerSettings: (next: TeamworkServerSettings) => void;
+  resetTeamworkServerSettings: () => void;
+  testTeamworkServerConnection: (
+    next: TeamworkServerSettings,
   ) => Promise<boolean>;
 
   canReloadWorkspace: boolean;
@@ -41,15 +41,15 @@ export type ConfigViewProps = {
   developerMode: boolean;
 };
 
-type OpenworkTestState = "idle" | "testing" | "success" | "error";
+type TeamworkTestState = "idle" | "testing" | "success" | "error";
 
 export function ConfigView(props: ConfigViewProps) {
-  const [openworkUrl, setOpenworkUrl] = useState("");
-  const [openworkToken, setOpenworkToken] = useState("");
-  const [openworkTokenVisible, setOpenworkTokenVisible] = useState(false);
-  const [openworkTestState, setOpenworkTestState] =
-    useState<OpenworkTestState>("idle");
-  const [openworkTestMessage, setOpenworkTestMessage] = useState<string | null>(
+  const [teamworkUrl, setTeamworkUrl] = useState("");
+  const [teamworkToken, setTeamworkToken] = useState("");
+  const [teamworkTokenVisible, setTeamworkTokenVisible] = useState(false);
+  const [teamworkTestState, setTeamworkTestState] =
+    useState<TeamworkTestState>("idle");
+  const [teamworkTestMessage, setTeamworkTestMessage] = useState<string | null>(
     null,
   );
   const [clientTokenVisible, setClientTokenVisible] = useState(false);
@@ -59,14 +59,14 @@ export function ConfigView(props: ConfigViewProps) {
   const copyTimeoutRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    setOpenworkUrl(props.openworkServerSettings.urlOverride ?? "");
-    setOpenworkToken(props.openworkServerSettings.token ?? "");
-  }, [props.openworkServerSettings]);
+    setTeamworkUrl(props.teamworkServerSettings.urlOverride ?? "");
+    setTeamworkToken(props.teamworkServerSettings.token ?? "");
+  }, [props.teamworkServerSettings]);
 
   useEffect(() => {
-    setOpenworkTestState("idle");
-    setOpenworkTestMessage(null);
-  }, [openworkUrl, openworkToken]);
+    setTeamworkTestState("idle");
+    setTeamworkTestMessage(null);
+  }, [teamworkUrl, teamworkToken]);
 
   useEffect(() => {
     return () => {
@@ -76,8 +76,8 @@ export function ConfigView(props: ConfigViewProps) {
     };
   }, []);
 
-  const openworkStatusLabel = (() => {
-    switch (props.openworkServerStatus) {
+  const teamworkStatusLabel = (() => {
+    switch (props.teamworkServerStatus) {
       case "connected":
         return t("config.status_connected");
       case "limited":
@@ -87,8 +87,8 @@ export function ConfigView(props: ConfigViewProps) {
     }
   })();
 
-  const openworkStatusStyle = (() => {
-    switch (props.openworkServerStatus) {
+  const teamworkStatusStyle = (() => {
+    switch (props.teamworkServerStatus) {
       case "connected":
         return "bg-green-7/10 text-green-11 border-green-7/20";
       case "limited":
@@ -113,33 +113,33 @@ export function ConfigView(props: ConfigViewProps) {
   const reloadButtonDisabled =
     props.reloadBusy || Boolean(reloadAvailabilityReason);
 
-  const buildOpenworkSettings = (): OpenworkServerSettings => ({
-    ...props.openworkServerSettings,
-    urlOverride: openworkUrl.trim() || undefined,
-    token: openworkToken.trim() || undefined,
+  const buildTeamworkSettings = (): TeamworkServerSettings => ({
+    ...props.teamworkServerSettings,
+    urlOverride: teamworkUrl.trim() || undefined,
+    token: teamworkToken.trim() || undefined,
   });
 
-  const hasOpenworkChanges = (() => {
-    const currentUrl = props.openworkServerSettings.urlOverride ?? "";
-    const currentToken = props.openworkServerSettings.token ?? "";
+  const hasTeamworkChanges = (() => {
+    const currentUrl = props.teamworkServerSettings.urlOverride ?? "";
+    const currentToken = props.teamworkServerSettings.token ?? "";
     return (
-      openworkUrl.trim() !== currentUrl || openworkToken.trim() !== currentToken
+      teamworkUrl.trim() !== currentUrl || teamworkToken.trim() !== currentToken
     );
   })();
 
   const resolvedWorkspaceId = (() => {
     const explicitId = props.runtimeWorkspaceId?.trim() ?? "";
     if (explicitId) return explicitId;
-    return parseOpenworkWorkspaceIdFromUrl(openworkUrl) ?? "";
+    return parseTeamworkWorkspaceIdFromUrl(teamworkUrl) ?? "";
   })();
 
   const resolvedWorkspaceUrl = (() => {
-    const baseUrl = openworkUrl.trim();
+    const baseUrl = teamworkUrl.trim();
     if (!baseUrl) return "";
-    return buildOpenworkWorkspaceBaseUrl(baseUrl, resolvedWorkspaceId) ?? baseUrl;
+    return buildTeamworkWorkspaceBaseUrl(baseUrl, resolvedWorkspaceId) ?? baseUrl;
   })();
 
-  const hostInfo = props.openworkServerHostInfo;
+  const hostInfo = props.teamworkServerHostInfo;
   const hostRemoteAccessEnabled = hostInfo?.remoteAccessEnabled === true;
   const hostStatusLabel = !hostInfo?.running
     ? t("config.host_offline")
@@ -158,8 +158,8 @@ export function ConfigView(props: ConfigViewProps) {
   const hostConnectUrlUsesMdns = hostConnectUrl.includes(".local");
 
   const diagnosticsBundleJson = useMemo(() => {
-    const urlOverride = props.openworkServerSettings.urlOverride?.trim() ?? "";
-    const token = props.openworkServerSettings.token?.trim() ?? "";
+    const urlOverride = props.teamworkServerSettings.urlOverride?.trim() ?? "";
+    const token = props.teamworkServerSettings.token?.trim() ?? "";
     const developerLogs = props.developerMode ? readDevLogs(80) : [];
     const perfLogs = props.developerMode ? readPerfLogs(80) : [];
     const bundle = {
@@ -173,9 +173,9 @@ export function ConfigView(props: ConfigViewProps) {
         clientConnected: props.clientConnected,
         anyActiveRuns: props.anyActiveRuns,
       },
-      openworkServer: {
-        status: props.openworkServerStatus,
-        url: props.openworkServerUrl,
+      teamworkServer: {
+        status: props.teamworkServerStatus,
+        url: props.teamworkServerUrl,
         settings: {
           urlOverride: urlOverride || null,
           tokenPresent: Boolean(token),
@@ -216,10 +216,10 @@ export function ConfigView(props: ConfigViewProps) {
     props.canReloadWorkspace,
     props.clientConnected,
     props.developerMode,
-    props.openworkServerSettings.token,
-    props.openworkServerSettings.urlOverride,
-    props.openworkServerStatus,
-    props.openworkServerUrl,
+    props.teamworkServerSettings.token,
+    props.teamworkServerSettings.urlOverride,
+    props.teamworkServerStatus,
+    props.teamworkServerUrl,
     props.runtimeWorkspaceId,
   ]);
 
@@ -241,15 +241,15 @@ export function ConfigView(props: ConfigViewProps) {
   };
 
   const handleTestConnection = async () => {
-    if (openworkTestState === "testing") return;
-    const next = buildOpenworkSettings();
-    props.updateOpenworkServerSettings(next);
-    setOpenworkTestState("testing");
-    setOpenworkTestMessage(null);
+    if (teamworkTestState === "testing") return;
+    const next = buildTeamworkSettings();
+    props.updateTeamworkServerSettings(next);
+    setTeamworkTestState("testing");
+    setTeamworkTestMessage(null);
     try {
-      const ok = await props.testOpenworkServerConnection(next);
-      setOpenworkTestState(ok ? "success" : "error");
-      setOpenworkTestMessage(
+      const ok = await props.testTeamworkServerConnection(next);
+      setTeamworkTestState(ok ? "success" : "error");
+      setTeamworkTestMessage(
         ok ? t("config.connection_successful") : t("config.connection_failed"),
       );
     } catch (error) {
@@ -257,8 +257,8 @@ export function ConfigView(props: ConfigViewProps) {
         error instanceof Error
           ? error.message
           : t("config.connection_failed_check");
-      setOpenworkTestState("error");
-      setOpenworkTestMessage(message);
+      setTeamworkTestState("error");
+      setTeamworkTestMessage(message);
     }
   };
 
@@ -491,17 +491,17 @@ export function ConfigView(props: ConfigViewProps) {
             </div>
           </div>
           <div
-            className={`text-xs px-2 py-1 rounded-full border ${openworkStatusStyle}`}
+            className={`text-xs px-2 py-1 rounded-full border ${teamworkStatusStyle}`}
           >
-            {openworkStatusLabel}
+            {teamworkStatusLabel}
           </div>
         </div>
 
         <div className="grid gap-3">
           <TextInput
             label={t("config.server_url_input_label")}
-            value={openworkUrl}
-            onChange={(event) => setOpenworkUrl(event.currentTarget.value)}
+            value={teamworkUrl}
+            onChange={(event) => setTeamworkUrl(event.currentTarget.value)}
             placeholder="http://127.0.0.1:<port>"
             hint={t("config.server_url_hint")}
             disabled={props.busy}
@@ -513,9 +513,9 @@ export function ConfigView(props: ConfigViewProps) {
             </div>
             <div className="flex items-center gap-2">
               <input
-                type={openworkTokenVisible ? "text" : "password"}
-                value={openworkToken}
-                onChange={(event) => setOpenworkToken(event.currentTarget.value)}
+                type={teamworkTokenVisible ? "text" : "password"}
+                value={teamworkToken}
+                onChange={(event) => setTeamworkToken(event.currentTarget.value)}
                 placeholder={t("config.token_placeholder")}
                 disabled={props.busy}
                 className="w-full rounded-xl bg-gray-2/60 px-3 py-2 text-sm text-gray-12 placeholder:text-gray-10 shadow-[0_0_0_1px_rgba(255,255,255,0.08)] focus:outline-none focus:ring-2 focus:ring-gray-6/20"
@@ -523,10 +523,10 @@ export function ConfigView(props: ConfigViewProps) {
               <Button
                 variant="outline"
                 className="text-xs h-9 px-3 shrink-0"
-                onClick={() => setOpenworkTokenVisible((prev) => !prev)}
+                onClick={() => setTeamworkTokenVisible((prev) => !prev)}
                 disabled={props.busy}
               >
-                {openworkTokenVisible ? t("common.hide") : t("common.show")}
+                {teamworkTokenVisible ? t("common.hide") : t("common.show")}
               </Button>
             </div>
             <div className="mt-1 text-xs text-gray-10">
@@ -550,49 +550,49 @@ export function ConfigView(props: ConfigViewProps) {
           <Button
             variant="secondary"
             onClick={() => void handleTestConnection()}
-            disabled={props.busy || openworkTestState === "testing"}
+            disabled={props.busy || teamworkTestState === "testing"}
           >
-            {openworkTestState === "testing"
+            {teamworkTestState === "testing"
               ? t("config.testing")
               : t("config.test_connection")}
           </Button>
           <Button
             variant="outline"
             onClick={() =>
-              props.updateOpenworkServerSettings(buildOpenworkSettings())
+              props.updateTeamworkServerSettings(buildTeamworkSettings())
             }
-            disabled={props.busy || !hasOpenworkChanges}
+            disabled={props.busy || !hasTeamworkChanges}
           >
             {t("common.save")}
           </Button>
           <Button
             variant="ghost"
-            onClick={props.resetOpenworkServerSettings}
+            onClick={props.resetTeamworkServerSettings}
             disabled={props.busy}
           >
             {t("common.reset")}
           </Button>
         </div>
 
-        {openworkTestState !== "idle" ? (
+        {teamworkTestState !== "idle" ? (
           <div
             className={`text-xs ${
-              openworkTestState === "success"
+              teamworkTestState === "success"
                 ? "text-green-11"
-                : openworkTestState === "error"
+                : teamworkTestState === "error"
                   ? "text-red-11"
                   : "text-gray-9"
             }`}
             role="status"
             aria-live="polite"
           >
-            {openworkTestState === "testing"
+            {teamworkTestState === "testing"
               ? t("config.testing_connection")
-              : (openworkTestMessage ?? t("config.connection_status_updated"))}
+              : (teamworkTestMessage ?? t("config.connection_status_updated"))}
           </div>
         ) : null}
 
-        {openworkStatusLabel !== t("config.status_connected") ? (
+        {teamworkStatusLabel !== t("config.status_connected") ? (
           <div className="text-xs text-gray-9">
             {t("config.server_needed_hint")}
           </div>

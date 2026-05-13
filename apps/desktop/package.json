@@ -1,11 +1,11 @@
 {
-  "name": "@openwork/desktop",
+  "name": "@teamwork/desktop",
   "private": true,
   "version": "0.13.3",
-  "description": "OpenWork desktop shell",
+  "description": "TeamWork desktop shell",
   "author": {
-    "name": "OpenWork",
-    "email": "support@openworklabs.com"
+    "name": "TeamWork",
+    "email": "support@teamworklabs.com"
   },
   "main": "electron/main.mjs",
   "type": "module",

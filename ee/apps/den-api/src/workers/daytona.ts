@@ -1,7 +1,7 @@
 import { Daytona, type Sandbox } from "@daytonaio/sdk"
-import { eq } from "@openwork-ee/den-db/drizzle"
-import { DaytonaSandboxTable } from "@openwork-ee/den-db/schema"
-import { createDenTypeId } from "@openwork-ee/utils/typeid"
+import { eq } from "@teamwork-ee/den-db/drizzle"
+import { DaytonaSandboxTable } from "@teamwork-ee/den-db/schema"
+import { createDenTypeId } from "@teamwork-ee/utils/typeid"
 import { db } from "../db.js"
 import { env } from "../env.js"
 
@@ -79,8 +79,8 @@ function workerHint(workerId: WorkerId) {
 
 function sandboxLabels(workerId: WorkerId) {
   return {
-    "openwork.den.provider": "daytona",
-    "openwork.den.worker-id": workerId,
+    "teamwork.den.provider": "daytona",
+    "teamwork.den.worker-id": workerId,
   }
 }
 
@@ -121,19 +121,19 @@ function sharedVolumeMounts(workerId: WorkerId, volumeId: string) {
   ]
 }
 
-function buildOpenWorkStartCommand(input: ProvisionInput) {
+function buildTeamWorkStartCommand(input: ProvisionInput) {
   const verifyRuntimeStep = [
-    "if ! command -v openwork >/dev/null 2>&1; then echo 'openwork binary missing from Daytona runtime image; rebuild and republish the Daytona snapshot' >&2; exit 1; fi",
+    "if ! command -v teamwork >/dev/null 2>&1; then echo 'teamwork binary missing from Daytona runtime image; rebuild and republish the Daytona snapshot' >&2; exit 1; fi",
     "if ! command -v opencode >/dev/null 2>&1; then echo 'opencode binary missing from Daytona runtime image; rebuild and republish the Daytona snapshot' >&2; exit 1; fi",
   ].join("; ")
-  const openworkServe = [
-    "OPENWORK_DATA_DIR=",
+  const teamworkServe = [
+    "TEAMWORK_DATA_DIR=",
     shellQuote(env.daytona.runtimeDataPath),
-    " OPENWORK_SIDECAR_DIR=",
+    " TEAMWORK_SIDECAR_DIR=",
     shellQuote(env.daytona.sidecarDir),
-    " OPENWORK_TOKEN=",
+    " TEAMWORK_TOKEN=",
     shellQuote(input.clientToken),
-    " OPENWORK_HOST_TOKEN=",
+    " TEAMWORK_HOST_TOKEN=",
     shellQuote(input.hostToken),
     " DEN_RUNTIME_PROVIDER=",
     shellQuote("daytona"),
@@ -145,10 +145,10 @@ function buildOpenWorkStartCommand(input: ProvisionInput) {
     shellQuote(workerActivityHeartbeatUrl(input.workerId)),
     " DEN_ACTIVITY_HEARTBEAT_TOKEN=",
     shellQuote(input.activityToken),
-    " openwork serve",
+    " teamwork serve",
     ` --workspace ${shellQuote(env.daytona.runtimeWorkspacePath)}`,
     ` --remote-access`,
-    ` --openwork-port ${env.daytona.openworkPort}`,
+    ` --teamwork-port ${env.daytona.teamworkPort}`,
     ` --opencode-host 127.0.0.1`,
     ` --opencode-port ${env.daytona.opencodePort}`,
     ` --connect-host 127.0.0.1`,
@@ -170,11 +170,11 @@ ${verifyRuntimeStep}
 attempt=0
 while [ "$attempt" -lt 3 ]; do
   attempt=$((attempt + 1))
-  if ${openworkServe}; then
+  if ${teamworkServe}; then
     exit 0
   fi
   status=$?
-  echo "openwork serve failed (attempt $attempt, exit $status); retrying in 3s"
+  echo "teamwork serve failed (attempt $attempt, exit $status); retrying in 3s"
   sleep 3
 done
 exit 1
@@ -300,7 +300,7 @@ async function waitForHealth(url: string, timeoutMs: number, sandbox: Sandbox, s
         const logs = await sandbox.process.getSessionCommandLogs(sessionId, commandId)
         throw new Error(
           [
-            `openwork session exited with ${command.exitCode}`,
+            `teamwork session exited with ${command.exitCode}`,
             logs.stdout?.trim() ? `stdout:\n${logs.stdout.trim().slice(-4000)}` : "",
             logs.stderr?.trim() ? `stderr:\n${logs.stderr.trim().slice(-4000)}` : "",
           ]
@@ -309,7 +309,7 @@ async function waitForHealth(url: string, timeoutMs: number, sandbox: Sandbox, s
         )
       }
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith("openwork session exited")) {
+      if (error instanceof Error && error.message.startsWith("teamwork session exited")) {
         throw error
       }
     }
@@ -396,7 +396,7 @@ export async function refreshDaytonaSignedPreview(workerId: WorkerId) {
   await sandbox.refreshData()
 
   const expiresInSeconds = normalizedSignedPreviewExpirySeconds()
-  const preview = await sandbox.getSignedPreviewUrl(env.daytona.openworkPort, expiresInSeconds)
+  const preview = await sandbox.getSignedPreviewUrl(env.daytona.teamworkPort, expiresInSeconds)
   const expiresAt = signedPreviewRefreshAt(expiresInSeconds)
 
   await db
@@ -488,19 +488,19 @@ export async function provisionWorkerOnDaytona(
           { timeout: env.daytona.createTimeoutSeconds },
         )
 
-    const sessionId = `openwork-${workerHint(input.workerId)}`
+    const sessionId = `teamwork-${workerHint(input.workerId)}`
     await sandbox.process.createSession(sessionId)
     const command = await sandbox.process.executeSessionCommand(
       sessionId,
       {
-        command: buildOpenWorkStartCommand(input),
+        command: buildTeamWorkStartCommand(input),
         runAsync: true,
       },
       0,
     )
 
     const expiresInSeconds = normalizedSignedPreviewExpirySeconds()
-    const preview = await sandbox.getSignedPreviewUrl(env.daytona.openworkPort, expiresInSeconds)
+    const preview = await sandbox.getSignedPreviewUrl(env.daytona.teamworkPort, expiresInSeconds)
     await waitForHealth(preview.url, env.daytona.healthcheckTimeoutMs, sandbox, sessionId, command.cmdId)
     await upsertDaytonaSandbox({
       workerId: input.workerId,

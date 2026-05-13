@@ -1,4 +1,4 @@
-name: OpenWork Tests
+name: TeamWork Tests
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  openwork-tests:
+  teamwork-tests:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -115,4 +115,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run e2e tests
-        run: pnpm --filter @openwork/app test:e2e
+        run: pnpm --filter @teamwork/app test:e2e

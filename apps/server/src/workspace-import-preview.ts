@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
-import { sanitizeOpenworkTemplateConfig } from "./blueprint-sessions.js";
+import { sanitizeTeamworkTemplateConfig } from "./blueprint-sessions.js";
 import { buildCommandContent } from "./commands.js";
 import { ApiError } from "./errors.js";
 import { parseFrontmatter } from "./frontmatter.js";
@@ -14,13 +14,13 @@ import { exists } from "./utils.js";
 import { sanitizeCommandName, validateCommandName, validateSkillName } from "./validators.js";
 import {
   opencodeConfigPath,
-  openworkConfigPath,
+  teamworkConfigPath,
   projectCommandsDir,
   projectSkillsDir,
 } from "./workspace-files.js";
 
 export type WorkspaceImportMode = "merge" | "replace";
-export type WorkspaceImportChangeKind = "opencode" | "openwork" | "skill" | "command" | "file";
+export type WorkspaceImportChangeKind = "opencode" | "teamwork" | "skill" | "command" | "file";
 export type WorkspaceImportChangeAction = "create" | "update" | "replace" | "delete" | "unchanged";
 
 export type WorkspaceImportChange = {
@@ -53,13 +53,13 @@ export type WorkspaceImportPlan = Omit<WorkspaceImportPreview, "changes"> & {
   changes: WorkspaceImportPlannedChange[];
 };
 
-type WorkspaceImportSection = "opencode" | "openwork" | "skills" | "commands" | "files";
+type WorkspaceImportSection = "opencode" | "teamwork" | "skills" | "commands" | "files";
 
 export type NormalizedWorkspaceImport = {
   modes: Record<string, WorkspaceImportMode>;
   sections: Record<WorkspaceImportSection, boolean>;
   opencode?: Record<string, unknown>;
-  openwork?: Record<string, unknown>;
+  teamwork?: Record<string, unknown>;
   skills: Array<{ name: string; content: string; description?: string }>;
   commands: Array<{
     name: string;
@@ -86,7 +86,7 @@ function normalizeModes(value: unknown): Record<string, WorkspaceImportMode> {
   const record = readRecord(value) ?? {};
   return {
     opencode: readMode(record.opencode),
-    openwork: readMode(record.openwork),
+    teamwork: readMode(record.teamwork),
     skills: readMode(record.skills),
     commands: readMode(record.commands),
     files: readMode(record.files),
@@ -175,7 +175,7 @@ export function normalizeWorkspaceImportPayload(
     modes: normalizeModes(payload.mode),
     sections: {
       opencode: payload.opencode !== undefined,
-      openwork: payload.openwork !== undefined,
+      teamwork: payload.teamwork !== undefined,
       skills: payload.skills !== undefined,
       commands: payload.commands !== undefined,
       files: payload.files !== undefined,
@@ -183,8 +183,8 @@ export function normalizeWorkspaceImportPayload(
     ...(payload.opencode !== undefined
       ? { opencode: sanitizePortableOpencodeConfig(readRecord(payload.opencode)) }
       : {}),
-    ...(payload.openwork !== undefined
-      ? { openwork: sanitizeOpenworkTemplateConfig(readRecord(payload.openwork)) }
+    ...(payload.teamwork !== undefined
+      ? { teamwork: sanitizeTeamworkTemplateConfig(readRecord(payload.teamwork)) }
       : {}),
     skills: normalizeSkills(payload.skills),
     commands: normalizeCommands(payload.commands),
@@ -274,13 +274,13 @@ function fingerprintWorkspaceImportChanges(changes: WorkspaceImportPlannedChange
   );
 }
 
-async function readOpenworkConfig(path: string): Promise<Record<string, unknown>> {
+async function readTeamworkConfig(path: string): Promise<Record<string, unknown>> {
   const raw = await readTextIfPresent(path);
   if (raw === null) return {};
   try {
     return JSON.parse(raw) as Record<string, unknown>;
   } catch {
-    throw new ApiError(422, "invalid_json", "Failed to parse openwork.json");
+    throw new ApiError(422, "invalid_json", "Failed to parse teamwork.json");
   }
 }
 
@@ -330,15 +330,15 @@ export async function buildWorkspaceImportPreview(
     });
   }
 
-  if (input.openwork !== undefined) {
-    const path = openworkConfigPath(workspaceRoot);
+  if (input.teamwork !== undefined) {
+    const path = teamworkConfigPath(workspaceRoot);
     const existsBefore = await exists(path);
-    const before = await readOpenworkConfig(path);
-    const after = input.modes.openwork === "replace" ? input.openwork : { ...before, ...input.openwork };
+    const before = await readTeamworkConfig(path);
+    const after = input.modes.teamwork === "replace" ? input.teamwork : { ...before, ...input.teamwork };
     changes.push({
-      kind: "openwork",
-      action: actionForTarget(existsBefore, !sameJson(before, after), input.modes.openwork),
-      label: "OpenWork config",
+      kind: "teamwork",
+      action: actionForTarget(existsBefore, !sameJson(before, after), input.modes.teamwork),
+      label: "TeamWork config",
       path: rel(workspaceRoot, path),
       absolutePath: path,
       beforeDigest: existsBefore ? jsonDigest(before) : textDigest(null),

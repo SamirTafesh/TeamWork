@@ -16,7 +16,7 @@ describe("env-file", () => {
   let path: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "openwork-env-"));
+    dir = mkdtempSync(join(tmpdir(), "teamwork-env-"));
     path = join(dir, "env.json");
   });
 
@@ -34,8 +34,8 @@ describe("env-file", () => {
     expect(isValidEnvKey("")).toBe(false);
   });
 
-  test("isReservedEnvKey blocks OPENWORK_ / OPENCODE_ prefixes", () => {
-    expect(isReservedEnvKey("OPENWORK_TOKEN")).toBe(true);
+  test("isReservedEnvKey blocks TEAMWORK_ / OPENCODE_ prefixes", () => {
+    expect(isReservedEnvKey("TEAMWORK_TOKEN")).toBe(true);
     expect(isReservedEnvKey("OPENCODE_SERVER_PASSWORD")).toBe(true);
     expect(isReservedEnvKey("ANTHROPIC_API_KEY")).toBe(false);
     expect(isReservedEnvKey("GCLOUD_PROJECT")).toBe(false);
@@ -97,7 +97,7 @@ describe("env-file", () => {
 
   test("upsertMany rejects reserved keys", async () => {
     const svc = new EnvService({ path });
-    const promise = svc.upsertMany([{ key: "OPENWORK_TOKEN", value: "x" }]);
+    const promise = svc.upsertMany([{ key: "TEAMWORK_TOKEN", value: "x" }]);
     await expect(promise).rejects.toBeInstanceOf(InvalidEnvKeyError);
     await expect(promise).rejects.toMatchObject({ code: "reserved_env_key" });
   });
@@ -137,7 +137,7 @@ describe("env-file", () => {
         schemaVersion: 1,
         updatedAt: Date.now(),
         variables: [
-          { key: "OPENWORK_TOKEN", value: "stolen" },
+          { key: "TEAMWORK_TOKEN", value: "stolen" },
           { key: "ANTHROPIC_API_KEY", value: "sk-ant" },
         ],
       }),

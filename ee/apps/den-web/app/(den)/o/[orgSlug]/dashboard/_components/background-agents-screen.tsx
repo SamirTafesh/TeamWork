@@ -22,9 +22,9 @@ import { DashboardPageTemplate } from "../../../../_components/ui/dashboard-page
 import { DenButton } from "../../../../_components/ui/button";
 import { OrgLimitDialog } from "../../../../_components/org-limit-dialog";
 import {
-  OPENWORK_APP_CONNECT_BASE_URL,
-  buildOpenworkAppConnectUrl,
-  buildOpenworkDeepLink,
+  TEAMWORK_APP_CONNECT_BASE_URL,
+  buildTeamworkAppConnectUrl,
+  buildTeamworkDeepLink,
   getErrorMessage,
   getWorkerStatusMeta,
   getWorkerTokens,
@@ -37,11 +37,11 @@ import { getBackgroundAgentsRoute } from "../../../../_lib/den-org";
 import { useOrgDashboard } from "../_providers/org-dashboard-provider";
 
 type ConnectionDetails = {
-  openworkUrl: string | null;
+  teamworkUrl: string | null;
   ownerToken: string | null;
   clientToken: string | null;
-  openworkAppConnectUrl: string | null;
-  openworkDeepLink: string | null;
+  teamworkAppConnectUrl: string | null;
+  teamworkDeepLink: string | null;
 };
 
 function getStatusBadgeClass(bucket: ReturnType<typeof getWorkerStatusMeta>["bucket"]) {
@@ -116,11 +116,11 @@ function SandboxCard({
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const meta = getWorkerStatusMeta(sandbox.status);
   const canConnect = meta.bucket === "ready";
-  const connectionUrl = details?.openworkUrl ?? sandbox.instanceUrl ?? null;
+  const connectionUrl = details?.teamworkUrl ?? sandbox.instanceUrl ?? null;
   const ownerToken = details?.ownerToken ?? null;
   const clientToken = details?.clientToken ?? null;
-  const openWebUrl = details?.openworkAppConnectUrl ?? null;
-  const openDesktopUrl = details?.openworkDeepLink ?? null;
+  const openWebUrl = details?.teamworkAppConnectUrl ?? null;
+  const openDesktopUrl = details?.teamworkDeepLink ?? null;
 
   async function handleCopy(field: string, text: string) {
     await navigator.clipboard.writeText(text);
@@ -354,19 +354,19 @@ export function BackgroundAgentsScreen() {
       }
 
       const nextDetails: ConnectionDetails = {
-        openworkUrl: tokens.openworkUrl,
+        teamworkUrl: tokens.teamworkUrl,
         ownerToken: tokens.ownerToken,
         clientToken: tokens.clientToken,
-        openworkAppConnectUrl: buildOpenworkAppConnectUrl(
-          OPENWORK_APP_CONNECT_BASE_URL,
-          tokens.openworkUrl,
+        teamworkAppConnectUrl: buildTeamworkAppConnectUrl(
+          TEAMWORK_APP_CONNECT_BASE_URL,
+          tokens.teamworkUrl,
           tokens.clientToken,
           workerId,
           workerName,
           { autoConnect: true },
         ),
-        openworkDeepLink: buildOpenworkDeepLink(
-          tokens.openworkUrl,
+        teamworkDeepLink: buildTeamworkDeepLink(
+          tokens.teamworkUrl,
           tokens.clientToken,
           workerId,
           workerName,

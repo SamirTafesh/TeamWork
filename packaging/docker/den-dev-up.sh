@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Bring up a local Den testability stack with random host ports.
 #
-# Usage (from _repos/openwork repo root):
+# Usage (from _repos/teamwork repo root):
 #   packaging/docker/den-dev-up.sh
 #
 # Outputs:
@@ -120,7 +120,7 @@ append_origin() {
 }
 
 DEV_ID="$(node -e "console.log(require('crypto').randomUUID().slice(0, 8))")"
-PROJECT="openwork-den-dev-$DEV_ID"
+PROJECT="teamwork-den-dev-$DEV_ID"
 DEN_WATCH_OTP_CODES="${DEN_WATCH_OTP_CODES:-1}"
 
 DEN_API_PORT="${DEN_API_PORT:-$(pick_port)}"
@@ -207,7 +207,7 @@ DEN_WORKER_PROXY_URL=http://localhost:$DEN_WORKER_PROXY_PORT
 DEN_API_PUBLIC_URL=http://$PUBLIC_HOST:$DEN_API_PORT
 DEN_WEB_PUBLIC_URL=http://$PUBLIC_HOST:$DEN_WEB_PORT
 DEN_WORKER_PROXY_PUBLIC_URL=http://$PUBLIC_HOST:$DEN_WORKER_PROXY_PORT
-DEN_MYSQL_URL=mysql://root:password@127.0.0.1:$DEN_MYSQL_PORT/openwork_den
+DEN_MYSQL_URL=mysql://root:password@127.0.0.1:$DEN_MYSQL_PORT/teamwork_den
 DEN_BETTER_AUTH_URL=$DEN_BETTER_AUTH_URL
 DEN_DB_ENCRYPTION_KEY=$DEN_DB_ENCRYPTION_KEY
 COMPOSE_FILE=$COMPOSE_FILE
@@ -260,13 +260,13 @@ if [ -n "$OTP_LOG_PID" ]; then
 fi
 
 echo "" >&2
-echo "OpenWork Cloud web UI:  http://localhost:$DEN_WEB_PORT" >&2
-echo "OpenWork Cloud web UI (LAN/public): http://$PUBLIC_HOST:$DEN_WEB_PORT" >&2
+echo "TeamWork Cloud web UI:  http://localhost:$DEN_WEB_PORT" >&2
+echo "TeamWork Cloud web UI (LAN/public): http://$PUBLIC_HOST:$DEN_WEB_PORT" >&2
 if [ -n "$LAN_IPV4" ]; then
-  echo "OpenWork Cloud web UI (LAN IP):     http://$LAN_IPV4:$DEN_WEB_PORT" >&2
+  echo "TeamWork Cloud web UI (LAN IP):     http://$LAN_IPV4:$DEN_WEB_PORT" >&2
 fi
 if [ -n "$TAILSCALE_DNS_NAME" ]; then
-  echo "OpenWork Cloud web UI (Tailscale):  http://$TAILSCALE_DNS_NAME:$DEN_WEB_PORT" >&2
+  echo "TeamWork Cloud web UI (Tailscale):  http://$TAILSCALE_DNS_NAME:$DEN_WEB_PORT" >&2
 fi
 echo "Den demo/API:          http://localhost:$DEN_API_PORT" >&2
 echo "Den demo/API (LAN/public):         http://$PUBLIC_HOST:$DEN_API_PORT" >&2
@@ -284,7 +284,7 @@ fi
 if [ -n "$TAILSCALE_DNS_NAME" ]; then
   echo "Worker proxy (Tailscale):          http://$TAILSCALE_DNS_NAME:$DEN_WORKER_PROXY_PORT" >&2
 fi
-echo "MySQL:                 mysql://root:password@127.0.0.1:$DEN_MYSQL_PORT/openwork_den" >&2
+echo "MySQL:                 mysql://root:password@127.0.0.1:$DEN_MYSQL_PORT/teamwork_den" >&2
 echo "Health check:          http://localhost:$DEN_API_PORT/health" >&2
 echo "Runtime env file:      $RUNTIME_FILE" >&2
 if [ -n "$OTP_LOG_PID" ]; then

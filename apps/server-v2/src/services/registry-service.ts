@@ -22,7 +22,7 @@ export type LegacyRemoteWorkspaceInput = {
   displayName: string;
   directory?: string | null;
   legacyNotes: JsonObject;
-  remoteType: "openwork" | "opencode";
+  remoteType: "teamwork" | "opencode";
   remoteWorkspaceId?: string | null;
   serverAuth?: JsonObject | null;
   serverBaseUrl: string;
@@ -97,7 +97,7 @@ export function createRegistryService(input: {
         return this.ensureLocalServer({
           baseUrl,
           hostingKind: "self_hosted",
-          label: "Local OpenWork Server",
+          label: "Local TeamWork Server",
         });
       }
 
@@ -253,7 +253,7 @@ export function createRegistryService(input: {
       });
 
       input.repositories.workspaceRuntimeState.upsert({
-        backendKind: "remote_openwork",
+        backendKind: "remote_teamwork",
         health: {
           imported: true,
           remoteServerId: serverId,

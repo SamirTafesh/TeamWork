@@ -1502,7 +1502,7 @@ export function registerPluginArchRoutes<T extends { Variables: OrgRouteVariable
     describeRoute({
       tags: ["GitHub"],
       summary: "Apply GitHub discovery selection",
-      description: "Creates OpenWork plugins and connector mappings from selected discovery candidates.",
+      description: "Creates TeamWork plugins and connector mappings from selected discovery candidates.",
       responses: {
         200: jsonResponse("GitHub discovery selection applied successfully.", githubDiscoveryApplyResponseSchema),
         400: jsonResponse("The discovery apply request was invalid.", invalidRequestSchema),

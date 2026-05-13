@@ -8,8 +8,8 @@ import { createAppDependencies } from "./context/app-dependencies.js";
 const tempRoots: string[] = [];
 const envBackup = {
   home: process.env.HOME,
-  publisherBaseUrl: process.env.OPENWORK_PUBLISHER_BASE_URL,
-  publisherOrigin: process.env.OPENWORK_PUBLISHER_REQUEST_ORIGIN,
+  publisherBaseUrl: process.env.TEAMWORK_PUBLISHER_BASE_URL,
+  publisherOrigin: process.env.TEAMWORK_PUBLISHER_REQUEST_ORIGIN,
 };
 const originalFetch = globalThis.fetch;
 
@@ -19,8 +19,8 @@ afterEach(() => {
     if (!next) continue;
     fs.rmSync(next, { force: true, recursive: true });
   }
-  process.env.OPENWORK_PUBLISHER_BASE_URL = envBackup.publisherBaseUrl;
-  process.env.OPENWORK_PUBLISHER_REQUEST_ORIGIN = envBackup.publisherOrigin;
+  process.env.TEAMWORK_PUBLISHER_BASE_URL = envBackup.publisherBaseUrl;
+  process.env.TEAMWORK_PUBLISHER_REQUEST_ORIGIN = envBackup.publisherOrigin;
   process.env.HOME = envBackup.home;
   globalThis.fetch = originalFetch;
 });
@@ -51,12 +51,12 @@ function createTestApp(label: string) {
 }
 
 test("managed resource routes cover MCPs, plugins, skills, shares, export/import, cloud signin, bundles, and router state", async () => {
-  const { app, dependencies, root } = createTestApp("openwork-server-v2-phase8-managed");
+  const { app, dependencies, root } = createTestApp("teamwork-server-v2-phase8-managed");
   const workspaceRoot = path.join(root, "workspace-managed");
   fs.mkdirSync(path.join(workspaceRoot, ".opencode", "tools"), { recursive: true });
   fs.writeFileSync(path.join(workspaceRoot, ".opencode", "tools", "demo.txt"), "tool-secret", "utf8");
 
-  const createResponse = await app.request("http://openwork.local/workspaces/local", {
+  const createResponse = await app.request("http://teamwork.local/workspaces/local", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ folderPath: workspaceRoot, name: "Managed", preset: "starter" }),
@@ -64,26 +64,26 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
   const created = await createResponse.json();
   const workspaceId = created.data.id as string;
 
-  const mcpAdded = await app.request(`http://openwork.local/workspace/${workspaceId}/mcp`, {
+  const mcpAdded = await app.request(`http://teamwork.local/workspace/${workspaceId}/mcp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: "demo", config: { command: ["demo"], type: "local" } }),
   });
-  const pluginsAdded = await app.request(`http://openwork.local/workspace/${workspaceId}/plugins`, {
+  const pluginsAdded = await app.request(`http://teamwork.local/workspace/${workspaceId}/plugins`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ spec: "demo-plugin" }),
   });
-  const skillAdded = await app.request(`http://openwork.local/workspace/${workspaceId}/skills`, {
+  const skillAdded = await app.request(`http://teamwork.local/workspace/${workspaceId}/skills`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ content: "## When To Use\n- Demo\n", description: "Demo skill", name: "demo-skill" }),
   });
-  const systemManagedMcps = await app.request("http://openwork.local/system/managed/mcps");
-  const shareExposed = await app.request(`http://openwork.local/workspaces/${workspaceId}/share`, { method: "POST" });
+  const systemManagedMcps = await app.request("http://teamwork.local/system/managed/mcps");
+  const shareExposed = await app.request(`http://teamwork.local/workspaces/${workspaceId}/share`, { method: "POST" });
   const shareBody = await shareExposed.json();
-  const exportConflict = await app.request(`http://openwork.local/workspaces/${workspaceId}/export?sensitive=auto`);
-  const exportSafe = await app.request(`http://openwork.local/workspaces/${workspaceId}/export?sensitive=exclude`);
+  const exportConflict = await app.request(`http://teamwork.local/workspaces/${workspaceId}/export?sensitive=auto`);
+  const exportSafe = await app.request(`http://teamwork.local/workspaces/${workspaceId}/export?sensitive=exclude`);
   const exportSafeBody = await exportSafe.json();
 
   expect(mcpAdded.status).toBe(200);
@@ -103,18 +103,18 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
   expect(exportSafeBody.data.skills[0].name).toBe("demo-skill");
 
   const importRoot = path.join(root, "workspace-imported");
-  const createImportWorkspace = await app.request("http://openwork.local/workspaces/local", {
+  const createImportWorkspace = await app.request("http://teamwork.local/workspaces/local", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ folderPath: importRoot, name: "Imported", preset: "starter" }),
   });
   const importedWorkspaceId = (await createImportWorkspace.json()).data.id as string;
-  const importResult = await app.request(`http://openwork.local/workspaces/${importedWorkspaceId}/import`, {
+  const importResult = await app.request(`http://teamwork.local/workspaces/${importedWorkspaceId}/import`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(exportSafeBody.data),
   });
-  const importedSkills = await app.request(`http://openwork.local/workspace/${importedWorkspaceId}/skills`);
+  const importedSkills = await app.request(`http://teamwork.local/workspace/${importedWorkspaceId}/skills`);
   expect(importResult.status).toBe(200);
   expect((await importedSkills.json()).items[0].name).toBe("demo-skill");
   const importedSkillRecord = dependencies.persistence.repositories.skills.list().find((item) => item.key === "demo-skill" && item.source === "imported");
@@ -134,7 +134,7 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
     },
     { preconnect: originalFetch.preconnect },
   ) as typeof fetch;
-  const hubInstall = await app.request(`http://openwork.local/workspace/${workspaceId}/skills/hub/hub-skill`, {
+  const hubInstall = await app.request(`http://teamwork.local/workspace/${workspaceId}/skills/hub/hub-skill`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ overwrite: true }),
@@ -158,13 +158,13 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
   });
   tempRoots.push(path.join(root, `cloud-server-${cloudServer.port}`));
   try {
-    const cloudPersist = await app.request("http://openwork.local/system/cloud-signin", {
+    const cloudPersist = await app.request("http://teamwork.local/system/cloud-signin", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ auth: { authToken: "token-demo" }, cloudBaseUrl: `http://127.0.0.1:${cloudServer.port}` }),
     });
-    const cloudValidated = await app.request("http://openwork.local/system/cloud-signin/validate", { method: "POST" });
-    const cloudCleared = await app.request("http://openwork.local/system/cloud-signin", { method: "DELETE" });
+    const cloudValidated = await app.request("http://teamwork.local/system/cloud-signin/validate", { method: "POST" });
+    const cloudCleared = await app.request("http://teamwork.local/system/cloud-signin", { method: "DELETE" });
     expect(cloudPersist.status).toBe(200);
     expect(cloudValidated.status).toBe(200);
     expect((await cloudValidated.json()).data.ok).toBe(true);
@@ -188,16 +188,16 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
     hostname: "127.0.0.1",
     port: 0,
   });
-  process.env.OPENWORK_PUBLISHER_BASE_URL = `http://127.0.0.1:${publisherServer.port}`;
-  process.env.OPENWORK_PUBLISHER_REQUEST_ORIGIN = "http://127.0.0.1:3000";
+  process.env.TEAMWORK_PUBLISHER_BASE_URL = `http://127.0.0.1:${publisherServer.port}`;
+  process.env.TEAMWORK_PUBLISHER_REQUEST_ORIGIN = "http://127.0.0.1:3000";
   try {
-    const publish = await app.request("http://openwork.local/share/bundles/publish", {
+    const publish = await app.request("http://teamwork.local/share/bundles/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bundleType: "skills-set", payload: { ok: true } }),
     });
     const publishBody = await publish.json();
-    const fetchBundle = await app.request("http://openwork.local/share/bundles/fetch", {
+    const fetchBundle = await app.request("http://teamwork.local/share/bundles/fetch", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ bundleUrl: publishBody.data.url }),
@@ -240,17 +240,17 @@ test("managed resource routes cover MCPs, plugins, skills, shares, export/import
       version: "test",
     });
     dependencies.services.runtime.applyRouterConfig = async () => dependencies.services.runtime.getRouterHealth();
-    const telegramIdentity = await app.request(`http://openwork.local/workspace/${workspaceId}/opencode-router/identities/telegram`, {
+    const telegramIdentity = await app.request(`http://teamwork.local/workspace/${workspaceId}/opencode-router/identities/telegram`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ access: "private", token: "123456:demo" }),
     });
-    const bindings = await app.request(`http://openwork.local/workspace/${workspaceId}/opencode-router/bindings`, {
+    const bindings = await app.request(`http://teamwork.local/workspace/${workspaceId}/opencode-router/bindings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ channel: "telegram", directory: workspaceRoot, peerId: "peer-1" }),
     });
-    const send = await app.request(`http://openwork.local/workspace/${workspaceId}/opencode-router/send`, {
+    const send = await app.request(`http://teamwork.local/workspace/${workspaceId}/opencode-router/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ channel: "telegram", directory: workspaceRoot, text: "hello" }),

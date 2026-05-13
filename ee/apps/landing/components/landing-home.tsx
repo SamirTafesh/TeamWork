@@ -44,7 +44,7 @@ export function LandingHome(props: Props) {
 
   const callLinkProps = externalLinkProps(props.callHref);
   const primaryCtaHref = props.isMobileVisitor
-    ? "https://app.openworklabs.com"
+    ? "https://app.teamworklabs.com"
     : "/download";
   const primaryCtaLabel = props.isMobileVisitor
     ? "Open the app"
@@ -63,7 +63,7 @@ export function LandingHome(props: Props) {
             stars={props.stars}
             downloadHref={props.downloadHref}
             callUrl={props.callHref}
-            mobilePrimaryHref="https://app.openworklabs.com"
+            mobilePrimaryHref="https://app.teamworklabs.com"
             mobilePrimaryLabel="Open app"
             active="home"
           />
@@ -75,7 +75,7 @@ export function LandingHome(props: Props) {
               The open source Claude Cowork<br />for your team
             </h1>
             <p className="mb-6 max-w-4xl text-lg leading-relaxed text-gray-700 md:mb-7 md:text-xl">
-              OpenWork is the desktop app that lets you use 50+ LLMs, bring your
+              TeamWork is the desktop app that lets you use 50+ LLMs, bring your
               own keys, and share your setups seamlessly with your team.
             </p>
 
@@ -126,7 +126,7 @@ export function LandingHome(props: Props) {
                 Start on mobile. Continue on desktop.
               </h2>
               <p className="mb-5 text-[15px] leading-7 text-gray-600">
-                OpenWork is a desktop app. Sign up here from your phone and keep the
+                TeamWork is a desktop app. Sign up here from your phone and keep the
                 desktop install flow handy for when you switch to your computer.
               </p>
               <WaitlistForm contactHref={props.callHref} />
@@ -145,7 +145,7 @@ export function LandingHome(props: Props) {
                   <div className="h-3 w-3 rounded-full border border-[#1aab29]/20 bg-[#27c93f]/90 shadow-sm"></div>
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2 text-[12px] font-medium tracking-wide text-gray-500">
-                  OpenWork
+                  TeamWork
                 </div>
               </div>
  
@@ -325,7 +325,7 @@ export function LandingHome(props: Props) {
                               <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
                               <div className="h-2.5 w-2.5 rounded-full bg-green-400/70" />
                             </div>
-                            <div className="text-[12px] font-medium text-gray-500">OpenWork</div>
+                            <div className="text-[12px] font-medium text-gray-500">TeamWork</div>
                           </div>
 
                           <div className="flex flex-1">

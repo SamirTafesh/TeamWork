@@ -1,10 +1,10 @@
-import { normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+import { normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { MiddlewareHandler } from "hono"
 import { getApiKeyScopedOrganizationId } from "../api-keys.js"
 import { resolveUserOrganizations, setSessionActiveOrganization, type UserOrgSummary } from "../orgs.js"
 import type { AuthContextVariables } from "../session.js"
 
-export const LEGACY_ORG_PROXY_HEADER = "x-openwork-legacy-org-id"
+export const LEGACY_ORG_PROXY_HEADER = "x-teamwork-legacy-org-id"
 
 export type UserOrganizationsContext = {
   userOrganizations: UserOrgSummary[]

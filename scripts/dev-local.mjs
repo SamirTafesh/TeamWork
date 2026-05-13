@@ -8,13 +8,13 @@ import { fileURLToPath } from "node:url"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, "..")
 const composeFile = path.join(rootDir, "packaging", "docker", "docker-compose.web-local.yml")
-const composeProject = "openwork-den-local"
+const composeProject = "teamwork-den-local"
 
 const apiPort = process.env.DEN_API_PORT?.trim() || process.env.DEN_CONTROLLER_PORT?.trim() || "8788"
 const workerProxyPort = process.env.DEN_WORKER_PROXY_PORT?.trim() || "8789"
 const webPort = process.env.DEN_WEB_PORT?.trim() || "3005"
-const appPort = process.env.OPENWORK_APP_PORT?.trim() || process.env.PORT?.trim() || "5173"
-const databaseUrl = process.env.DATABASE_URL?.trim() || "mysql://root:password@127.0.0.1:3306/openwork_den"
+const appPort = process.env.TEAMWORK_APP_PORT?.trim() || process.env.PORT?.trim() || "5173"
+const databaseUrl = process.env.DATABASE_URL?.trim() || "mysql://root:password@127.0.0.1:3306/teamwork_den"
 const dbEncryptionKey =
   process.env.DEN_DB_ENCRYPTION_KEY?.trim() ||
   "local-dev-db-encryption-key-please-change-1234567890"
@@ -172,7 +172,7 @@ async function main() {
   }
 
   console.log("[den] Syncing Den schema...")
-  await run("bash", ["-lc", "pnpm --filter @openwork-ee/den-db build && pnpm --filter @openwork-ee/den-db exec node --import tsx ./node_modules/drizzle-kit/bin.cjs push --config drizzle.config.ts --force"], {
+  await run("bash", ["-lc", "pnpm --filter @teamwork-ee/den-db build && pnpm --filter @teamwork-ee/den-db exec node --import tsx ./node_modules/drizzle-kit/bin.cjs push --config drizzle.config.ts --force"], {
     env: {
       ...process.env,
       DATABASE_URL: databaseUrl,
@@ -190,9 +190,9 @@ async function main() {
       "run",
       "dev:local",
       "--output-logs=full",
-        "--filter=@openwork-ee/den-api",
-        "--filter=@openwork-ee/den-worker-proxy",
-        "--filter=@openwork-ee/den-web",
+        "--filter=@teamwork-ee/den-api",
+        "--filter=@teamwork-ee/den-worker-proxy",
+        "--filter=@teamwork-ee/den-web",
     ],
     {
       cwd: rootDir,
@@ -200,7 +200,7 @@ async function main() {
       detached: process.platform !== "win32",
       env: {
         ...process.env,
-        OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE?.trim() || "1",
+        TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE?.trim() || "1",
         DATABASE_URL: databaseUrl,
         DEN_DB_ENCRYPTION_KEY: dbEncryptionKey,
         BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET?.trim() || "local-dev-secret-not-for-production-use!!",

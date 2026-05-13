@@ -1,48 +1,48 @@
-> OpenWork is the open source alternative to Claude Cowork/Codex (desktop app).
+> TeamWork is the open source alternative to Claude Cowork/Codex (desktop app).
 
 
 ## Core Philosophy
 
-- Local-first, cloud-ready: OpenWork runs on your machine in one click. Send a message instantly.
+- Local-first, cloud-ready: TeamWork runs on your machine in one click. Send a message instantly.
 - Composable: desktop app, Slack/Telegram connector, or server. Use what fits, no lock-in.
-- Ejectable: OpenWork is powered by OpenCode, so everything OpenCode can do works in OpenWork, even without a UI yet.
+- Ejectable: TeamWork is powered by OpenCode, so everything OpenCode can do works in TeamWork, even without a UI yet.
 - Sharing is caring: start solo on localhost, then explicitly opt into remote sharing when you need it.
 
 <p align="center">
-  <img src="./app-demo.gif" alt="OpenWork demo" width="800" />
+  <img src="./app-demo.gif" alt="TeamWork demo" width="800" />
 </p>
 
-OpenWork is designed around the idea that you can easily ship your agentic workflows for your team as a repeatable, productized process.
+TeamWork is designed around the idea that you can easily ship your agentic workflows for your team as a repeatable, productized process.
 
 > [!TIP]
-> **Looking for an [Enterprise Plan](https://openworklabs.com/enterprise)?** [Speak with our Sales Team today](https://calendar.app.google/86QpCENvhfEzDFLu5)
+> **Looking for an [Enterprise Plan](https://teamworklabs.com/enterprise)?** [Speak with our Sales Team today](https://calendar.app.google/86QpCENvhfEzDFLu5)
 >
 > Get enhanced capabilities including feature prioritization, SSO, SLA support, LTS versions, and more.
 
 ## Alternate UIs
-- **OpenWork Orchestrator (CLI host)**: run OpenCode + OpenWork server without the desktop UI.
-  - install: `npm install -g openwork-orchestrator`
-  - run: `openwork start --workspace /path/to/workspace --approval auto`
+- **TeamWork Orchestrator (CLI host)**: run OpenCode + TeamWork server without the desktop UI.
+  - install: `npm install -g teamwork-orchestrator`
+  - run: `teamwork start --workspace /path/to/workspace --approval auto`
   - docs: [apps/orchestrator/README.md](./apps/orchestrator/README.md)
 
 ## Quick start
 
-Download the desktop app from [openworklabs.com/download](https://openworklabs.com/download), grab the latest [GitHub release](https://github.com/different-ai/openwork/releases), or install from source below.
+Download the desktop app from [teamworklabs.com/download](https://teamworklabs.com/download), grab the latest [GitHub release](https://github.com/SamirTafesh/TeamWork/releases), or install from source below.
 
 - macOS and Linux downloads are available directly.
-- Windows access is currently handled through the paid support plan on [openworklabs.com/pricing#windows-support](https://openworklabs.com/pricing#windows-support).
-- Hosted OpenWork Cloud workers are launched from the web app after checkout, then connected from the desktop app via `Add a worker` -> `Connect remote`.
+- Windows access is currently handled through the paid support plan on [teamworklabs.com/pricing#windows-support](https://teamworklabs.com/pricing#windows-support).
+- Hosted TeamWork Cloud workers are launched from the web app after checkout, then connected from the desktop app via `Add a worker` -> `Connect remote`.
 
 ## Why
 
 Current CLI and GUIs for opencode are anchored around developers. That means a focus on file diffs, tool names, and hard to extend capabilities without relying on exposing some form of cli.
 
-OpenWork is designed to be:
+TeamWork is designed to be:
 
 - **Extensible**: skill and opencode plugins are installable modules.
 - **Auditable**: show what happened, when, and why.
 - **Permissioned**: access to privileged flows.
-- **Local/Remote**: OpenWork works locally as well as can connect to remote servers.
+- **Local/Remote**: TeamWork works locally as well as can connect to remote servers.
 
 ## What’s Included
 
@@ -96,7 +96,7 @@ pnpm install --frozen-lockfile
 
 which bun
 bun --version
-pnpm --filter @openwork/desktop exec tauri --version
+pnpm --filter @teamwork/desktop exec tauri --version
 ```
 
 ### Install
@@ -105,7 +105,7 @@ pnpm --filter @openwork/desktop exec tauri --version
 pnpm install
 ```
 
-OpenWork now lives in `apps/app` (UI) and `apps/desktop` (desktop shell).
+TeamWork now lives in `apps/app` (UI) and `apps/desktop` (desktop shell).
 
 ### Run (Desktop)
 
@@ -113,7 +113,7 @@ OpenWork now lives in `apps/app` (UI) and `apps/desktop` (desktop shell).
 pnpm dev
 ```
 
-`pnpm dev` now enables `OPENWORK_DEV_MODE=1` automatically, so desktop dev uses an isolated OpenCode state instead of your personal global config/auth/data.
+`pnpm dev` now enables `TEAMWORK_DEV_MODE=1` automatically, so desktop dev uses an isolated OpenCode state instead of your personal global config/auth/data.
 
 ### Run (Web UI only)
 
@@ -121,7 +121,7 @@ pnpm dev
 pnpm dev:ui
 ```
 
-All repo `dev` entrypoints now opt into the same dev-mode isolation so local testing uses the OpenWork-managed OpenCode state consistently.
+All repo `dev` entrypoints now opt into the same dev-mode isolation so local testing uses the TeamWork-managed OpenCode state consistently.
 
 ### Arch Users:
 
@@ -132,11 +132,11 @@ curl -fsSL https://opencode.ai/install | bash -s -- --version "$(node -e "const 
 
 ## Architecture (high-level)
 
-- In **Host mode**, OpenWork runs a local host stack and connects the UI to it.
-  - Default runtime: `openwork` (installed from `openwork-orchestrator`), which orchestrates `opencode`, `openwork-server`, and optionally `opencode-router`.
+- In **Host mode**, TeamWork runs a local host stack and connects the UI to it.
+  - Default runtime: `teamwork` (installed from `teamwork-orchestrator`), which orchestrates `opencode`, `teamwork-server`, and optionally `opencode-router`.
   - Fallback runtime: `direct`, where the desktop app spawns `opencode serve --hostname 127.0.0.1 --port <free-port>` directly.
 
-When you select a project folder, OpenWork runs the host stack locally using that folder and connects the desktop UI.
+When you select a project folder, TeamWork runs the host stack locally using that folder and connects the desktop UI.
 This lets you run agentic workflows, send prompts, and see progress entirely on your machine without a remote server.
 
 - The UI uses `@opencode-ai/sdk/v2/client` to:
@@ -155,13 +155,13 @@ Capability permissions are defined in:
 
 ## OpenCode Plugins
 
-Plugins are the **native** way to extend OpenCode. OpenWork now manages them from the Skills tab by
+Plugins are the **native** way to extend OpenCode. TeamWork now manages them from the Skills tab by
 reading and writing `opencode.json`.
 
 - **Project scope**: `<workspace>/opencode.json`
 - **Global scope**: `~/.config/opencode/opencode.json` (or `$XDG_CONFIG_HOME/opencode/opencode.json`)
 
-You can still edit `opencode.json` manually; OpenWork uses the same format as the OpenCode CLI:
+You can still edit `opencode.json` manually; TeamWork uses the same format as the OpenCode CLI:
 
 ```json
 {
@@ -186,7 +186,7 @@ pnpm test:e2e
 - Local LAN server (shared host): [docs/local-server-lan-deployment-guide.md](./docs/local-server-lan-deployment-guide.md)
 - Team host from source: [docs/team-setup-sharing-guide.md](./docs/team-setup-sharing-guide.md)
 - Cloud VM (Ubuntu + nginx + Cloudflare Tunnel): [docs/cloud-ubuntu-setup-guide.md](./docs/cloud-ubuntu-setup-guide.md)
-- Full product usage guide (account, billing, org, providers, skills, sharing): [docs/openwork-cloud-user-guide.md](./docs/openwork-cloud-user-guide.md)
+- Full product usage guide (account, billing, org, providers, skills, sharing): [docs/teamwork-cloud-user-guide.md](./docs/teamwork-cloud-user-guide.md)
 
 ## Troubleshooting
 
@@ -194,19 +194,19 @@ If you need to report a desktop or session bug, open Settings -> Debug and expor
 
 ### Linux / Wayland (Hyprland)
 
-If OpenWork crashes on launch with WebKitGTK errors like `Failed to create GBM buffer`, disable dmabuf or compositing before launch. Try one of the following environment flags.
+If TeamWork crashes on launch with WebKitGTK errors like `Failed to create GBM buffer`, disable dmabuf or compositing before launch. Try one of the following environment flags.
 
 ```bash
-WEBKIT_DISABLE_DMABUF_RENDERER=1 openwork
+WEBKIT_DISABLE_DMABUF_RENDERER=1 teamwork
 ```
 
 ```bash
-WEBKIT_DISABLE_COMPOSITING_MODE=1 openwork
+WEBKIT_DISABLE_COMPOSITING_MODE=1 teamwork
 ```
 
 ## Security Notes
 
-- OpenWork hides model reasoning and sensitive tool metadata by default.
+- TeamWork hides model reasoning and sensitive tool metadata by default.
 - Host mode binds to `127.0.0.1` by default.
 
 ## Contributing
@@ -251,7 +251,7 @@ The App is available in the following languages:
 
 ## For Teams & Businesses
 
-Interested in using OpenWork in your organization? We'd love to hear from you — reach out at [ben@openworklabs.com](mailto:ben@openworklabs.com) to chat about your use case.
+Interested in using TeamWork in your organization? We'd love to hear from you — reach out at [ben@teamworklabs.com](mailto:ben@teamworklabs.com) to chat about your use case.
 
 ## License
 

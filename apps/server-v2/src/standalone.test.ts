@@ -67,8 +67,8 @@ test("cli boots as a standalone process and serves health plus runtime routes", 
     cwd: packageDir,
     env: {
       ...process.env,
-      OPENWORK_SERVER_V2_IN_MEMORY: "1",
-      OPENWORK_SERVER_V2_RUNTIME_BOOTSTRAP: "disabled",
+      TEAMWORK_SERVER_V2_IN_MEMORY: "1",
+      TEAMWORK_SERVER_V2_RUNTIME_BOOTSTRAP: "disabled",
     },
     stderr: "pipe",
     stdout: "pipe",
@@ -85,7 +85,7 @@ test("cli boots as a standalone process and serves health plus runtime routes", 
   const runtimeVersions = await runtimeVersionsResponse.json();
 
   expect(body.ok).toBe(true);
-  expect(body.data.service).toBe("openwork-server-v2");
+  expect(body.data.service).toBe("teamwork-server-v2");
   expect(runtimeSummary.ok).toBe(true);
   expect(runtimeSummary.data.target).toBeTruthy();
   expect(runtimeVersions.ok).toBe(true);

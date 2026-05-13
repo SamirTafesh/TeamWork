@@ -16,8 +16,8 @@ import { createClient, unwrap } from "../../app/lib/opencode";
 import { useLocal } from "../kernel/local-provider";
 import { WelcomePage } from "../domains/onboarding/welcome-page";
 import { CreateWorkspaceModal } from "../domains/workspace/create-workspace-modal";
-import { resolveOpenworkConnection } from "./openwork-connection";
-import { buildOpenworkWorkspaceBaseUrl, createOpenworkServerClient } from "../../app/lib/openwork-server";
+import { resolveTeamworkConnection } from "./teamwork-connection";
+import { buildTeamworkWorkspaceBaseUrl, createTeamworkServerClient } from "../../app/lib/teamwork-server";
 import { writeActiveWorkspaceId, writeLastSessionFor } from "./session-memory";
 import { workspaceSessionRoute } from "./workspace-routes";
 
@@ -29,7 +29,7 @@ function folderNameFromPath(path: string) {
 
 function focusPromptSoon() {
   if (typeof window === "undefined") return;
-  const focus = () => window.dispatchEvent(new Event("openwork:focusPrompt"));
+  const focus = () => window.dispatchEvent(new Event("teamwork:focusPrompt"));
   [0, 80, 240, 600].forEach((delay) => window.setTimeout(focus, delay));
 }
 
@@ -85,17 +85,17 @@ export function WelcomeRoute() {
           await workspaceSetRuntimeActive(createdId).catch(() => undefined);
           writeActiveWorkspaceId(createdId);
         }
-        // Register with the running openwork-server if available.
+        // Register with the running teamwork-server if available.
         try {
           const { normalizedBaseUrl, resolvedToken, resolvedHostToken } =
-            await resolveOpenworkConnection();
+            await resolveTeamworkConnection();
           if (normalizedBaseUrl && resolvedToken) {
-            const openworkClient = createOpenworkServerClient({
+            const teamworkClient = createTeamworkServerClient({
               baseUrl: normalizedBaseUrl,
               token: resolvedToken,
               hostToken: resolvedHostToken || undefined,
             });
-            const serverList = await openworkClient
+            const serverList = await teamworkClient
               .createLocalWorkspace({
                 folderPath: folder,
                 name: workspaceName,
@@ -109,9 +109,9 @@ export function WelcomeRoute() {
             if (targetWorkspaceId) {
               const workspacePath = targetWorkspace?.path?.trim() || folder;
               const session = unwrap(await createClient(
-                `${(buildOpenworkWorkspaceBaseUrl(normalizedBaseUrl, targetWorkspaceId) ?? normalizedBaseUrl).replace(/\/+$/, "")}/opencode`,
+                `${(buildTeamworkWorkspaceBaseUrl(normalizedBaseUrl, targetWorkspaceId) ?? normalizedBaseUrl).replace(/\/+$/, "")}/opencode`,
                 workspacePath || undefined,
-                { token: resolvedToken, mode: "openwork" },
+                { token: resolvedToken, mode: "teamwork" },
               ).session.create({ directory: workspacePath || undefined }));
               targetSessionId = session.id;
             }
@@ -140,23 +140,23 @@ export function WelcomeRoute() {
 
   const handleCreateRemote = useCallback(
     async (input: {
-      openworkHostUrl?: string | null;
-      openworkToken?: string | null;
+      teamworkHostUrl?: string | null;
+      teamworkToken?: string | null;
       directory?: string | null;
       displayName?: string | null;
     }) => {
-      const baseUrlValue = input.openworkHostUrl?.trim() ?? "";
+      const baseUrlValue = input.teamworkHostUrl?.trim() ?? "";
       if (!baseUrlValue) return false;
       setRemoteBusy(true);
       setRemoteError(null);
       try {
         const list = await workspaceCreateRemote({
           baseUrl: baseUrlValue,
-          openworkHostUrl: baseUrlValue,
-          openworkToken: input.openworkToken?.trim() || null,
+          teamworkHostUrl: baseUrlValue,
+          teamworkToken: input.teamworkToken?.trim() || null,
           displayName: input.displayName?.trim() || null,
           directory: input.directory?.trim() || null,
-          remoteType: "openwork",
+          remoteType: "teamwork",
         });
         const createdId =
           resolveWorkspaceListSelectedId(list) ||

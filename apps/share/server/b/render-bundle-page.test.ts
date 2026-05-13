@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { buildBundleUrls, renderBundlePage, wantsDownload } from "./render-bundle-page.ts";
 import type { RequestLike } from "../_lib/types.ts";
 
-function makeReq({ accept = "", query = {}, host = "share.openworklabs.com" }: { accept?: string; query?: Record<string, string>; host?: string } = {}): RequestLike {
+function makeReq({ accept = "", query = {}, host = "share.teamworklabs.com" }: { accept?: string; query?: Record<string, string>; host?: string } = {}): RequestLike {
   return {
     query,
     headers: {
@@ -24,9 +24,9 @@ test("wantsDownload only enables on download=1", () => {
 
 test("buildBundleUrls uses the fixed share origin", () => {
   const urls = buildBundleUrls(makeReq({ host: "example.test" }), "01ABC");
-  assert.equal(urls.shareUrl, "https://share.openworklabs.com/b/01ABC");
-  assert.equal(urls.jsonUrl, "https://share.openworklabs.com/b/01ABC/data");
-  assert.equal(urls.downloadUrl, "https://share.openworklabs.com/b/01ABC/data?download=1");
+  assert.equal(urls.shareUrl, "https://share.teamworklabs.com/b/01ABC");
+  assert.equal(urls.jsonUrl, "https://share.teamworklabs.com/b/01ABC/data");
+  assert.equal(urls.downloadUrl, "https://share.teamworklabs.com/b/01ABC/data?download=1");
 });
 
 test("renderBundlePage includes machine-readable metadata and escaped json script", () => {
@@ -42,25 +42,25 @@ test("renderBundlePage includes machine-readable metadata and escaped json scrip
   const html = renderBundlePage({
     id: "01TEST",
     rawJson,
-    req: makeReq({ accept: "text/html", host: "share.openworklabs.com" }),
+    req: makeReq({ accept: "text/html", host: "share.teamworklabs.com" }),
   });
 
-  assert.match(html, /data-openwork-share="true"/);
-  assert.match(html, /data-openwork-bundle-type="skill"/);
-  assert.match(html, /meta name="openwork:bundle-id" content="01TEST"/);
+  assert.match(html, /data-teamwork-share="true"/);
+  assert.match(html, /data-teamwork-bundle-type="skill"/);
+  assert.match(html, /meta name="teamwork:bundle-id" content="01TEST"/);
   assert.match(html, /\/b\/01TEST\/data/);
-  assert.match(html, /openwork:\/\/import-bundle\?/);
-  assert.match(html, /ow_bundle=https%3A%2F%2Fshare\.openworklabs\.com%2Fb%2F01TEST/);
+  assert.match(html, /teamwork:\/\/import-bundle\?/);
+  assert.match(html, /ow_bundle=https%3A%2F%2Fshare\.teamworklabs\.com%2Fb%2F01TEST/);
   assert.match(html, /ow_intent=new_worker/);
   assert.match(html, /ow_source=share_service/);
-  assert.match(html, /id="openwork-bundle-json" type="application\/json"/);
+  assert.match(html, /id="teamwork-bundle-json" type="application\/json"/);
   assert.match(html, /demo \\u003c\/script\\u003e skill/);
   assert.doesNotMatch(html, /Open in app to choose where to add this skill\./);
   assert.doesNotMatch(html, /Bundle details/);
   assert.doesNotMatch(html, /Raw endpoints/);
   assert.match(html, /skill\.md/);
-  assert.match(html, /Open in OpenWork app/);
-  assert.match(html, /Open in an OpenWork den/);
+  assert.match(html, /Open in TeamWork app/);
+  assert.match(html, /Open in an TeamWork den/);
   assert.doesNotMatch(html, /Open in web app/);
   assert.doesNotMatch(html, /Copy share link/);
 });

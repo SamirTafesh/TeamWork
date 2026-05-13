@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
-    "OPENWORK_DEV_MODE",
+    "TEAMWORK_DEV_MODE",
     "DATABASE_URL",
     "DEN_DB_ENCRYPTION_KEY",
     "BETTER_AUTH_SECRET",

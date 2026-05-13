@@ -15,8 +15,8 @@ export const storyWorkspaces: WorkspaceInfo[] = [
   {
     id: "local-foundation",
     name: "Local Foundation",
-    displayName: "OpenWork App",
-    path: "~/OpenWork/app",
+    displayName: "TeamWork App",
+    path: "~/TeamWork/app",
     preset: "starter",
     workspaceType: "local",
   },
@@ -27,12 +27,12 @@ export const storyWorkspaces: WorkspaceInfo[] = [
     path: "remote://ops-worker",
     preset: "automation",
     workspaceType: "remote",
-    remoteType: "openwork",
-    baseUrl: "https://worker.openworklabs.com/opencode",
-    openworkHostUrl: "https://worker.openworklabs.com",
-    openworkWorkspaceName: "Ops Worker",
+    remoteType: "teamwork",
+    baseUrl: "https://worker.teamworklabs.com/opencode",
+    teamworkHostUrl: "https://worker.teamworklabs.com",
+    teamworkWorkspaceName: "Ops Worker",
     sandboxBackend: "docker",
-    sandboxContainerName: "openwork-ops-worker",
+    sandboxContainerName: "teamwork-ops-worker",
   },
 ];
 
@@ -94,7 +94,7 @@ export const sessionMessages: MessageWithParts[] = [
       {
         type: "text",
         text:
-          "Build a faithful story-book for the OpenWork app so we can iterate on the shell, session timeline, settings cards, and onboarding without touching the live runtime. Also make the mocked transcript feel closer to a real OpenWork session, including tool activity.",
+          "Build a faithful story-book for the TeamWork app so we can iterate on the shell, session timeline, settings cards, and onboarding without touching the live runtime. Also make the mocked transcript feel closer to a real TeamWork session, including tool activity.",
       } as Part,
     ],
   },
@@ -211,10 +211,10 @@ export const settingsCards = [
   {
     title: "Runtime",
     eyebrow: "Core services",
-    body: "Status for your local engine and OpenWork server with versioning, connection health, and repair actions.",
+    body: "Status for your local engine and TeamWork server with versioning, connection health, and repair actions.",
     points: [
       "OpenCode engine ready on localhost:4096",
-      "OpenWork server proxied for remote workers",
+      "TeamWork server proxied for remote workers",
       "Developer mode enabled for design QA",
     ],
     action: "Reconnect runtime",
@@ -257,11 +257,11 @@ export const settingsCards = [
 export const onboardingChoices = [
   {
     title: "Create local workspace",
-    detail: "Spin up a local OpenWork folder with reusable skills and project memory.",
+    detail: "Spin up a local TeamWork folder with reusable skills and project memory.",
   },
   {
     title: "Connect remote worker",
-    detail: "Attach to a hosted worker using OpenWork URL + token for shared remote execution.",
+    detail: "Attach to a hosted worker using TeamWork URL + token for shared remote execution.",
   },
 ];
 

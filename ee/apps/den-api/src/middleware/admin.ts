@@ -1,5 +1,5 @@
-import { eq } from "@openwork-ee/den-db/drizzle"
-import { AdminAllowlistTable } from "@openwork-ee/den-db/schema"
+import { eq } from "@teamwork-ee/den-db/drizzle"
+import { AdminAllowlistTable } from "@teamwork-ee/den-db/schema"
 import type { MiddlewareHandler } from "hono"
 import { ensureAdminAllowlistSeeded } from "../admin-allowlist.js"
 import { db } from "../db.js"

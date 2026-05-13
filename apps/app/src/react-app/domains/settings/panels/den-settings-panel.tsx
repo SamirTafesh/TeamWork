@@ -93,8 +93,8 @@ export type DenSettingsPanelProps = {
   extensions: DenSettingsExtensionsStore;
   openLink: (url: string) => void;
   connectRemoteWorkspace: (input: {
-    openworkHostUrl?: string | null;
-    openworkToken?: string | null;
+    teamworkHostUrl?: string | null;
+    teamworkToken?: string | null;
     directory?: string | null;
     displayName?: string | null;
   }) => Promise<boolean>;
@@ -122,7 +122,7 @@ function parseManualAuthInput(value: string) {
     const routeSegments = routePath.split("/").filter(Boolean);
     const routeTail = routeSegments[routeSegments.length - 1] ?? "";
     if (
-      (protocol === "openwork:" || protocol === "openwork-dev:") &&
+      (protocol === "teamwork:" || protocol === "teamwork-dev:") &&
       (routeHost === "den-auth" || routePath === "den-auth" || routeTail === "den-auth")
     ) {
       const grant = url.searchParams.get("grant")?.trim() ?? "";
@@ -1028,7 +1028,7 @@ export function DenSettingsPanel(props: DenSettingsPanelProps) {
   );
 
   // Worker mutation: open remote workspace
-  const handleOpenWorker = React.useCallback(
+  const handleTeamWorker = React.useCallback(
     async (workerId: string, workerName: string) => {
       const orgId = activeOrgId.trim();
       if (!orgId) {
@@ -1041,15 +1041,15 @@ export function DenSettingsPanel(props: DenSettingsPanelProps) {
 
       try {
         const tokens = await client.getWorkerTokens(workerId, orgId);
-        const openworkUrl = tokens.openworkUrl?.trim() ?? "";
+        const teamworkUrl = tokens.teamworkUrl?.trim() ?? "";
         const accessToken = tokens.ownerToken?.trim() || tokens.clientToken?.trim() || "";
-        if (!openworkUrl || !accessToken) {
+        if (!teamworkUrl || !accessToken) {
           throw new Error(t("den.error_worker_not_ready"));
         }
 
         const ok = await props.connectRemoteWorkspace({
-          openworkHostUrl: openworkUrl,
-          openworkToken: accessToken,
+          teamworkHostUrl: teamworkUrl,
+          teamworkToken: accessToken,
           directory: null,
           displayName: workerName,
         });
@@ -1433,7 +1433,7 @@ export function DenSettingsPanel(props: DenSettingsPanelProps) {
             workers={workers}
             workersBusy={workersBusy}
             workersError={workersError}
-            onOpenWorker={handleOpenWorker}
+            onTeamWorker={handleTeamWorker}
             onRefreshWorkers={refreshWorkers}
           />
 

@@ -1,4 +1,4 @@
-const OPENWORK_DOWNLOAD_URL = "https://openworklabs.com/download";
+const TEAMWORK_DOWNLOAD_URL = "https://teamworklabs.com/download";
 
 function GitHubMark() {
   return (
@@ -13,33 +13,33 @@ export default function ShareNav({ stars = "" }: { stars?: string }) {
 
   return (
     <nav className="nav">
-      <a className="brand" href="/" aria-label="OpenWork Share home">
+      <a className="brand" href="/" aria-label="TeamWork Share home">
         <img
-          src="/openwork-mark.svg"
+          src="/teamwork-mark.svg"
           alt=""
           aria-hidden="true"
           style={{ width: "24px", height: "auto" }}
         />
-        <span style={{ fontWeight: "600", fontSize: "1.2rem" }}>openwork</span>
+        <span style={{ fontWeight: "600", fontSize: "1.2rem" }}>teamwork</span>
       </a>
       <div className="nav-links">
-        <a href="https://openworklabs.com/docs" target="_blank" rel="noreferrer">
+        <a href="https://teamworklabs.com/docs" target="_blank" rel="noreferrer">
           Docs
         </a>
-        <a href={OPENWORK_DOWNLOAD_URL} target="_blank" rel="noreferrer">
+        <a href={TEAMWORK_DOWNLOAD_URL} target="_blank" rel="noreferrer">
           Download
         </a>
-        <a href="https://openworklabs.com/enterprise" target="_blank" rel="noreferrer">
+        <a href="https://teamworklabs.com/enterprise" target="_blank" rel="noreferrer">
           Enterprise
         </a>
       </div>
       <div className="nav-actions">
         <a
           className="button-secondary share-github-button"
-          href="https://github.com/different-ai/openwork"
+          href="https://github.com/SamirTafesh/TeamWork"
           target="_blank"
           rel="noreferrer"
-          aria-label="OpenWork GitHub stars"
+          aria-label="TeamWork GitHub stars"
         >
           <GitHubMark />
           {githubLabel}

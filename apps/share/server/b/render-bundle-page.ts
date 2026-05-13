@@ -1,5 +1,5 @@
 import {
-  OPENWORK_DOWNLOAD_URL,
+  TEAMWORK_DOWNLOAD_URL,
   SHARE_EASE,
   buildBundleNarrative,
   buildBundleUrls,
@@ -27,22 +27,22 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
 
   const schemaVersion = bundle.schemaVersion == null ? "unknown" : String(bundle.schemaVersion);
   const typeLabel = humanizeType(bundle.type);
-  const title = bundle.name || `OpenWork ${typeLabel}`;
+  const title = bundle.name || `TeamWork ${typeLabel}`;
   const description = bundle.description || buildBundleNarrative(bundle);
   const items = collectBundleItems(bundle, 8);
-  const compactItem = bundle.type === "skill" ? "skill.md" : items[0]?.name || "OpenWork bundle";
+  const compactItem = bundle.type === "skill" ? "skill.md" : items[0]?.name || "TeamWork bundle";
 
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)} - OpenWork Share</title>
+  <title>${escapeHtml(title)} - TeamWork Share</title>
   <meta name="description" content="${escapeHtml(description)}" />
-  <meta name="openwork:bundle-id" content="${escapeHtml(id)}" />
-  <meta name="openwork:bundle-type" content="${escapeHtml(bundle.type || "unknown")}" />
-  <meta name="openwork:schema-version" content="${escapeHtml(schemaVersion)}" />
-  <meta name="openwork:open-in-app-url" content="${escapeHtml(openInAppDeepLink)}" />
+  <meta name="teamwork:bundle-id" content="${escapeHtml(id)}" />
+  <meta name="teamwork:bundle-type" content="${escapeHtml(bundle.type || "unknown")}" />
+  <meta name="teamwork:schema-version" content="${escapeHtml(schemaVersion)}" />
+  <meta name="teamwork:open-in-app-url" content="${escapeHtml(openInAppDeepLink)}" />
   <link rel="canonical" href="${escapeHtml(urls.shareUrl)}" />
   <link rel="alternate" type="application/json" href="${escapeHtml(urls.jsonUrl)}" />
   <meta property="og:type" content="website" />
@@ -60,7 +60,7 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
   <style>
     @font-face {
       font-family: "FK Raster Roman Compact Smooth";
-      src: url("https://openworklabs.com/fonts/FKRasterRomanCompact-Smooth.woff2") format("woff2");
+      src: url("https://teamworklabs.com/fonts/FKRasterRomanCompact-Smooth.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -397,24 +397,24 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
   </style>
 </head>
 <body
-  data-openwork-share="true"
-  data-openwork-bundle-id="${escapeHtml(id)}"
-  data-openwork-bundle-type="${escapeHtml(bundle.type || "unknown")}"
-  data-openwork-schema-version="${escapeHtml(schemaVersion)}"
+  data-teamwork-share="true"
+  data-teamwork-bundle-id="${escapeHtml(id)}"
+  data-teamwork-bundle-type="${escapeHtml(bundle.type || "unknown")}"
+  data-teamwork-schema-version="${escapeHtml(schemaVersion)}"
 >
   <main class="shell">
     <nav class="nav">
-      <a class="brand" href="/" aria-label="OpenWork Share home">
+      <a class="brand" href="/" aria-label="TeamWork Share home">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>openwork</span>
+        <span>teamwork</span>
       </a>
       <div class="nav-links">
-        <a href="https://openworklabs.com/docs" target="_blank" rel="noreferrer">Docs</a>
-        <a href="${escapeHtml(OPENWORK_DOWNLOAD_URL)}" target="_blank" rel="noreferrer">Download</a>
-        <a href="https://openworklabs.com/enterprise" target="_blank" rel="noreferrer">Enterprise</a>
+        <a href="https://teamworklabs.com/docs" target="_blank" rel="noreferrer">Docs</a>
+        <a href="${escapeHtml(TEAMWORK_DOWNLOAD_URL)}" target="_blank" rel="noreferrer">Download</a>
+        <a href="https://teamworklabs.com/enterprise" target="_blank" rel="noreferrer">Enterprise</a>
       </div>
       <div class="nav-actions">
-        <a class="button-secondary" href="https://github.com/different-ai/openwork" target="_blank" rel="noreferrer">
+        <a class="button-secondary" href="https://github.com/SamirTafesh/TeamWork" target="_blank" rel="noreferrer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
           GitHub
         </a>
@@ -426,8 +426,8 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
         <h1>${escapeHtml(title)} <em>ready</em></h1>
         <p class="hero-body">${escapeHtml(description)}</p>
         <div class="hero-actions">
-          <a class="button-primary" href="${escapeHtml(openInAppDeepLink)}">Open in OpenWork app</a>
-          <a class="button-secondary" href="https://openworklabs.com/den" target="_blank" rel="noreferrer">Open in an OpenWork den</a>
+          <a class="button-primary" href="${escapeHtml(openInAppDeepLink)}">Open in TeamWork app</a>
+          <a class="button-secondary" href="https://teamworklabs.com/den" target="_blank" rel="noreferrer">Open in an TeamWork den</a>
         </div>
       </div>
 
@@ -439,7 +439,7 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
               <div class="mac-dot yellow"></div>
               <div class="mac-dot green"></div>
             </div>
-            <div class="app-window-title">OpenWork</div>
+            <div class="app-window-title">TeamWork</div>
           </div>
           <div class="app-window-body">
             <div class="included-section">
@@ -456,16 +456,16 @@ export function renderBundlePage({ id, rawJson, req }: { id: string; rawJson: st
     <section class="results-grid">
       <div class="result-card">
         <div class="step-list">
-          <div class="step-row"><span class="step-bullet">01</span><span>Open the bundle in OpenWork</span></div>
+          <div class="step-row"><span class="step-bullet">01</span><span>Open the bundle in TeamWork</span></div>
           <div class="step-row"><span class="step-bullet">02</span><span>Choose the destination worker</span></div>
-          <div class="step-row"><span class="step-bullet">03</span><span>Happy OpenWorking!</span></div>
+          <div class="step-row"><span class="step-bullet">03</span><span>Happy TeamWorking!</span></div>
         </div>
       </div>
     </section>
 
   </main>
 
-  <script id="openwork-bundle-json" type="application/json">${escapeJsonForScript(rawJson)}</script>
+  <script id="teamwork-bundle-json" type="application/json">${escapeJsonForScript(rawJson)}</script>
   <script>
   </script>
 </body>

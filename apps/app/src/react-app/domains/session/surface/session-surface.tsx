@@ -8,9 +8,9 @@ import { createClient, unwrap } from "../../../../app/lib/opencode";
 import { abortSessionSafe } from "../../../../app/lib/opencode-session";
 import { readWorkspaceCloudImports, type CloudImportedPlugin } from "../../../../app/cloud/import-state";
 import type {
-  OpenworkServerClient,
-  OpenworkSessionSnapshot,
-} from "../../../../app/lib/openwork-server";
+  TeamworkServerClient,
+  TeamworkSessionSnapshot,
+} from "../../../../app/lib/teamwork-server";
 import type {
   ComposerAttachment,
   ComposerDraft,
@@ -23,7 +23,7 @@ import {
   publishInspectorSlice,
   recordInspectorEvent,
 } from "../../../shell/app-inspector";
-import { useControlAction, type OpenworkControlAction } from "../../../shell/control/control-provider";
+import { useControlAction, type TeamworkControlAction } from "../../../shell/control/control-provider";
 import { getReactQueryClient } from "../../../infra/query-client";
 import { ReactSessionComposer } from "./composer/composer";
 import { DevProfiler } from "../../../shell/dev-profiler";
@@ -43,7 +43,7 @@ import {
 
 const EMPTY_TRANSCRIPT: UIMessage[] = [];
 const IDLE_STATUS: SessionStatus = { type: "idle" };
-const DEFAULT_COMPOSER_CONTROL_TEXT = "Help me outline the next OpenWork task.";
+const DEFAULT_COMPOSER_CONTROL_TEXT = "Help me outline the next TeamWork task.";
 
 type SessionError = {
   message: string;
@@ -55,12 +55,12 @@ type SessionError = {
 };
 
 export type SessionSurfaceProps = {
-  client: OpenworkServerClient;
+  client: TeamworkServerClient;
   workspaceId: string;
   workspaceRoot: string;
   sessionId: string;
   opencodeBaseUrl: string;
-  openworkToken: string;
+  teamworkToken: string;
   developerMode: boolean;
   modelLabel: string;
   onModelClick: () => void;
@@ -87,7 +87,7 @@ export type SessionSurfaceProps = {
 };
 
 function messageToReadableText(message: UIMessage) {
-  const header = message.role === "user" ? "You" : message.role === "assistant" ? "OpenWork" : message.role;
+  const header = message.role === "user" ? "You" : message.role === "assistant" ? "TeamWork" : message.role;
   const body = message.parts
     .flatMap((part) => {
       if (part.type === "text") return [part.text];
@@ -110,7 +110,7 @@ function transcriptToText(messages: UIMessage[]) {
     .join("\n\n---\n\n");
 }
 
-function statusLabel(snapshot: OpenworkSessionSnapshot | undefined, busy: boolean) {
+function statusLabel(snapshot: TeamworkSessionSnapshot | undefined, busy: boolean) {
   if (busy) return "Running...";
   if (snapshot?.status.type === "busy") return "Running...";
   if (snapshot?.status.type === "retry") return `Retrying: ${snapshot.status.message}`;
@@ -255,7 +255,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   const [sending, setSending] = useState(false);
   const [showDelayedLoading, setShowDelayedLoading] = useState(false);
   const [awaitingAssistantBaseline, setAwaitingAssistantBaseline] = useState<number | null>(null);
-  const [rendered, setRendered] = useState<{ sessionId: string; snapshot: OpenworkSessionSnapshot } | null>(null);
+  const [rendered, setRendered] = useState<{ sessionId: string; snapshot: TeamworkSessionSnapshot } | null>(null);
   const [toolSkills, setToolSkills] = useState<SkillCard[]>([]);
   const [toolMcpServers, setToolMcpServers] = useState<McpServerEntry[]>([]);
   const [toolMcpStatus, setToolMcpStatus] = useState<string | null>(null);
@@ -266,8 +266,8 @@ export function SessionSurface(props: SessionSurfaceProps) {
   const attachmentsRef = useRef<ComposerAttachment[]>([]);
   attachmentsRef.current = attachments;
   const opencodeClient = useMemo(
-    () => createClient(props.opencodeBaseUrl, undefined, { token: props.openworkToken, mode: "openwork" }),
-    [props.opencodeBaseUrl, props.openworkToken],
+    () => createClient(props.opencodeBaseUrl, undefined, { token: props.teamworkToken, mode: "teamwork" }),
+    [props.opencodeBaseUrl, props.teamworkToken],
   );
 
   const snapshotQueryKey = useMemo(
@@ -282,7 +282,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
     () => reactStatusKey(props.workspaceId, props.sessionId),
     [props.workspaceId, props.sessionId],
   );
-  const snapshotQuery = useQuery<OpenworkSessionSnapshot>({
+  const snapshotQuery = useQuery<TeamworkSessionSnapshot>({
     queryKey: snapshotQueryKey,
     queryFn: async () => (await props.client.getSessionSnapshot(props.workspaceId, props.sessionId, { limit: 140 })).item,
     staleTime: 500,
@@ -619,12 +619,12 @@ export function SessionSurface(props: SessionSurfaceProps) {
   };
 
   const typeComposerText = useCallback(async (text: string) => {
-    window.dispatchEvent(new Event("openwork:focusPrompt"));
+    window.dispatchEvent(new Event("teamwork:focusPrompt"));
     setDraft(text);
     await waitForControl(40);
   }, []);
 
-  const composerSetTextControlAction = useMemo<OpenworkControlAction>(() => ({
+  const composerSetTextControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "composer.set_text",
     label: "Type into the composer",
     description: "Replace the current session draft and type the supplied text visibly.",
@@ -643,7 +643,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   }), [attachments, buildDraft, props.onDraftChange, typeComposerText]);
   useControlAction(composerSetTextControlAction);
 
-  const composerSendControlAction = useMemo<OpenworkControlAction>(() => ({
+  const composerSendControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "composer.send",
     label: "Send the composer prompt",
     description: "Send the currently visible composer draft to the active session.",
@@ -657,7 +657,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   }), [attachments.length, draft, handleSend, model.transitionState]);
   useControlAction(composerSendControlAction);
 
-  const composerStopControlAction = useMemo<OpenworkControlAction>(() => ({
+  const composerStopControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "composer.stop",
     label: "Stop the current run",
     description: "Stop the current streaming session run.",
@@ -708,7 +708,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
 
   const listImportedPlugins = async (): Promise<CloudImportedPlugin[]> => {
     const response = await props.client.getConfig(props.workspaceId);
-    const plugins = Object.values(readWorkspaceCloudImports(response.openwork).plugins)
+    const plugins = Object.values(readWorkspaceCloudImports(response.teamwork).plugins)
       .sort((left, right) => left.name.localeCompare(right.name));
     setToolImportedPlugins(plugins);
     return plugins;
@@ -746,7 +746,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
     contentRef,
   });
 
-  const sessionScrollTopControlAction = useMemo<OpenworkControlAction>(() => ({
+  const sessionScrollTopControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "session.scroll_top",
     label: "Go to the top of the session",
     description: "Scroll the visible session transcript to the first messages.",
@@ -760,7 +760,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   }), []);
   useControlAction(sessionScrollTopControlAction);
 
-  const sessionScrollBottomControlAction = useMemo<OpenworkControlAction>(() => ({
+  const sessionScrollBottomControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "session.scroll_bottom",
     label: "Go to the bottom of the session",
     description: "Scroll the visible session transcript to the newest messages and composer area.",
@@ -772,7 +772,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   }), [sessionScroll.jumpToLatest]);
   useControlAction(sessionScrollBottomControlAction);
 
-  const sessionLatestMessageControlAction = useMemo<OpenworkControlAction>(() => ({
+  const sessionLatestMessageControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "session.latest_message",
     label: "Read the latest session message",
     description: "Return the latest visible message in the current session transcript.",
@@ -791,7 +791,7 @@ export function SessionSurface(props: SessionSurfaceProps) {
   }), [props.sessionId, renderedMessages]);
   useControlAction(sessionLatestMessageControlAction);
 
-  const sessionReadTranscriptControlAction = useMemo<OpenworkControlAction>(() => ({
+  const sessionReadTranscriptControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "session.read_transcript",
     label: "Read the current session transcript",
     description: "Return the last messages from the current session transcript as readable text, including the session ID, title, and message count.",

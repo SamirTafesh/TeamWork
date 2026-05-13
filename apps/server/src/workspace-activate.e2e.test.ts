@@ -24,14 +24,14 @@ afterEach(async () => {
 });
 
 async function createWorkspaceRoot() {
-  const root = await mkdtemp(join(tmpdir(), "openwork-activate-"));
+  const root = await mkdtemp(join(tmpdir(), "teamwork-activate-"));
   await mkdir(join(root, ".opencode"), { recursive: true });
   roots.push(root);
   return root;
 }
 
 function hostAuth(token: string) {
-  return { "X-OpenWork-Host-Token": token };
+  return { "X-TeamWork-Host-Token": token };
 }
 
 function startMockOpencode() {
@@ -54,7 +54,7 @@ function startMockOpencode() {
   return { server, requests };
 }
 
-async function startOpenworkServer(input: { workspaceRoot: string; opencodeBaseUrl: string }) {
+async function startTeamworkServer(input: { workspaceRoot: string; opencodeBaseUrl: string }) {
   const config: ServerConfig = {
     host: "127.0.0.1",
     port: 0,
@@ -89,15 +89,15 @@ describe("workspace activation", () => {
   test("reloads the bound OpenCode engine on activate", async () => {
     const workspaceRoot = await createWorkspaceRoot();
     const mock = startMockOpencode();
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
-    const base = `http://127.0.0.1:${openwork.server.port}`;
+    const base = `http://127.0.0.1:${teamwork.server.port}`;
     const response = await fetch(`${base}/workspaces/ws_1/activate`, {
       method: "POST",
-      headers: hostAuth(openwork.hostToken),
+      headers: hostAuth(teamwork.hostToken),
     });
 
     expect(response.status).toBe(200);

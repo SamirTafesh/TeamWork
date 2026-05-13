@@ -5,19 +5,19 @@ import {
   appBuildInfo as appBuildInfoCmd,
   engineInfo as engineInfoCmd,
   engineStart as engineStartCmd,
-  nukeOpenworkAndOpencodeConfigAndExit,
+  nukeTeamworkAndOpencodeConfigAndExit,
   openDesktopUrl,
-  openworkServerInfo as openworkServerInfoCmd,
-  openworkServerRestart as openworkServerRestartCmd,
+  teamworkServerInfo as teamworkServerInfoCmd,
+  teamworkServerRestart as teamworkServerRestartCmd,
   pickFile,
   revealDesktopItemInDir,
-  resetOpenworkState,
+  resetTeamworkState,
   sandboxDebugProbe as sandboxDebugProbeCmd,
   updaterEnvironment as updaterEnvironmentCmd,
   workspaceBootstrap as workspaceBootstrapCmd,
   type AppBuildInfo,
   type EngineInfo,
-  type OpenworkServerInfo,
+  type TeamworkServerInfo,
   type SandboxDebugProbeResult,
 } from "../../../../app/lib/desktop";
 import {
@@ -26,8 +26,8 @@ import {
 } from "../../../../app/lib/electron-alpha";
 
 import {
-  writeOpenworkServerSettings,
-} from "../../../../app/lib/openwork-server";
+  writeTeamworkServerSettings,
+} from "../../../../app/lib/teamwork-server";
 import {
   clearStartupPreference,
   isDesktopRuntime,
@@ -38,19 +38,19 @@ import {
 import { t } from "../../../../i18n";
 import type { DebugViewProps } from "../pages/debug-view";
 import type { ReleaseChannel } from "../../../../app/types";
-import type { OpenworkServerStore, OpenworkServerStoreSnapshot } from "../../connections/openwork-server-store";
+import type { TeamworkServerStore, TeamworkServerStoreSnapshot } from "../../connections/teamwork-server-store";
 
-const STARTUP_PREFERENCE_KEY = "openwork.startupPreference";
-const ENGINE_SOURCE_KEY = "openwork.engineSource";
-const ENGINE_CUSTOM_BIN_KEY = "openwork.engineCustomBinPath";
-const OPENCODE_ENABLE_EXA_KEY = "openwork.opencodeEnableExa";
+const STARTUP_PREFERENCE_KEY = "teamwork.startupPreference";
+const ENGINE_SOURCE_KEY = "teamwork.engineSource";
+const ENGINE_CUSTOM_BIN_KEY = "teamwork.engineCustomBinPath";
+const OPENCODE_ENABLE_EXA_KEY = "teamwork.opencodeEnableExa";
 
 type ResetModalMode = "onboarding" | "all";
 
 type UseDebugViewModelOptions = {
   developerMode: boolean;
-  openworkServerStore: OpenworkServerStore;
-  openworkServerSnapshot: OpenworkServerStoreSnapshot;
+  teamworkServerStore: TeamworkServerStore;
+  teamworkServerSnapshot: TeamworkServerStoreSnapshot;
   runtimeWorkspaceId: string | null;
   selectedWorkspaceRoot: string;
   setRouteError: (value: string | null) => void;
@@ -169,7 +169,7 @@ function formatOpencodeBinary(info: EngineInfo | null) {
   return formatBinaryWithSource(info?.opencodeBinPath, info?.opencodeBinSource);
 }
 
-function formatManagedOpencodeBinary(info: OpenworkServerInfo | null) {
+function formatManagedOpencodeBinary(info: TeamworkServerInfo | null) {
   return formatBinaryWithSource(
     info?.managedOpencodeBinPath,
     info?.managedOpencodeBinSource,
@@ -183,7 +183,7 @@ function formatBinaryWithSource(path: string | null | undefined, source: string 
   return sourceLabel ? `${binary} (${sourceLabel})` : binary;
 }
 
-function describeOpenworkServer(info: OpenworkServerInfo | null) {
+function describeTeamworkServer(info: TeamworkServerInfo | null) {
   const running = Boolean(info?.running);
   return {
     ...statusPill(running),
@@ -221,8 +221,8 @@ function describeOpencodeConnect(engine: EngineInfo | null) {
 export function useDebugViewModel(options: UseDebugViewModelOptions) {
   const {
     developerMode,
-    openworkServerStore,
-    openworkServerSnapshot,
+    teamworkServerStore,
+    teamworkServerSnapshot,
     runtimeWorkspaceId,
     selectedWorkspaceRoot,
     setRouteError,
@@ -238,17 +238,17 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
   const [sandboxProbeResult, setSandboxProbeResult] = useState<SandboxDebugProbeResult | null>(null);
   const [sandboxProbeStatus, setSandboxProbeStatus] = useState<string | null>(null);
   const [opencodeRestarting, setOpencodeRestarting] = useState(false);
-  const [openworkServerRestarting, setOpenworkServerRestarting] = useState(false);
+  const [teamworkServerRestarting, setTeamworkServerRestarting] = useState(false);
   const [opencodeServiceStatus, setOpencodeServiceStatus] = useState<{
     tone: "success" | "error";
     message: string;
   } | null>(null);
-  const [openworkServiceStatus, setOpenworkServiceStatus] = useState<{
+  const [teamworkServiceStatus, setTeamworkServiceStatus] = useState<{
     tone: "success" | "error";
     message: string;
   } | null>(null);
   const [opencodeLogStatus, setOpencodeLogStatus] = useState<string | null>(null);
-  const [openworkLogStatus, setOpenworkLogStatus] = useState<string | null>(null);
+  const [teamworkLogStatus, setTeamworkLogStatus] = useState<string | null>(null);
   const [serviceRestartError, setServiceRestartError] = useState<string | null>(null);
   const [resetModalBusy, setResetModalBusy] = useState(false);
   const [nukeConfigBusy, setNukeConfigBusy] = useState(false);
@@ -314,13 +314,13 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       appVersionLabel: appBuild?.version ?? "—",
       appCommitLabel: appBuild?.gitSha ?? "—",
       opencodeVersionLabel: engineInfoState?.baseUrl ? "managed" : "—",
-      openworkServerVersionLabel: openworkServerSnapshot.openworkServerDiagnostics?.version ?? "—",
+      teamworkServerVersionLabel: teamworkServerSnapshot.teamworkServerDiagnostics?.version ?? "—",
     }),
     [
       appBuild?.gitSha,
       appBuild?.version,
       engineInfoState?.baseUrl,
-      openworkServerSnapshot.openworkServerDiagnostics?.version,
+      teamworkServerSnapshot.teamworkServerDiagnostics?.version,
     ],
   );
 
@@ -329,13 +329,13 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       collectedAt: new Date().toISOString(),
       app: appBuild ?? null,
       engine: engineInfoState,
-      openworkServer: {
-        hostInfo: openworkServerSnapshot.openworkServerHostInfo,
-        diagnostics: openworkServerSnapshot.openworkServerDiagnostics,
-        capabilities: openworkServerSnapshot.openworkServerCapabilities,
-        settings: openworkServerSnapshot.openworkServerSettings,
-        status: openworkServerSnapshot.openworkServerStatus,
-        url: openworkServerSnapshot.openworkServerUrl,
+      teamworkServer: {
+        hostInfo: teamworkServerSnapshot.teamworkServerHostInfo,
+        diagnostics: teamworkServerSnapshot.teamworkServerDiagnostics,
+        capabilities: teamworkServerSnapshot.teamworkServerCapabilities,
+        settings: teamworkServerSnapshot.teamworkServerSettings,
+        status: teamworkServerSnapshot.teamworkServerStatus,
+        url: teamworkServerSnapshot.teamworkServerUrl,
       },
       runtimeWorkspaceId,
       selectedWorkspaceRoot,
@@ -343,12 +343,12 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
   }, [
     appBuild,
     engineInfoState,
-    openworkServerSnapshot.openworkServerCapabilities,
-    openworkServerSnapshot.openworkServerDiagnostics,
-    openworkServerSnapshot.openworkServerHostInfo,
-    openworkServerSnapshot.openworkServerSettings,
-    openworkServerSnapshot.openworkServerStatus,
-    openworkServerSnapshot.openworkServerUrl,
+    teamworkServerSnapshot.teamworkServerCapabilities,
+    teamworkServerSnapshot.teamworkServerDiagnostics,
+    teamworkServerSnapshot.teamworkServerHostInfo,
+    teamworkServerSnapshot.teamworkServerSettings,
+    teamworkServerSnapshot.teamworkServerStatus,
+    teamworkServerSnapshot.teamworkServerUrl,
     runtimeWorkspaceId,
     selectedWorkspaceRoot,
   ]);
@@ -359,9 +359,9 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
   );
 
   const engineCard = useMemo(() => describeEngine(engineInfoState), [engineInfoState]);
-  const openworkCard = useMemo(
-    () => describeOpenworkServer(openworkServerSnapshot.openworkServerHostInfo),
-    [openworkServerSnapshot.openworkServerHostInfo],
+  const teamworkCard = useMemo(
+    () => describeTeamworkServer(teamworkServerSnapshot.teamworkServerHostInfo),
+    [teamworkServerSnapshot.teamworkServerHostInfo],
   );
   const opencodeConnectCard = useMemo(
     () => describeOpencodeConnect(engineInfoState),
@@ -380,7 +380,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
   const onExportRuntimeDebugReport = useCallback(async () => {
     try {
       downloadTextAsFile(
-        `openwork-runtime-${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
+        `teamwork-runtime-${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
         runtimeDebugReportJson,
         "application/json",
       );
@@ -407,7 +407,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
   const onExportDeveloperLog = useCallback(async () => {
     try {
       downloadTextAsFile(
-        `openwork-developer-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
+        `teamwork-developer-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
         developerLog.join("\n"),
         "text/plain",
       );
@@ -454,11 +454,11 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       const env = await updaterEnvironmentCmd();
       const appBundlePath = env.appBundlePath?.trim();
       if (!appBundlePath) {
-        setElectronMigrationStatus("Could not resolve the current OpenWork.app bundle path.");
+        setElectronMigrationStatus("Could not resolve the current TeamWork.app bundle path.");
         return;
       }
       await revealDesktopItemInDir(`${appBundlePath}.migrate-bak`);
-      setElectronMigrationStatus("Requested Finder reveal for OpenWork.app.migrate-bak. The backup exists after an install handoff completes.");
+      setElectronMigrationStatus("Requested Finder reveal for TeamWork.app.migrate-bak. The backup exists after an install handoff completes.");
     } catch (error) {
       setElectronMigrationStatus(error instanceof Error ? error.message : safeStringify(error));
     }
@@ -474,7 +474,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
 
   useEffect(() => {
     if (!developerMode || !isElectronRuntime()) return;
-    const bridge = window.__OPENWORK_ELECTRON__?.updater;
+    const bridge = window.__TEAMWORK_ELECTRON__?.updater;
     if (!bridge?.getChannel) return;
     let cancelled = false;
     void bridge.getChannel()
@@ -497,7 +497,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       setElectronAlphaUpdaterStatus("Electron alpha updates are macOS-only for now.");
       return;
     }
-    const bridge = window.__OPENWORK_ELECTRON__?.updater;
+    const bridge = window.__TEAMWORK_ELECTRON__?.updater;
     if (!bridge?.setChannel) {
       setElectronAlphaUpdaterStatus("Electron updater bridge is unavailable.");
       return;
@@ -523,7 +523,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       setElectronAlphaUpdaterStatus("Electron update checks are available only in the Electron desktop app.");
       return;
     }
-    const bridge = window.__OPENWORK_ELECTRON__?.updater;
+    const bridge = window.__TEAMWORK_ELECTRON__?.updater;
     if (!bridge?.check) {
       setElectronAlphaUpdaterStatus("Electron updater bridge is unavailable.");
       return;
@@ -619,7 +619,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       );
     }
 
-    // Collect ALL local workspace paths so openwork-server is started with
+    // Collect ALL local workspace paths so teamwork-server is started with
     // --workspace <path> for every registered local workspace. Mirrors the
     // Solid reference (context/workspace.ts::resolveWorkspacePaths) so that
     // `client.listWorkspaces()` later returns the full set, not just the
@@ -640,17 +640,17 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       runtime: "direct",
       workspacePaths,
       opencodeEnableExa: readOpencodeEnableExa(),
-      openworkRemoteAccess:
-        optionsRef.current.openworkServerSnapshot.openworkServerSettings
+      teamworkRemoteAccess:
+        optionsRef.current.teamworkServerSnapshot.teamworkServerSettings
           .remoteAccessEnabled === true,
     });
 
-    // engine_start restarts openwork-server on a NEW port and lets that server
+    // engine_start restarts teamwork-server on a NEW port and lets that server
     // manage OpenCode. Re-read host info and persist the fresh URL/token.
     try {
-      const hostInfo = await openworkServerInfoCmd();
+      const hostInfo = await teamworkServerInfoCmd();
       if (hostInfo?.baseUrl) {
-        writeOpenworkServerSettings({
+        writeTeamworkServerSettings({
           urlOverride: hostInfo.baseUrl,
           token: hostInfo.ownerToken?.trim() || hostInfo.clientToken?.trim() || undefined,
           hostToken: hostInfo.hostToken?.trim() || undefined,
@@ -658,17 +658,17 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
           remoteAccessEnabled: hostInfo.remoteAccessEnabled === true,
         });
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+          window.dispatchEvent(new CustomEvent("teamwork-server-settings-changed"));
         }
       }
     } catch {
       // best-effort: if this fails, the host-info poller will catch up in ~10s.
     }
 
-    await openworkServerStore.reconnectOpenworkServer();
+    await teamworkServerStore.reconnectTeamworkServer();
     await refreshEngineInfo();
     return info;
-  }, [openworkServerStore, refreshEngineInfo]);
+  }, [teamworkServerStore, refreshEngineInfo]);
 
   const onRestartOpencode = useCallback(async () => {
     if (!isDesktopRuntime()) return;
@@ -694,34 +694,34 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
     }
   }, [bootFullEngineStack, pushDeveloperLog]);
 
-  const onRestartOpenworkServer = useCallback(async () => {
+  const onRestartTeamworkServer = useCallback(async () => {
     if (!isDesktopRuntime()) return;
-    setOpenworkServerRestarting(true);
-    setOpenworkServiceStatus(null);
+    setTeamworkServerRestarting(true);
+    setTeamworkServiceStatus(null);
     setServiceRestartError(null);
     try {
-      await openworkServerRestartCmd({
-        remoteAccessEnabled: openworkServerSnapshot.openworkServerSettings.remoteAccessEnabled === true,
+      await teamworkServerRestartCmd({
+        remoteAccessEnabled: teamworkServerSnapshot.teamworkServerSettings.remoteAccessEnabled === true,
       });
-      setOpenworkServiceStatus({
+      setTeamworkServiceStatus({
         tone: "success",
-        message: t("settings.restart_succeeded_template", { service: "OpenWork server" }),
+        message: t("settings.restart_succeeded_template", { service: "TeamWork server" }),
       });
-      pushDeveloperLog("Restarted openwork-server");
-      await openworkServerStore.reconnectOpenworkServer();
+      pushDeveloperLog("Restarted teamwork-server");
+      await teamworkServerStore.reconnectTeamworkServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : safeStringify(error);
-      setOpenworkServiceStatus({
+      setTeamworkServiceStatus({
         tone: "error",
-        message: `${t("settings.restart_failed_template", { service: "OpenWork server" })} ${message}`,
+        message: `${t("settings.restart_failed_template", { service: "TeamWork server" })} ${message}`,
       });
       setServiceRestartError(message);
     } finally {
-      setOpenworkServerRestarting(false);
+      setTeamworkServerRestarting(false);
     }
   }, [
-    openworkServerSnapshot.openworkServerSettings.remoteAccessEnabled,
-    openworkServerStore,
+    teamworkServerSnapshot.teamworkServerSettings.remoteAccessEnabled,
+    teamworkServerStore,
     pushDeveloperLog,
   ]);
 
@@ -759,7 +759,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
     }
     try {
       downloadTextAsFile(
-        `openwork-opencode-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
+        `teamwork-opencode-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
         text,
         "text/plain",
       );
@@ -769,39 +769,39 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
     }
   }, [engineInfoState?.lastStderr, engineInfoState?.lastStdout, formatServiceLogs]);
 
-  const onCopyOpenworkLogs = useCallback(async () => {
-    const info = openworkServerSnapshot.openworkServerHostInfo;
+  const onCopyTeamworkLogs = useCallback(async () => {
+    const info = teamworkServerSnapshot.teamworkServerHostInfo;
     const text = formatServiceLogs(info?.lastStdout, info?.lastStderr);
     if (!text) {
-      setOpenworkLogStatus(t("settings.no_logs_captured"));
+      setTeamworkLogStatus(t("settings.no_logs_captured"));
       return;
     }
     try {
       await navigator.clipboard.writeText(text);
-      setOpenworkLogStatus(t("settings.copied_service_logs", { service: "OpenWork server" }));
+      setTeamworkLogStatus(t("settings.copied_service_logs", { service: "TeamWork server" }));
     } catch (error) {
-      setOpenworkLogStatus(error instanceof Error ? error.message : safeStringify(error));
+      setTeamworkLogStatus(error instanceof Error ? error.message : safeStringify(error));
     }
-  }, [formatServiceLogs, openworkServerSnapshot.openworkServerHostInfo]);
+  }, [formatServiceLogs, teamworkServerSnapshot.teamworkServerHostInfo]);
 
-  const onExportOpenworkLogs = useCallback(async () => {
-    const info = openworkServerSnapshot.openworkServerHostInfo;
+  const onExportTeamworkLogs = useCallback(async () => {
+    const info = teamworkServerSnapshot.teamworkServerHostInfo;
     const text = formatServiceLogs(info?.lastStdout, info?.lastStderr);
     if (!text) {
-      setOpenworkLogStatus(t("settings.no_logs_captured"));
+      setTeamworkLogStatus(t("settings.no_logs_captured"));
       return;
     }
     try {
       downloadTextAsFile(
-        `openwork-server-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
+        `teamwork-server-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
         text,
         "text/plain",
       );
-      setOpenworkLogStatus(t("settings.exported_developer_log"));
+      setTeamworkLogStatus(t("settings.exported_developer_log"));
     } catch (error) {
-      setOpenworkLogStatus(error instanceof Error ? error.message : safeStringify(error));
+      setTeamworkLogStatus(error instanceof Error ? error.message : safeStringify(error));
     }
-  }, [formatServiceLogs, openworkServerSnapshot.openworkServerHostInfo]);
+  }, [formatServiceLogs, teamworkServerSnapshot.teamworkServerHostInfo]);
 
   const [resetStatus, setResetStatus] = useState<string | null>(null);
 
@@ -810,21 +810,21 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       if (!isDesktopRuntime()) return;
       const message =
         mode === "all"
-          ? "Reset ALL OpenWork app data? Open sessions and workspaces will be removed."
+          ? "Reset ALL TeamWork app data? Open sessions and workspaces will be removed."
           : "Reset onboarding state only?";
       if (typeof window !== "undefined" && !window.confirm(message)) {
         return;
       }
       setResetModalBusy(true);
       setResetStatus(null);
-      void resetOpenworkState(mode)
+      void resetTeamworkState(mode)
         .then(() => {
           setResetStatus(
             mode === "all"
-              ? "Reset OpenWork state. Restart the app to see changes."
+              ? "Reset TeamWork state. Restart the app to see changes."
               : "Reset onboarding state.",
           );
-          pushDeveloperLog(`reset_openwork_state mode=${mode}`);
+          pushDeveloperLog(`reset_teamwork_state mode=${mode}`);
         })
         .catch((error) => {
           setRouteError(error instanceof Error ? error.message : safeStringify(error));
@@ -836,19 +836,19 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
     [pushDeveloperLog, setRouteError],
   );
 
-  const onNukeOpenworkAndOpencodeConfig = useCallback(async () => {
+  const onNukeTeamworkAndOpencodeConfig = useCallback(async () => {
     if (!isDesktopRuntime()) return;
     const confirmed =
       typeof window === "undefined"
         ? true
         : window.confirm(
-            "Delete ALL local OpenWork + OpenCode config and quit? This cannot be undone.",
+            "Delete ALL local TeamWork + OpenCode config and quit? This cannot be undone.",
           );
     if (!confirmed) return;
     setNukeConfigBusy(true);
     setNukeConfigStatus(null);
     try {
-      await nukeOpenworkAndOpencodeConfigAndExit();
+      await nukeTeamworkAndOpencodeConfigAndExit();
     } catch (error) {
       setNukeConfigStatus(error instanceof Error ? error.message : safeStringify(error));
     } finally {
@@ -868,8 +868,8 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       anyActiveRuns: false,
       startupPreference: "server",
       startupLabel:
-        openworkServerSnapshot.openworkServerStatus === "connected"
-          ? t("settings.openwork_server_label")
+        teamworkServerSnapshot.teamworkServerStatus === "connected"
+          ? t("settings.teamwork_server_label")
           : t("status.disconnected_label"),
       runtimeSummary,
       runtimeDebugReportJson,
@@ -922,40 +922,40 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       startupStatus,
       workspaceDebugEventsStatus,
       opencodeRestarting,
-      openworkServerRestarting,
+      teamworkServerRestarting,
       opencodeServiceStatus,
-      openworkServiceStatus,
+      teamworkServiceStatus,
       opencodeLogStatus,
-      openworkLogStatus,
+      teamworkLogStatus,
       onCopyOpencodeLogs,
       onExportOpencodeLogs,
-      onCopyOpenworkLogs,
-      onExportOpenworkLogs,
+      onCopyTeamworkLogs,
+      onExportTeamworkLogs,
       serviceRestartError,
       onRestartOpencode,
-      onRestartOpenworkServer,
+      onRestartTeamworkServer,
       engineCard,
       opencodeConnectCard,
-      openworkCard,
-      openworkServerDiagnostics: openworkServerSnapshot.openworkServerDiagnostics,
+      teamworkCard,
+      teamworkServerDiagnostics: teamworkServerSnapshot.teamworkServerDiagnostics,
       runtimeWorkspaceId,
-      openworkServerCapabilities: openworkServerSnapshot.openworkServerCapabilities,
+      teamworkServerCapabilities: teamworkServerSnapshot.teamworkServerCapabilities,
       pendingPermissions: {},
       events: [],
       workspaceDebugEvents: [],
       safeStringify,
       onClearWorkspaceDebugEvents,
-      openworkAuditEntries: openworkServerSnapshot.openworkAuditEntries,
-      openworkAuditStatus: auditStatusPill(openworkServerSnapshot.openworkAuditStatus),
-      openworkAuditError: openworkServerSnapshot.openworkAuditError,
+      teamworkAuditEntries: teamworkServerSnapshot.teamworkAuditEntries,
+      teamworkAuditStatus: auditStatusPill(teamworkServerSnapshot.teamworkAuditStatus),
+      teamworkAuditError: teamworkServerSnapshot.teamworkAuditError,
       opencodeConnectStatus: null,
-      opencodeDevModeEnabled: appBuild?.openworkDevMode === true,
+      opencodeDevModeEnabled: appBuild?.teamworkDevMode === true,
       nukeConfigBusy,
       nukeConfigStatus,
-      onNukeOpenworkAndOpencodeConfig,
+      onNukeTeamworkAndOpencodeConfig,
     }),
     [
-      appBuild?.openworkDevMode,
+      appBuild?.teamworkDevMode,
       developerLog,
       developerLogStatus,
       developerMode,
@@ -982,7 +982,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       onExportRuntimeDebugReport,
       onInstallElectronPreviewFromTauri,
       onCheckElectronAlphaUpdates,
-      onNukeOpenworkAndOpencodeConfig,
+      onNukeTeamworkAndOpencodeConfig,
       onOpenElectronPreviewRelease,
       onOpenResetModal,
       onPrepareElectronMigrationSnapshot,
@@ -991,7 +991,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       onRevealElectronMigrationBackup,
       onResetStartupPreference,
       onRestartOpencode,
-      onRestartOpenworkServer,
+      onRestartTeamworkServer,
       onRunSandboxDebugProbe,
       onSetElectronAlphaUpdaterChannel,
       onSetElectronMigrationSha512,
@@ -999,26 +999,26 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       onSetEngineSource,
       onStopHost,
       onCopyOpencodeLogs,
-      onCopyOpenworkLogs,
+      onCopyTeamworkLogs,
       onExportOpencodeLogs,
-      onExportOpenworkLogs,
+      onExportTeamworkLogs,
       opencodeConnectCard,
       opencodeLogStatus,
       opencodeRestarting,
       opencodeServiceStatus,
-      openworkCard,
-      openworkLogStatus,
-      openworkServiceStatus,
-      openworkServerRestarting,
+      teamworkCard,
+      teamworkLogStatus,
+      teamworkServiceStatus,
+      teamworkServerRestarting,
       resetStatus,
       startupStatus,
       workspaceDebugEventsStatus,
-      openworkServerSnapshot.openworkAuditEntries,
-      openworkServerSnapshot.openworkAuditError,
-      openworkServerSnapshot.openworkAuditStatus,
-      openworkServerSnapshot.openworkServerCapabilities,
-      openworkServerSnapshot.openworkServerDiagnostics,
-      openworkServerSnapshot.openworkServerStatus,
+      teamworkServerSnapshot.teamworkAuditEntries,
+      teamworkServerSnapshot.teamworkAuditError,
+      teamworkServerSnapshot.teamworkAuditStatus,
+      teamworkServerSnapshot.teamworkServerCapabilities,
+      teamworkServerSnapshot.teamworkServerDiagnostics,
+      teamworkServerSnapshot.teamworkServerStatus,
       resetModalBusy,
       runtimeDebugReportJson,
       runtimeDebugStatus,

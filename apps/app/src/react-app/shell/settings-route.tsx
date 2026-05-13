@@ -5,15 +5,15 @@ import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom"
 import { SUGGESTED_PLUGINS } from "../../app/constants";
 import { createClient } from "../../app/lib/opencode";
 import {
-  buildOpenworkWorkspaceBaseUrl,
-  createOpenworkServerClient,
-  isLoopbackOpenworkServerUrl,
-  readOpenworkServerSettings,
-  type OpenworkServerCapabilities,
-  type OpenworkServerClient,
-  type OpenworkWorkspaceInfo,
-} from "../../app/lib/openwork-server";
-import { buildOpenworkEnvRuntimeKey } from "../../app/lib/openwork-env-runtime";
+  buildTeamworkWorkspaceBaseUrl,
+  createTeamworkServerClient,
+  isLoopbackTeamworkServerUrl,
+  readTeamworkServerSettings,
+  type TeamworkServerCapabilities,
+  type TeamworkServerClient,
+  type TeamworkWorkspaceInfo,
+} from "../../app/lib/teamwork-server";
+import { buildTeamworkEnvRuntimeKey } from "../../app/lib/teamwork-env-runtime";
 import type {
   Client,
   ProviderListItem,
@@ -26,7 +26,7 @@ import type {
 import { getWorkspaceTaskLoadErrorDisplay, isSandboxWorkspace } from "../../app/utils";
 import { currentLocale, t, setLocale, type Language } from "../../i18n";
 import { createConnectionsStore, useConnectionsStoreSnapshot } from "../domains/connections/store";
-import { createOpenworkServerStore, useOpenworkServerStoreSnapshot } from "../domains/connections/openwork-server-store";
+import { createTeamworkServerStore, useTeamworkServerStoreSnapshot } from "../domains/connections/teamwork-server-store";
 import { createProviderAuthStore, useProviderAuthStoreSnapshot } from "../domains/connections/provider-auth/store";
 import ProviderAuthModal from "../domains/connections/provider-auth/provider-auth-modal";
 import ConnectionsModals from "../domains/connections/modals";
@@ -51,8 +51,8 @@ import { createExtensionsStore, useExtensionsStoreSnapshot } from "../domains/se
 import { usePlatform } from "../kernel/platform";
 import { useLocal } from "../kernel/local-provider";
 import {
-  openworkServerInfo,
-  openworkServerRestart,
+  teamworkServerInfo,
+  teamworkServerRestart,
   engineStart,
   pickDirectory,
   resolveWorkspaceListSelectedId,
@@ -86,20 +86,20 @@ import { ModelPickerModal } from "../domains/session/modals/model-picker-modal";
 import type { ModelOption, ModelRef } from "../../app/types";
 import { workspaceSwatchColor } from "../domains/session/sidebar/utils";
 import { recordInspectorEvent } from "./app-inspector";
-import { ensureDesktopLocalOpenworkConnection } from "./desktop-local-openwork";
-import { resolveOpenworkConnection } from "./openwork-connection";
+import { ensureDesktopLocalTeamworkConnection } from "./desktop-local-teamwork";
+import { resolveTeamworkConnection } from "./teamwork-connection";
 import { abortSessionSafe } from "../../app/lib/opencode-session";
 import { useReloadCoordinator } from "./reload-coordinator";
 import { buildFeedbackUrl } from "../../app/lib/feedback";
 import { readActiveWorkspaceId, writeActiveWorkspaceId } from "./session-memory";
 import { workspaceSessionRoute, workspaceSettingsRoute } from "./workspace-routes";
 
-type RouteWorkspace = OpenworkWorkspaceInfo & {
+type RouteWorkspace = TeamworkWorkspaceInfo & {
   displayNameResolved: string;
 };
 
-const ROUTE_OPENWORK_CAPABILITIES: OpenworkServerCapabilities = {
-  skills: { read: true, write: true, source: "openwork" },
+const ROUTE_TEAMWORK_CAPABILITIES: TeamworkServerCapabilities = {
+  skills: { read: true, write: true, source: "teamwork" },
   plugins: { read: true, write: true },
   mcp: { read: true, write: true },
   commands: { read: true, write: true },
@@ -133,13 +133,13 @@ function describeWorkspaceCreateError(error: unknown) {
     lower.includes("os error 60") ||
     lower.includes("etimedout")
   ) {
-    return `${message}\n\nOpenWork could not read the workspace config before the filesystem timed out. This often happens when the folder is still syncing from iCloud Drive or another remote folder. Wait for the folder to finish downloading, move the workspace to a local folder, or try again.`;
+    return `${message}\n\nTeamWork could not read the workspace config before the filesystem timed out. This often happens when the folder is still syncing from iCloud Drive or another remote folder. Wait for the folder to finish downloading, move the workspace to a local folder, or try again.`;
   }
   return message;
 }
 
 function mergeRouteWorkspaces(
-  serverWorkspaces: OpenworkWorkspaceInfo[],
+  serverWorkspaces: TeamworkWorkspaceInfo[],
   desktopWorkspaces: RouteWorkspace[],
 ): RouteWorkspace[] {
   const desktopById = new Map(desktopWorkspaces.map((workspace) => [workspace.id, workspace]));
@@ -222,15 +222,15 @@ function folderNameFromPath(path: string) {
 
 type PersistedThemeMode = "light" | "dark" | "system";
 
-const SETTINGS_THEME_KEY = "openwork.react.settings.theme-mode";
-const SETTINGS_HIDE_TITLEBAR_KEY = "openwork.react.settings.hide-titlebar";
-const SETTINGS_UPDATE_AUTO_CHECK_KEY = "openwork.react.settings.update-auto-check";
-const SETTINGS_UPDATE_AUTO_DOWNLOAD_KEY = "openwork.react.settings.update-auto-download";
+const SETTINGS_THEME_KEY = "teamwork.react.settings.theme-mode";
+const SETTINGS_HIDE_TITLEBAR_KEY = "teamwork.react.settings.hide-titlebar";
+const SETTINGS_UPDATE_AUTO_CHECK_KEY = "teamwork.react.settings.update-auto-check";
+const SETTINGS_UPDATE_AUTO_DOWNLOAD_KEY = "teamwork.react.settings.update-auto-download";
 
-function workspaceLabel(workspace: OpenworkWorkspaceInfo) {
+function workspaceLabel(workspace: TeamworkWorkspaceInfo) {
   return (
     workspace.displayName?.trim() ||
-    workspace.openworkWorkspaceName?.trim() ||
+    workspace.teamworkWorkspaceName?.trim() ||
     workspace.name?.trim() ||
     workspace.path?.trim() ||
     t("session.workspace_fallback")
@@ -380,7 +380,7 @@ export function SettingsRoute() {
   const selectedWorkspaceId = routeWorkspaceId || legacySelectedWorkspaceId;
   const [baseUrl, setBaseUrl] = useState("");
   const [token, setToken] = useState("");
-  const [openworkClient, setOpenworkClient] = useState<OpenworkServerClient | null>(null);
+  const [teamworkClient, setTeamworkClient] = useState<TeamworkServerClient | null>(null);
   const [activeClient, setActiveClient] = useState<Client | null>(null);
   const [busy, setBusy] = useState(false);
   const [busyLabel, setBusyLabel] = useState<string | null>(null);
@@ -438,9 +438,9 @@ export function SettingsRoute() {
     selectedWorkspaceRoot: "",
     selectedWorkspaceType: "local" as "local" | "remote",
     runtimeWorkspaceId: null as string | null,
-    openworkServerClient: null as OpenworkServerClient | null,
-    openworkServerStatus: "disconnected" as "connected" | "disconnected",
-    openworkServerCapabilities: null as OpenworkServerCapabilities | null,
+    teamworkServerClient: null as TeamworkServerClient | null,
+    teamworkServerStatus: "disconnected" as "connected" | "disconnected",
+    teamworkServerCapabilities: null as TeamworkServerCapabilities | null,
     selectedWorkspaceDisplay: emptyWorkspaceDisplay as WorkspaceDisplay,
     providerItems: [] as ProviderListItem[],
     providerDefaults: {} as Record<string, string>,
@@ -478,7 +478,7 @@ export function SettingsRoute() {
             preset: "starter",
             workspaceType: selectedWorkspace.workspaceType ?? "local",
             displayName: selectedWorkspace.displayNameResolved,
-            openworkWorkspaceName: selectedWorkspace.openworkWorkspaceName,
+            teamworkWorkspaceName: selectedWorkspace.teamworkWorkspaceName,
           }
         : emptyWorkspaceDisplay,
     [emptyWorkspaceDisplay, selectedWorkspace],
@@ -490,9 +490,9 @@ export function SettingsRoute() {
     selectedWorkspaceRoot,
     selectedWorkspaceType: selectedWorkspace?.workspaceType ?? "local",
     runtimeWorkspaceId: selectedWorkspace?.id ?? null,
-    openworkServerClient: openworkClient,
-    openworkServerStatus: openworkClient ? "connected" : "disconnected",
-    openworkServerCapabilities: openworkClient ? ROUTE_OPENWORK_CAPABILITIES : null,
+    teamworkServerClient: teamworkClient,
+    teamworkServerStatus: teamworkClient ? "connected" : "disconnected",
+    teamworkServerCapabilities: teamworkClient ? ROUTE_TEAMWORK_CAPABILITIES : null,
     selectedWorkspaceDisplay,
     providerItems: providers,
     providerDefaults,
@@ -518,15 +518,15 @@ export function SettingsRoute() {
 
   const reloadWorkspaceEngineFromUi = useCallback(async () => {
     const workspaceId = routeStateRef.current.runtimeWorkspaceId?.trim() || selectedWorkspaceId.trim();
-    if (!openworkClient || !workspaceId) {
+    if (!teamworkClient || !workspaceId) {
       setRouteError(t("app.error_connect_first"));
       return false;
     }
 
-    await openworkClient.reloadEngine(workspaceId);
+    await teamworkClient.reloadEngine(workspaceId);
 
     try {
-      window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+      window.dispatchEvent(new CustomEvent("teamwork-server-settings-changed"));
     } catch {
       // ignore browser event dispatch failures
     }
@@ -536,11 +536,11 @@ export function SettingsRoute() {
     void pollMcpServersAfterReloadRef.current?.();
 
     return true;
-  }, [openworkClient, selectedWorkspaceId]);
+  }, [teamworkClient, selectedWorkspaceId]);
 
   useEffect(() => {
     return reloadCoordinator.registerWorkspaceReloadControls({
-      canReloadWorkspaceEngine: () => Boolean(openworkClient && (selectedWorkspace?.id || selectedWorkspaceId)),
+      canReloadWorkspaceEngine: () => Boolean(teamworkClient && (selectedWorkspace?.id || selectedWorkspaceId)),
       reloadWorkspaceEngine: reloadWorkspaceEngineFromUi,
       activeSessions: () => activeReloadBlockingSessions,
       stopSession: async (sessionId) => {
@@ -551,24 +551,24 @@ export function SettingsRoute() {
   }, [
     activeClient,
     activeReloadBlockingSessions,
-    openworkClient,
+    teamworkClient,
     reloadCoordinator,
     reloadWorkspaceEngineFromUi,
     selectedWorkspace?.id,
     selectedWorkspaceId,
   ]);
 
-  const openworkServerStore = useMemo(
+  const teamworkServerStore = useMemo(
     () =>
-      createOpenworkServerStore({
+      createTeamworkServerStore({
         startupPreference: () => {
           // In desktop mode, loopback URLs are ephemeral local runtime details.
           // Only non-loopback stored URLs indicate an explicit remote/manual
           // server connection preference.
           if (!isDesktopRuntime()) return "server";
-          const stored = readOpenworkServerSettings();
+          const stored = readTeamworkServerSettings();
           const storedUrl = stored.urlOverride?.trim() ?? "";
-          return storedUrl && !isLoopbackOpenworkServerUrl(storedUrl) ? "server" : "local";
+          return storedUrl && !isLoopbackTeamworkServerUrl(storedUrl) ? "server" : "local";
         },
         documentVisible: () => typeof document === "undefined" || document.visibilityState === "visible",
         developerMode: () => routeStateRef.current.developerMode,
@@ -578,9 +578,9 @@ export function SettingsRoute() {
         restartLocalServer: async () => {
           if (!isDesktopRuntime()) return false;
           try {
-            await openworkServerRestart({
+            await teamworkServerRestart({
               remoteAccessEnabled:
-                readOpenworkServerSettings().remoteAccessEnabled === true,
+                readTeamworkServerSettings().remoteAccessEnabled === true,
             });
             return true;
           } catch {
@@ -600,12 +600,12 @@ export function SettingsRoute() {
         selectedWorkspaceId: () => routeStateRef.current.selectedWorkspaceId,
         selectedWorkspaceRoot: () => routeStateRef.current.selectedWorkspaceRoot,
         workspaceType: () => routeStateRef.current.selectedWorkspaceType,
-        openworkServer: openworkServerStore,
+        teamworkServer: teamworkServerStore,
         runtimeWorkspaceId: () => routeStateRef.current.runtimeWorkspaceId,
         developerMode: () => routeStateRef.current.developerMode,
         markReloadRequired: reloadCoordinator.markReloadRequired,
       }),
-    [openworkServerStore, reloadCoordinator.markReloadRequired],
+    [teamworkServerStore, reloadCoordinator.markReloadRequired],
   );
   refreshMcpServersRef.current = connectionsStore.refreshMcpServers;
   notifyMcpReloadingRef.current = connectionsStore.notifyMcpReloading;
@@ -621,7 +621,7 @@ export function SettingsRoute() {
         selectedWorkspaceDisplay: () => routeStateRef.current.selectedWorkspaceDisplay,
         selectedWorkspaceRoot: () => routeStateRef.current.selectedWorkspaceRoot,
         runtimeWorkspaceId: () => routeStateRef.current.runtimeWorkspaceId,
-        openworkServer: openworkServerStore,
+        teamworkServer: teamworkServerStore,
         setProviders,
         setProviderDefaults,
         setProviderConnectedIds,
@@ -635,7 +635,7 @@ export function SettingsRoute() {
           });
         },
       }),
-    [openworkServerStore, reloadCoordinator.markReloadRequired],
+    [teamworkServerStore, reloadCoordinator.markReloadRequired],
   );
   const extensionsStore = useMemo(
     () =>
@@ -645,11 +645,11 @@ export function SettingsRoute() {
         selectedWorkspaceId: () => routeStateRef.current.selectedWorkspaceId,
         selectedWorkspaceRoot: () => routeStateRef.current.selectedWorkspaceRoot,
         workspaceType: () => routeStateRef.current.selectedWorkspaceType,
-        openworkServer: openworkServerStore,
-        openworkServerConnection: () => ({
-          openworkServerClient: routeStateRef.current.openworkServerClient,
-          openworkServerStatus: routeStateRef.current.openworkServerStatus,
-          openworkServerCapabilities: routeStateRef.current.openworkServerCapabilities,
+        teamworkServer: teamworkServerStore,
+        teamworkServerConnection: () => ({
+          teamworkServerClient: routeStateRef.current.teamworkServerClient,
+          teamworkServerStatus: routeStateRef.current.teamworkServerStatus,
+          teamworkServerCapabilities: routeStateRef.current.teamworkServerCapabilities,
         }),
         runtimeWorkspaceId: () => routeStateRef.current.runtimeWorkspaceId,
         setBusy,
@@ -658,17 +658,17 @@ export function SettingsRoute() {
         setError: setRouteError,
         markReloadRequired: reloadCoordinator.markReloadRequired,
       }),
-    [openworkServerStore, reloadCoordinator.markReloadRequired],
+    [teamworkServerStore, reloadCoordinator.markReloadRequired],
   );
-  const openworkServerSnapshot = useOpenworkServerStoreSnapshot(openworkServerStore);
+  const teamworkServerSnapshot = useTeamworkServerStoreSnapshot(teamworkServerStore);
   const connectionsSnapshot = useConnectionsStoreSnapshot(connectionsStore);
   const providerAuthSnapshot = useProviderAuthStoreSnapshot(providerAuthStore);
   useExtensionsStoreSnapshot(extensionsStore);
 
   const shareWorkspaceState = useShareWorkspaceState({
     workspaces,
-    openworkServerHostInfo: openworkServerSnapshot.openworkServerHostInfo,
-    openworkServerSettings: openworkServerSnapshot.openworkServerSettings,
+    teamworkServerHostInfo: teamworkServerSnapshot.teamworkServerHostInfo,
+    teamworkServerSettings: teamworkServerSnapshot.teamworkServerSettings,
     engineInfo: null,
     exportWorkspaceBusy,
     openLink: (url) => platform.openLink(url),
@@ -677,8 +677,8 @@ export function SettingsRoute() {
 
   const debugViewProps = useDebugViewModel({
     developerMode,
-    openworkServerStore,
-    openworkServerSnapshot,
+    teamworkServerStore,
+    teamworkServerSnapshot,
     runtimeWorkspaceId: selectedWorkspace?.id ?? null,
     selectedWorkspaceRoot,
     setRouteError,
@@ -705,7 +705,7 @@ export function SettingsRoute() {
 
   const opencodeBaseUrl = useMemo(() => {
     if (!selectedWorkspace || !selectedWorkspaceId || !baseUrl) return "";
-    const mounted = buildOpenworkWorkspaceBaseUrl(baseUrl, selectedWorkspaceId) ?? baseUrl;
+    const mounted = buildTeamworkWorkspaceBaseUrl(baseUrl, selectedWorkspaceId) ?? baseUrl;
     return `${mounted.replace(/\/+$/, "")}/opencode`;
   }, [baseUrl, selectedWorkspace, selectedWorkspaceId]);
 
@@ -714,7 +714,7 @@ export function SettingsRoute() {
       opencodeBaseUrl && token
         ? createClient(opencodeBaseUrl, selectedWorkspaceRoot || undefined, {
             token,
-            mode: "openwork",
+            mode: "teamwork",
           })
         : null,
     [opencodeBaseUrl, selectedWorkspaceRoot, token],
@@ -776,7 +776,7 @@ export function SettingsRoute() {
 
   useEffect(() => {
     applyThemeMode(themeMode);
-    void window.__OPENWORK_ELECTRON__?.invokeDesktop?.("__setNativeTheme", themeMode);
+    void window.__TEAMWORK_ELECTRON__?.invokeDesktop?.("__setNativeTheme", themeMode);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(SETTINGS_THEME_KEY, themeMode);
     }
@@ -818,10 +818,10 @@ export function SettingsRoute() {
           desktopWorkspaces = workspacesRef.current;
         }
       }
-      const { normalizedBaseUrl, resolvedToken, resolvedHostToken } = await resolveOpenworkConnection();
+      const { normalizedBaseUrl, resolvedToken, resolvedHostToken } = await resolveTeamworkConnection();
 
       if (!normalizedBaseUrl || !resolvedToken) {
-        setOpenworkClient(null);
+        setTeamworkClient(null);
         setBaseUrl("");
         setToken("");
         setWorkspaces(desktopWorkspaces);
@@ -835,7 +835,7 @@ export function SettingsRoute() {
         return;
       }
 
-      const client = createOpenworkServerClient({
+      const client = createTeamworkServerClient({
         baseUrl: normalizedBaseUrl,
         token: resolvedToken,
         hostToken: resolvedHostToken || undefined,
@@ -883,7 +883,7 @@ export function SettingsRoute() {
         }),
       );
 
-      setOpenworkClient(client);
+      setTeamworkClient(client);
       setBaseUrl(normalizedBaseUrl);
       setToken(resolvedToken);
       setWorkspaces(nextWorkspaces);
@@ -1034,7 +1034,7 @@ export function SettingsRoute() {
   useEffect(() => {
     if (!isDesktopRuntime()) return;
     if (loading) return;
-    if (openworkClient) {
+    if (teamworkClient) {
       reconnectAttemptedWorkspaceIdRef.current = "";
       return;
     }
@@ -1043,7 +1043,7 @@ export function SettingsRoute() {
     if (!workspaceId || reconnectAttemptedWorkspaceIdRef.current === workspaceId) return;
     reconnectAttemptedWorkspaceIdRef.current = workspaceId;
 
-    void ensureDesktopLocalOpenworkConnection({
+    void ensureDesktopLocalTeamworkConnection({
       route: "settings",
       workspace: selectedWorkspace,
       allWorkspaces: workspaces,
@@ -1051,21 +1051,21 @@ export function SettingsRoute() {
       const message = error instanceof Error ? error.message : describeRouteError(error);
       setRouteError(message);
     });
-  }, [loading, openworkClient, selectedWorkspace, workspaces]);
+  }, [loading, teamworkClient, selectedWorkspace, workspaces]);
 
   useEffect(() => {
     void refreshRouteState();
     const handleSettingsChange = () => {
       void refreshRouteState();
     };
-    window.addEventListener("openwork-server-settings-changed", handleSettingsChange);
+    window.addEventListener("teamwork-server-settings-changed", handleSettingsChange);
     return () => {
-      window.removeEventListener("openwork-server-settings-changed", handleSettingsChange);
+      window.removeEventListener("teamwork-server-settings-changed", handleSettingsChange);
     };
   }, [refreshRouteState]);
 
   useEffect(() => {
-    openworkServerStore.start();
+    teamworkServerStore.start();
     connectionsStore.start();
     providerAuthStore.start();
     extensionsStore.start();
@@ -1074,9 +1074,9 @@ export function SettingsRoute() {
       extensionsStore.dispose();
       providerAuthStore.dispose();
       connectionsStore.dispose();
-      openworkServerStore.dispose();
+      teamworkServerStore.dispose();
     };
-  }, [connectionsStore, extensionsStore, openworkServerStore, providerAuthStore]);
+  }, [connectionsStore, extensionsStore, teamworkServerStore, providerAuthStore]);
 
   // Periodically reconcile workspace-imported cloud providers from Den while
   // signed in (dev #1509 "auto-sync cloud providers"). Mounted here because
@@ -1089,7 +1089,7 @@ export function SettingsRoute() {
   }, [providerAuthStore, route.tab]);
 
   useEffect(() => {
-    openworkServerStore.syncFromOptions();
+    teamworkServerStore.syncFromOptions();
     connectionsStore.syncFromOptions();
     providerAuthStore.syncFromOptions();
     extensionsStore.syncFromOptions();
@@ -1097,7 +1097,7 @@ export function SettingsRoute() {
     activeClient,
     connectionsStore,
     extensionsStore,
-    openworkServerStore,
+    teamworkServerStore,
     providerAuthStore,
     selectedWorkspace?.id,
     selectedWorkspace?.workspaceType,
@@ -1126,9 +1126,9 @@ export function SettingsRoute() {
   const workspaceType = selectedWorkspace?.workspaceType ?? "local";
   const isRemoteWorkspace = workspaceType === "remote";
   const canWriteWorkspaceSkills =
-    !isRemoteWorkspace || openworkServerSnapshot.openworkServerCanWriteSkills;
+    !isRemoteWorkspace || teamworkServerSnapshot.teamworkServerCanWriteSkills;
   const canWriteWorkspacePlugins =
-    !isRemoteWorkspace || openworkServerSnapshot.openworkServerCanWritePlugins;
+    !isRemoteWorkspace || teamworkServerSnapshot.teamworkServerCanWritePlugins;
   const skillsAccessHint =
     isRemoteWorkspace && !canWriteWorkspaceSkills ? t("app.skills_hint_readonly") : null;
   const pluginsAccessHint =
@@ -1154,17 +1154,17 @@ export function SettingsRoute() {
       name: provider.name ?? provider.id,
     }));
   const mcpConnectedAppsCount = connectionsSnapshot.mcpServers.length;
-  const routeOpenworkStatus = openworkClient ? "connected" : "disconnected";
+  const routeTeamworkStatus = teamworkClient ? "connected" : "disconnected";
   const notFoundRouteError = !loading && routeWorkspaceId && !selectedWorkspace
     ? "Workspace was not found. Select a new workspace from the sidebar."
     : null;
-  const routeOpenworkCapabilities: OpenworkServerCapabilities | null = openworkClient
-    ? ROUTE_OPENWORK_CAPABILITIES
+  const routeTeamworkCapabilities: TeamworkServerCapabilities | null = teamworkClient
+    ? ROUTE_TEAMWORK_CAPABILITIES
     : null;
-  const environmentRuntimeKey = buildOpenworkEnvRuntimeKey({
-    baseUrl: openworkServerSnapshot.openworkServerBaseUrl || openworkServerSnapshot.openworkServerUrl,
-    pid: openworkServerSnapshot.openworkServerHostInfo?.pid ?? null,
-    port: openworkServerSnapshot.openworkServerHostInfo?.port ?? null,
+  const environmentRuntimeKey = buildTeamworkEnvRuntimeKey({
+    baseUrl: teamworkServerSnapshot.teamworkServerBaseUrl || teamworkServerSnapshot.teamworkServerUrl,
+    pid: teamworkServerSnapshot.teamworkServerHostInfo?.pid ?? null,
+    port: teamworkServerSnapshot.teamworkServerHostInfo?.port ?? null,
   });
 
   const handleApplyEnvironmentChanges = async () => {
@@ -1192,9 +1192,9 @@ export function SettingsRoute() {
       preferSidecar: true,
       runtime: "direct",
       workspacePaths,
-      openworkRemoteAccess: openworkServerSnapshot.openworkServerSettings.remoteAccessEnabled === true,
+      teamworkRemoteAccess: teamworkServerSnapshot.teamworkServerSettings.remoteAccessEnabled === true,
     });
-    const reconnected = await openworkServerStore.reconnectOpenworkServer();
+    const reconnected = await teamworkServerStore.reconnectTeamworkServer();
     if (!reconnected) {
       await refreshRouteState().catch(() => {});
       return { statusMessage: t("settings.environment.apply_refresh_failed") };
@@ -1237,8 +1237,8 @@ export function SettingsRoute() {
           displayName: trimmed,
         }).catch(() => undefined);
       }
-      if (openworkClient) {
-        await openworkClient
+      if (teamworkClient) {
+        await teamworkClient
           .updateWorkspaceDisplayName(renameWorkspaceId, trimmed)
           .catch(() => undefined);
       }
@@ -1248,7 +1248,7 @@ export function SettingsRoute() {
     } finally {
       setRenameWorkspaceBusy(false);
     }
-  }, [openworkClient, refreshRouteState, renameWorkspaceId, renameWorkspaceTitle]);
+  }, [teamworkClient, refreshRouteState, renameWorkspaceId, renameWorkspaceTitle]);
 
   const handleRevealWorkspace = useCallback(async (workspaceId: string) => {
     const workspace = workspaces.find((item) => item.id === workspaceId);
@@ -1283,8 +1283,8 @@ export function SettingsRoute() {
     if (isDesktopRuntime()) {
       await workspaceForget(workspaceId).catch(() => undefined);
     }
-    if (openworkClient) {
-      await openworkClient.deleteWorkspace(workspaceId).catch(() => undefined);
+    if (teamworkClient) {
+      await teamworkClient.deleteWorkspace(workspaceId).catch(() => undefined);
     }
     if (selectedWorkspaceId === workspaceId) {
       const nextWorkspace = workspaces.find((workspace) => workspace.id !== workspaceId);
@@ -1295,7 +1295,7 @@ export function SettingsRoute() {
       }
     }
     await refreshRouteState();
-  }, [openworkClient, refreshRouteState, selectedWorkspaceId, workspaces]);
+  }, [teamworkClient, refreshRouteState, selectedWorkspaceId, workspaces]);
 
   const handleCreateWorkspace = async (preset: WorkspacePreset, folder: string | null) => {
     if (!folder) return;
@@ -1313,13 +1313,13 @@ export function SettingsRoute() {
         await workspaceSetSelected(createdId).catch(() => undefined);
         await workspaceSetRuntimeActive(createdId).catch(() => undefined);
       }
-      // Register the workspace with the running openwork-server so
+      // Register the workspace with the running teamwork-server so
       // listWorkspaces() reflects it immediately. Without this the UI only
       // picks up the new workspace after an app restart (because the server
       // is launched with a fixed --workspace list at boot and the bridge
       // write only updates desktop-side state).
-      if (openworkClient) {
-        await openworkClient
+      if (teamworkClient) {
+        await teamworkClient
           .createLocalWorkspace({ folderPath: folder, name: workspaceName, preset })
           .catch(() => undefined);
       }
@@ -1333,23 +1333,23 @@ export function SettingsRoute() {
   };
 
   const handleCreateRemoteWorkspace = async (input: {
-    openworkHostUrl?: string | null;
-    openworkToken?: string | null;
+    teamworkHostUrl?: string | null;
+    teamworkToken?: string | null;
     directory?: string | null;
     displayName?: string | null;
   }) => {
-    const baseUrlValue = input.openworkHostUrl?.trim() ?? "";
+    const baseUrlValue = input.teamworkHostUrl?.trim() ?? "";
     if (!baseUrlValue) return false;
     setCreateWorkspaceRemoteBusy(true);
     setCreateWorkspaceRemoteError(null);
     try {
       const list = await workspaceCreateRemote({
         baseUrl: baseUrlValue,
-        openworkHostUrl: baseUrlValue,
-        openworkToken: input.openworkToken?.trim() || null,
+        teamworkHostUrl: baseUrlValue,
+        teamworkToken: input.teamworkToken?.trim() || null,
         displayName: input.displayName?.trim() || null,
         directory: input.directory?.trim() || null,
-        remoteType: "openwork",
+        remoteType: "teamwork",
       });
       const createdId = resolveWorkspaceListSelectedId(list) || list.workspaces[list.workspaces.length - 1]?.id || "";
       if (createdId) {
@@ -1368,52 +1368,52 @@ export function SettingsRoute() {
   };
 
   const handleReconnectMessagingServer = useCallback(async () => {
-    const ok = await openworkServerStore.reconnectOpenworkServer();
+    const ok = await teamworkServerStore.reconnectTeamworkServer();
     if (ok) {
       await refreshRouteState();
     }
     return ok;
-  }, [openworkServerStore, refreshRouteState]);
+  }, [teamworkServerStore, refreshRouteState]);
 
   const handleRestartLocalServer = useCallback(async () => {
     if (!isDesktopRuntime()) return false;
     try {
-      await openworkServerRestart({
+      await teamworkServerRestart({
         remoteAccessEnabled:
-          readOpenworkServerSettings().remoteAccessEnabled === true,
+          readTeamworkServerSettings().remoteAccessEnabled === true,
       });
-      await openworkServerStore.reconnectOpenworkServer();
+      await teamworkServerStore.reconnectTeamworkServer();
       await refreshRouteState();
       return true;
     } catch {
       return false;
     }
-  }, [openworkServerStore, refreshRouteState]);
+  }, [teamworkServerStore, refreshRouteState]);
 
   const handleRestartMessagingWorker = useCallback(async () => {
     if (!isDesktopRuntime()) return false;
 
     try {
-      await openworkServerRestart({
+      await teamworkServerRestart({
         remoteAccessEnabled:
-          readOpenworkServerSettings().remoteAccessEnabled === true,
+          readTeamworkServerSettings().remoteAccessEnabled === true,
       });
-      await openworkServerStore.reconnectOpenworkServer();
+      await teamworkServerStore.reconnectTeamworkServer();
       await refreshRouteState();
       return true;
     } catch {
       return false;
     }
-  }, [openworkServerStore, refreshRouteState]);
+  }, [teamworkServerStore, refreshRouteState]);
 
   const messagingViewProps = useMessagingViewProps({
     busy,
-    openworkServerStatus: openworkServerSnapshot.openworkServerStatus,
-    openworkServerUrl: openworkServerSnapshot.openworkServerUrl,
-    openworkServerClient:
-      openworkClient ?? openworkServerSnapshot.openworkServerClient,
-    openworkReconnectBusy: openworkServerSnapshot.openworkReconnectBusy,
-    reconnectOpenworkServer: handleReconnectMessagingServer,
+    teamworkServerStatus: teamworkServerSnapshot.teamworkServerStatus,
+    teamworkServerUrl: teamworkServerSnapshot.teamworkServerUrl,
+    teamworkServerClient:
+      teamworkClient ?? teamworkServerSnapshot.teamworkServerClient,
+    teamworkReconnectBusy: teamworkServerSnapshot.teamworkReconnectBusy,
+    reconnectTeamworkServer: handleReconnectMessagingServer,
     restartMessagingWorker: handleRestartMessagingWorker,
     workspaceId: selectedWorkspace?.id ?? null,
     selectedWorkspaceRoot,
@@ -1436,9 +1436,9 @@ export function SettingsRoute() {
         return (
           <GeneralSettingsView
             authorizedFoldersPanel={{
-              openworkServerClient: openworkClient,
-              openworkServerStatus: routeOpenworkStatus,
-              openworkServerCapabilities: routeOpenworkCapabilities,
+              teamworkServerClient: teamworkClient,
+              teamworkServerStatus: routeTeamworkStatus,
+              teamworkServerCapabilities: routeTeamworkCapabilities,
               runtimeWorkspaceId: selectedWorkspace?.id ?? null,
               selectedWorkspaceRoot,
               activeWorkspaceType: workspaceType,
@@ -1484,7 +1484,7 @@ export function SettingsRoute() {
             }}
             onSendFeedback={() => platform.openLink(buildFeedbackUrl({ entrypoint: "settings" }))}
             onJoinDiscord={() => platform.openLink("https://discord.gg/VEhNQXxYMB")}
-            onReportIssue={() => platform.openLink("https://github.com/different-ai/openwork/issues/new?template=bug.yml")}
+            onReportIssue={() => platform.openLink("https://github.com/SamirTafesh/TeamWork/issues/new?template=bug.yml")}
           />
         );
       case "automations":
@@ -1567,7 +1567,7 @@ export function SettingsRoute() {
                   void connectionsStore.removeMcp(name);
                 }}
                 setMcpEnabled={
-                  routeOpenworkStatus === "connected" && routeOpenworkCapabilities?.mcp?.write
+                  routeTeamworkStatus === "connected" && routeTeamworkCapabilities?.mcp?.write
                     ? (name, enabled) => connectionsStore.setMcpEnabled(name, enabled)
                     : undefined
                 }
@@ -1596,13 +1596,13 @@ export function SettingsRoute() {
           <AdvancedView
             busy={busy}
             baseUrl={opencodeBaseUrl}
-            headerStatus={openworkServerSnapshot.openworkServerStatus}
+            headerStatus={teamworkServerSnapshot.teamworkServerStatus}
             clientConnected={Boolean(opencodeClient)}
             opencodeConnectStatus={null}
-            openworkServerStatus={openworkServerSnapshot.openworkServerStatus}
-            openworkServerUrl={openworkServerSnapshot.openworkServerUrl}
-            openworkReconnectBusy={openworkServerSnapshot.openworkReconnectBusy}
-            reconnectOpenworkServer={openworkServerStore.reconnectOpenworkServer}
+            teamworkServerStatus={teamworkServerSnapshot.teamworkServerStatus}
+            teamworkServerUrl={teamworkServerSnapshot.teamworkServerUrl}
+            teamworkReconnectBusy={teamworkServerSnapshot.teamworkReconnectBusy}
+            reconnectTeamworkServer={teamworkServerStore.reconnectTeamworkServer}
             engineInfo={null}
             restartLocalServer={handleRestartLocalServer}
             stopHost={() => {}}
@@ -1628,14 +1628,14 @@ export function SettingsRoute() {
               busy,
               clientConnected: Boolean(opencodeClient),
               anyActiveRuns: false,
-              openworkServerStatus: openworkServerSnapshot.openworkServerStatus,
-              openworkServerUrl: openworkServerSnapshot.openworkServerUrl,
-              openworkServerSettings: openworkServerSnapshot.openworkServerSettings,
-              openworkServerHostInfo: openworkServerSnapshot.openworkServerHostInfo,
+              teamworkServerStatus: teamworkServerSnapshot.teamworkServerStatus,
+              teamworkServerUrl: teamworkServerSnapshot.teamworkServerUrl,
+              teamworkServerSettings: teamworkServerSnapshot.teamworkServerSettings,
+              teamworkServerHostInfo: teamworkServerSnapshot.teamworkServerHostInfo,
               runtimeWorkspaceId: selectedWorkspace?.id ?? null,
-              updateOpenworkServerSettings: openworkServerStore.updateOpenworkServerSettings,
-              resetOpenworkServerSettings: openworkServerStore.resetOpenworkServerSettings,
-              testOpenworkServerConnection: openworkServerStore.testOpenworkServerConnection,
+              updateTeamworkServerSettings: teamworkServerStore.updateTeamworkServerSettings,
+              resetTeamworkServerSettings: teamworkServerStore.resetTeamworkServerSettings,
+              testTeamworkServerConnection: teamworkServerStore.testTeamworkServerConnection,
               canReloadWorkspace: reloadCoordinator.canReloadWorkspaceEngine,
               reloadWorkspaceEngine: reloadCoordinator.reloadWorkspaceEngine,
               reloadBusy: false,
@@ -1702,7 +1702,7 @@ export function SettingsRoute() {
             }}
             dockerCleanupBusy={false}
             dockerCleanupResult={null}
-            onCleanupOpenworkDockerContainers={() => {
+            onCleanupTeamworkDockerContainers={() => {
               setRouteError("Docker cleanup is not wired into the React settings route yet.");
             }}
           />
@@ -1710,7 +1710,7 @@ export function SettingsRoute() {
       case "environment":
         return (
           <EnvironmentView
-            client={openworkServerSnapshot.openworkServerClient}
+            client={teamworkServerSnapshot.teamworkServerClient}
             isRemoteWorkspace={isRemoteWorkspace}
             onStatusMessage={setConfigActionStatus}
             onApplyChanges={isDesktopRuntime() && !isRemoteWorkspace ? handleApplyEnvironmentChanges : undefined}
@@ -1743,7 +1743,7 @@ export function SettingsRoute() {
         selectedWorkspaceColor={selectedWorkspaceColor}
         workspaces={workspaceOptions}
         onSelectWorkspace={handleSelectSettingsWorkspace}
-        headerStatus={routeOpenworkStatus}
+        headerStatus={routeTeamworkStatus}
         busyHint={loading ? t("session.loading_detail") : busyLabel}
         onClose={() => navigate(selectedWorkspaceId ? workspaceSessionRoute(selectedWorkspaceId) : "/session")}
         error={routeError ?? notFoundRouteError}

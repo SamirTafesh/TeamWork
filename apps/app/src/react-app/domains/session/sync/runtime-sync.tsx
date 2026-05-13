@@ -7,7 +7,7 @@ type ReactSessionRuntimeProps = {
   workspaceId: string;
   sessionId: string | null;
   opencodeBaseUrl: string;
-  openworkToken: string;
+  teamworkToken: string;
 };
 
 export function ReactSessionRuntime(props: ReactSessionRuntimeProps) {
@@ -15,20 +15,20 @@ export function ReactSessionRuntime(props: ReactSessionRuntimeProps) {
     return ensureWorkspaceSessionSync({
       workspaceId: props.workspaceId,
       baseUrl: props.opencodeBaseUrl,
-      openworkToken: props.openworkToken,
+      teamworkToken: props.teamworkToken,
     });
-  }, [props.workspaceId, props.opencodeBaseUrl, props.openworkToken]);
+  }, [props.workspaceId, props.opencodeBaseUrl, props.teamworkToken]);
 
   useEffect(() => {
     return trackWorkspaceSessionSync(
       {
         workspaceId: props.workspaceId,
         baseUrl: props.opencodeBaseUrl,
-        openworkToken: props.openworkToken,
+        teamworkToken: props.teamworkToken,
       },
       props.sessionId,
     );
-  }, [props.workspaceId, props.sessionId, props.opencodeBaseUrl, props.openworkToken]);
+  }, [props.workspaceId, props.sessionId, props.opencodeBaseUrl, props.teamworkToken]);
 
   return null;
 }

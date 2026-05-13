@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Globe, Loader2, Minimize2, Redo2, Undo2, Zap } from "lucide-react";
 
 import { t } from "../../../../i18n";
-import { buildOpenworkWorkspaceBaseUrl, type OpenworkServerClient, type OpenworkServerStatus } from "../../../../app/lib/openwork-server";
+import { buildTeamworkWorkspaceBaseUrl, type TeamworkServerClient, type TeamworkServerStatus } from "../../../../app/lib/teamwork-server";
 import { getDisplaySessionTitle } from "../../../../app/lib/session-title";
 import type { BootPhase } from "../../../../app/lib/startup-boot";
 import type { WorkspaceInfo } from "../../../../app/lib/desktop";
@@ -85,7 +85,7 @@ export type SessionPageSidebarProps = {
 
 export type SessionPageSurfaceProps = Omit<
   SessionSurfaceProps,
-  "client" | "workspaceId" | "sessionId" | "opencodeBaseUrl" | "openworkToken"
+  "client" | "workspaceId" | "sessionId" | "opencodeBaseUrl" | "teamworkToken"
 >;
 
 export type SessionPageProps = {
@@ -101,9 +101,9 @@ export type SessionPageProps = {
   runtimeWorkspaceId: string | null;
   workspaces: WorkspaceInfo[];
   clientConnected: boolean;
-  openworkServerStatus: OpenworkServerStatus;
-  openworkServerClient: OpenworkServerClient | null;
-  openworkServerToken?: string | null;
+  teamworkServerStatus: TeamworkServerStatus;
+  teamworkServerClient: TeamworkServerClient | null;
+  teamworkServerToken?: string | null;
   developerMode: boolean;
   headerStatus: string;
   busyHint: string | null;
@@ -186,7 +186,7 @@ export function SessionPage(props: SessionPageProps) {
   // the panel opened and doesn't render the BrowserPanel toolbar.
   useEffect(() => {
     if (!isElectronRuntime()) return;
-    const browser = (window as Window).__OPENWORK_ELECTRON__?.browser;
+    const browser = (window as Window).__TEAMWORK_ELECTRON__?.browser;
     if (!browser) return;
     const unsubOpen = browser.onPanelOpened?.(() => setBrowserPanelOpen(true));
     const unsubClose = browser.onPanelClosed?.(() => setBrowserPanelOpen(false));
@@ -232,17 +232,17 @@ export function SessionPage(props: SessionPageProps) {
 
   const reactSessionBaseUrl = useMemo(() => {
     const workspaceId = props.runtimeWorkspaceId?.trim() ?? "";
-    const baseUrl = props.openworkServerClient?.baseUrl?.trim() ?? "";
+    const baseUrl = props.teamworkServerClient?.baseUrl?.trim() ?? "";
     if (!workspaceId || !baseUrl) return "";
-    const mounted = buildOpenworkWorkspaceBaseUrl(baseUrl, workspaceId) ?? baseUrl;
+    const mounted = buildTeamworkWorkspaceBaseUrl(baseUrl, workspaceId) ?? baseUrl;
     return `${mounted.replace(/\/+$/, "")}/opencode`;
-  }, [props.openworkServerClient?.baseUrl, props.runtimeWorkspaceId]);
+  }, [props.teamworkServerClient?.baseUrl, props.runtimeWorkspaceId]);
 
-  const reactSessionToken = props.openworkServerClient?.token?.trim() || props.openworkServerToken?.trim() || "";
+  const reactSessionToken = props.teamworkServerClient?.token?.trim() || props.teamworkServerToken?.trim() || "";
   const canRenderReactSurface = Boolean(
     props.selectedSessionId &&
       props.runtimeWorkspaceId &&
-      props.openworkServerClient &&
+      props.teamworkServerClient &&
       reactSessionBaseUrl &&
       reactSessionToken &&
       props.surface,
@@ -467,11 +467,11 @@ export function SessionPage(props: SessionPageProps) {
 
               {!showDelayedSessionLoadingState && canRenderReactSurface ? (
                 <SessionSurface
-                  client={props.openworkServerClient!}
+                  client={props.teamworkServerClient!}
                   workspaceId={props.runtimeWorkspaceId!}
                   sessionId={props.selectedSessionId!}
                   opencodeBaseUrl={reactSessionBaseUrl}
-                  openworkToken={reactSessionToken}
+                  teamworkToken={reactSessionToken}
                   {...props.surface!}
                 />
               ) : null}
@@ -563,7 +563,7 @@ export function SessionPage(props: SessionPageProps) {
 
           <StatusBar
             clientConnected={props.clientConnected}
-            openworkServerStatus={props.openworkServerStatus}
+            teamworkServerStatus={props.teamworkServerStatus}
             developerMode={props.developerMode}
             settingsOpen={props.statusBar?.settingsOpen ?? false}
             onSendFeedback={props.onSendFeedback}

@@ -316,16 +316,16 @@ const MOCK_PLUGINS: DenPlugin[] = [
     requiresProvider: "any",
   },
   {
-    id: "plg_openwork_release",
-    name: "OpenWork Release Kit",
-    slug: "openwork-release-kit",
+    id: "plg_teamwork_release",
+    name: "TeamWork Release Kit",
+    slug: "teamwork-release-kit",
     description:
-      "Internal plugin that automates OpenWork release prep, orchestrator sidecar builds, and changelog generation. Shipped by OpenWork infra.",
+      "Internal plugin that automates TeamWork release prep, orchestrator sidecar builds, and changelog generation. Shipped by TeamWork infra.",
     version: "2.3.1",
-    author: "OpenWork",
+    author: "TeamWork",
     category: "workflows",
     installed: true,
-    source: { type: "github", repo: "different-ai/openwork-plugins" },
+    source: { type: "github", repo: "SamirTafesh/TeamWork-plugins" },
     skills: [
       { id: "sk_ow_release_prep", name: "Release Prep", description: "Bump versions across app/desktop/orchestrator in lockstep." },
       { id: "sk_ow_changelog", name: "Changelog Drafter", description: "Generate markdown release notes from merged PRs." },

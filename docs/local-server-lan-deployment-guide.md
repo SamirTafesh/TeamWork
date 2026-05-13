@@ -1,10 +1,10 @@
-# OpenWork Local Server Deployment Guide (LAN Team Host)
+# TeamWork Local Server Deployment Guide (LAN Team Host)
 
-This guide deploys OpenWork on a local Ubuntu/Linux server so your whole team can connect to one shared host.
+This guide deploys TeamWork on a local Ubuntu/Linux server so your whole team can connect to one shared host.
 
 It covers:
 
-1. Running OpenWork in shared mode on LAN
+1. Running TeamWork in shared mode on LAN
 2. Keeping it always-on with `systemd`
 3. Optional `nginx` reverse proxy
 4. Team onboarding and token management
@@ -13,8 +13,8 @@ It covers:
 
 Recommended for local office/home lab:
 
-1. One Linux server hosts OpenWork.
-2. OpenWork listens on LAN (`0.0.0.0:8787`).
+1. One Linux server hosts TeamWork.
+2. TeamWork listens on LAN (`0.0.0.0:8787`).
 3. Teammates connect using:
    - `connectUrl` (for example `http://10.0.0.20:8787`)
    - collaborator token
@@ -33,31 +33,31 @@ Install these on the host:
 Repo path used below:
 
 ```bash
-/opt/openwork/openwork
+/opt/teamwork/teamwork
 ```
 
 Workspace path used below:
 
 ```bash
-/srv/openwork/workspaces/main
+/srv/teamwork/workspaces/main
 ```
 
 ## 3. Clone And Install
 
 ```bash
-sudo mkdir -p /opt/openwork
-sudo chown -R "$USER":"$USER" /opt/openwork
-cd /opt/openwork
-git clone git@github.com:SamirTafesh/openwork.git
-cd openwork
+sudo mkdir -p /opt/teamwork
+sudo chown -R "$USER":"$USER" /opt/teamwork
+cd /opt/teamwork
+git clone git@github.com:SamirTafesh/teamwork.git
+cd teamwork
 pnpm install
 ```
 
 Create workspace folder:
 
 ```bash
-sudo mkdir -p /srv/openwork/workspaces/main
-sudo chown -R "$USER":"$USER" /srv/openwork/workspaces/main
+sudo mkdir -p /srv/teamwork/workspaces/main
+sudo chown -R "$USER":"$USER" /srv/teamwork/workspaces/main
 ```
 
 ## 4. Generate Stable Tokens
@@ -72,43 +72,43 @@ echo "$HOST_TOKEN"
 Store these in a protected file:
 
 ```bash
-sudo mkdir -p /etc/openwork
-sudo tee /etc/openwork/openwork.env >/dev/null <<EOF
-WORKSPACE_DIR=/srv/openwork/workspaces/main
-OPENWORK_PORT=8787
-OPENWORK_CONNECT_HOST=10.0.0.20
-OPENWORK_TOKEN=${COLLAB_TOKEN}
-OPENWORK_HOST_TOKEN=${HOST_TOKEN}
+sudo mkdir -p /etc/teamwork
+sudo tee /etc/teamwork/teamwork.env >/dev/null <<EOF
+WORKSPACE_DIR=/srv/teamwork/workspaces/main
+TEAMWORK_PORT=8787
+TEAMWORK_CONNECT_HOST=10.0.0.20
+TEAMWORK_TOKEN=${COLLAB_TOKEN}
+TEAMWORK_HOST_TOKEN=${HOST_TOKEN}
 EOF
-sudo chmod 600 /etc/openwork/openwork.env
+sudo chmod 600 /etc/teamwork/teamwork.env
 ```
 
-Set `OPENWORK_CONNECT_HOST` to your server LAN IP or internal DNS name.
+Set `TEAMWORK_CONNECT_HOST` to your server LAN IP or internal DNS name.
 
 ## 5. First Manual Start (Validation)
 
 ```bash
-cd /opt/openwork/openwork
+cd /opt/teamwork/teamwork
 set -a
-source /etc/openwork/openwork.env
+source /etc/teamwork/teamwork.env
 set +a
 
-pnpm --filter openwork-orchestrator dev -- \
+pnpm --filter teamwork-orchestrator dev -- \
   serve \
   --workspace "$WORKSPACE_DIR" \
   --remote-access \
-  --openwork-host 0.0.0.0 \
-  --openwork-port "$OPENWORK_PORT" \
-  --connect-host "$OPENWORK_CONNECT_HOST" \
-  --openwork-token "$OPENWORK_TOKEN" \
-  --openwork-host-token "$OPENWORK_HOST_TOKEN" \
+  --teamwork-host 0.0.0.0 \
+  --teamwork-port "$TEAMWORK_PORT" \
+  --connect-host "$TEAMWORK_CONNECT_HOST" \
+  --teamwork-token "$TEAMWORK_TOKEN" \
+  --teamwork-host-token "$TEAMWORK_HOST_TOKEN" \
   --approval manual
 ```
 
 Health check from host:
 
 ```bash
-curl -fsS "http://127.0.0.1:${OPENWORK_PORT}/health"
+curl -fsS "http://127.0.0.1:${TEAMWORK_PORT}/health"
 ```
 
 Stop with `Ctrl+C` after validation.
@@ -118,26 +118,26 @@ Stop with `Ctrl+C` after validation.
 Copy the example unit:
 
 ```bash
-sudo cp deployment/local/openwork-team.service.example /etc/systemd/system/openwork-team.service
+sudo cp deployment/local/teamwork-team.service.example /etc/systemd/system/teamwork-team.service
 ```
 
-Edit `/etc/systemd/system/openwork-team.service`:
+Edit `/etc/systemd/system/teamwork-team.service`:
 
 1. Set `User=` and `Group=` to your Linux account (or dedicated service account).
-2. Confirm `WorkingDirectory=/opt/openwork/openwork`.
+2. Confirm `WorkingDirectory=/opt/teamwork/teamwork`.
 
 Enable and start:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now openwork-team.service
-sudo systemctl status openwork-team.service --no-pager
+sudo systemctl enable --now teamwork-team.service
+sudo systemctl status teamwork-team.service --no-pager
 ```
 
 Follow logs:
 
 ```bash
-journalctl -u openwork-team.service -f
+journalctl -u teamwork-team.service -f
 ```
 
 ## 7. Optional Nginx Reverse Proxy
@@ -147,37 +147,37 @@ Use nginx if you want a stable internal hostname and/or TLS termination.
 Example config:
 
 ```bash
-sudo cp deployment/local/nginx-openwork-lan.conf.example /etc/nginx/sites-available/openwork-lan.conf
-sudo ln -sfn /etc/nginx/sites-available/openwork-lan.conf /etc/nginx/sites-enabled/openwork-lan.conf
+sudo cp deployment/local/nginx-teamwork-lan.conf.example /etc/nginx/sites-available/teamwork-lan.conf
+sudo ln -sfn /etc/nginx/sites-available/teamwork-lan.conf /etc/nginx/sites-enabled/teamwork-lan.conf
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
 If you proxy through nginx, set:
 
-1. `OPENWORK_CONNECT_HOST` to the nginx hostname
-2. `OPENWORK_PORT` to nginx listen port (for example `443` or `80`)
+1. `TEAMWORK_CONNECT_HOST` to the nginx hostname
+2. `TEAMWORK_PORT` to nginx listen port (for example `443` or `80`)
 
 Then restart service:
 
 ```bash
-sudo systemctl restart openwork-team.service
+sudo systemctl restart teamwork-team.service
 ```
 
 ## 8. Team Onboarding
 
 Share with teammates:
 
-1. `connectUrl`: `http://<OPENWORK_CONNECT_HOST>:<OPENWORK_PORT>`
-2. collaborator token: value of `OPENWORK_TOKEN`
+1. `connectUrl`: `http://<TEAMWORK_CONNECT_HOST>:<TEAMWORK_PORT>`
+2. collaborator token: value of `TEAMWORK_TOKEN`
 
 Do not share:
 
-1. `OPENWORK_HOST_TOKEN` (admin approvals token)
+1. `TEAMWORK_HOST_TOKEN` (admin approvals token)
 
 Client steps:
 
-1. Open OpenWork desktop app.
+1. Open TeamWork desktop app.
 2. `Add worker` -> `Connect remote`.
 3. Paste `connectUrl`.
 4. Paste collaborator token.
@@ -185,18 +185,18 @@ Client steps:
 ## 9. Approval Operations (Admin)
 
 ```bash
-openwork approvals list \
-  --openwork-url "http://127.0.0.1:8787" \
-  --host-token "<OPENWORK_HOST_TOKEN>"
+teamwork approvals list \
+  --teamwork-url "http://127.0.0.1:8787" \
+  --host-token "<TEAMWORK_HOST_TOKEN>"
 
-openwork approvals reply <approval-id> --allow \
-  --openwork-url "http://127.0.0.1:8787" \
-  --host-token "<OPENWORK_HOST_TOKEN>"
+teamwork approvals reply <approval-id> --allow \
+  --teamwork-url "http://127.0.0.1:8787" \
+  --host-token "<TEAMWORK_HOST_TOKEN>"
 ```
 
 ## 10. Firewall Baseline
 
-Allow only your LAN to access OpenWork port.
+Allow only your LAN to access TeamWork port.
 
 Example (`ufw`, adapt CIDR):
 
@@ -211,23 +211,23 @@ If using nginx on `80/443`, restrict those similarly to LAN or VPN ranges.
 ## 11. Upgrade Procedure
 
 ```bash
-cd /opt/openwork/openwork
+cd /opt/teamwork/teamwork
 git fetch --all
 git pull --ff-only origin dev
 pnpm install
-sudo systemctl restart openwork-team.service
+sudo systemctl restart teamwork-team.service
 ```
 
 ## 12. Token Rotation
 
-Regenerate and update `/etc/openwork/openwork.env`:
+Regenerate and update `/etc/teamwork/teamwork.env`:
 
-1. `OPENWORK_TOKEN` (collaborators reconnect with new token)
-2. `OPENWORK_HOST_TOKEN` (admin scripts use new token)
+1. `TEAMWORK_TOKEN` (collaborators reconnect with new token)
+2. `TEAMWORK_HOST_TOKEN` (admin scripts use new token)
 
 Then restart:
 
 ```bash
-sudo systemctl restart openwork-team.service
+sudo systemctl restart teamwork-team.service
 ```
 

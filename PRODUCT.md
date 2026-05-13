@@ -1,8 +1,8 @@
 ## Product
 
-OpenWork helps individual create, consume, and maintain their agentic workflows.
+TeamWork helps individual create, consume, and maintain their agentic workflows.
 
-OpenWork helps companies share their agentic workflows and provision their entire team.
+TeamWork helps companies share their agentic workflows and provision their entire team.
 
 The chat interfaces is where people consume the workflows.
 
@@ -26,19 +26,19 @@ Where are workflows created:
 - [We need better places for this to happen[
 
 Where are workflows maintain:
-- In OpenWork Cloud (internal name is Den).
+- In TeamWork Cloud (internal name is Den).
 
 Where are workflow hosted:
 - Local Machine
-- Remote via a OpenWork Host (CLI or desktop)
-- Remote on OpenWork Cloud (via Den sandbox workers)
+- Remote via a TeamWork Host (CLI or desktop)
+- Remote on TeamWork Cloud (via Den sandbox workers)
 
-## Current OpenWork Cloud flow
+## Current TeamWork Cloud flow
 
 - Users can sign in with the standard web auth providers or accept an org invite through the hosted join flow.
 - Invite signup keeps the invited email fixed, verifies the user by email code, and then drops them into the org join path.
 - Cloud workers are a paid flow: users complete checkout before they can launch hosted workers.
-- After a worker is ready, the user connects from the OpenWork app with `Add a worker` -> `Connect remote`, or opens the generated deep link directly.
+- After a worker is ready, the user connects from the TeamWork app with `Add a worker` -> `Connect remote`, or opens the generated deep link directly.
 
 ## Team distribution
 
@@ -54,7 +54,7 @@ Constraints:
 - We stay platform agnostic
 
 
-How to decide if OpenWork should do something:
+How to decide if TeamWork should do something:
 - Does it help Bob share config more easily?
 - Does it help Susan consume shared workflows more easily?
 - Is this something that is coding specific?

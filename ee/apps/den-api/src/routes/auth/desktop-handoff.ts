@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto"
-import { and, eq, gt, isNull } from "@openwork-ee/den-db/drizzle"
-import { AuthSessionTable, AuthUserTable, DesktopHandoffGrantTable } from "@openwork-ee/den-db/schema"
-import { normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+import { and, eq, gt, isNull } from "@teamwork-ee/den-db/drizzle"
+import { AuthSessionTable, AuthUserTable, DesktopHandoffGrantTable } from "@teamwork-ee/den-db/schema"
+import { normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"
@@ -22,7 +22,7 @@ const exchangeGrantSchema = z.object({
 const desktopHandoffGrantResponseSchema = z.object({
   grant: z.string(),
   expiresAt: z.string().datetime(),
-  openworkUrl: z.string().url(),
+  teamworkUrl: z.string().url(),
 }).meta({ ref: "DesktopHandoffGrantResponse" })
 
 const desktopHandoffExchangeResponseSchema = z.object({
@@ -75,8 +75,8 @@ function isWebAppHost(hostname: string) {
     }
   }
 
-  return normalized === "app.openworklabs.com"
-    || normalized === "app.openwork.software"
+  return normalized === "app.teamworklabs.com"
+    || normalized === "app.teamwork.software"
     || normalized.startsWith("app.")
 }
 
@@ -109,7 +109,7 @@ function resolveDesktopDenBaseUrl(request: Request) {
   const protocol = forwardedProto ?? new URL(request.url).protocol.replace(/:$/, "")
   const targetHost = forwardedHost ?? host
   if (!targetHost) {
-    return "https://app.openworklabs.com/api/den"
+    return "https://app.teamworklabs.com/api/den"
   }
 
   const origin = `${protocol}://${targetHost}`
@@ -125,15 +125,15 @@ function resolveDesktopDenBaseUrl(request: Request) {
   return origin
 }
 
-function buildOpenworkDeepLink(input: {
+function buildTeamworkDeepLink(input: {
   scheme?: string | null
   grant: string
   denBaseUrl: string
 }) {
-  const requestedScheme = input.scheme?.trim() || "openwork"
+  const requestedScheme = input.scheme?.trim() || "teamwork"
   const scheme = /^[a-z][a-z0-9+.-]*$/i.test(requestedScheme)
     ? requestedScheme
-    : "openwork"
+    : "teamwork"
   const url = new URL(`${scheme}://den-auth`)
   url.searchParams.set("grant", input.grant)
   url.searchParams.set("denBaseUrl", input.denBaseUrl)
@@ -147,7 +147,7 @@ export function registerDesktopAuthRoutes<T extends { Variables: AuthContextVari
       hide: true,
       tags: ["Authentication"],
       summary: "Create desktop handoff grant",
-      description: "Creates a short-lived desktop handoff grant and deep link so a signed-in web user can continue the same account in the OpenWork desktop app.",
+      description: "Creates a short-lived desktop handoff grant and deep link so a signed-in web user can continue the same account in the TeamWork desktop app.",
       responses: {
         200: jsonResponse("Desktop handoff grant created successfully.", desktopHandoffGrantResponseSchema),
         400: jsonResponse("The handoff request body was invalid.", invalidRequestSchema),
@@ -180,8 +180,8 @@ export function registerDesktopAuthRoutes<T extends { Variables: AuthContextVari
     return c.json({
       grant,
       expiresAt: expiresAt.toISOString(),
-      openworkUrl: buildOpenworkDeepLink({
-        scheme: input.desktopScheme || "openwork",
+      teamworkUrl: buildTeamworkDeepLink({
+        scheme: input.desktopScheme || "teamwork",
         grant,
         denBaseUrl,
       }),

@@ -29,7 +29,7 @@ export function registerMcpRoutes<T extends { Variables: Record<string, unknown>
     const document = await loadOpenApiDocument(app as unknown as Hono, c.env)
     const catalog = buildMcpCatalog(document)
     const server = new McpServer({
-      name: "openwork-den-api",
+      name: "teamwork-den-api",
       version: "1.0.0",
     })
 

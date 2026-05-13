@@ -1,12 +1,12 @@
-# OpenWork Design System
+# TeamWork Design System
 
 This document turns the visual direction in `DESIGN-LANGUAGE.md` into an implementation system that can unify:
 
-- `apps/app` (OpenWork app)
-- `ee/apps/den-web` (OpenWork Cloud / Den web surfaces)
+- `apps/app` (TeamWork app)
+- `ee/apps/den-web` (TeamWork Cloud / Den web surfaces)
 - `ee/apps/landing` (marketing + product storytelling)
 
-The goal is not to create three similar styles. The goal is one OpenWork design system with a few environment-specific expressions.
+The goal is not to create three similar styles. The goal is one TeamWork design system with a few environment-specific expressions.
 
 ---
 
@@ -31,7 +31,7 @@ This file defines the missing structure.
 
 ## 2. System model
 
-OpenWork should use a three-layer design system:
+TeamWork should use a three-layer design system:
 
 ### Layer 1: Foundations
 
@@ -94,7 +94,7 @@ If there is a conflict:
 
 ## 4. Core principle: one system, three expressions
 
-OpenWork has three main UI contexts:
+TeamWork has three main UI contexts:
 
 1. **App expression** — denser, flatter, operational
 2. **Cloud expression** — still operational, slightly more editorial and roomy
@@ -194,7 +194,7 @@ Typography should be systemized into roles, not ad hoc text sizes.
 
 ## 7. Spacing system
 
-OpenWork should use a consistent spacing scale instead of one-off values.
+TeamWork should use a consistent spacing scale instead of one-off values.
 
 Recommended base scale:
 
@@ -323,7 +323,7 @@ They should not invent new button styles, new shadow rules, or new selection pat
 ### Rule 3: Radix stays underneath the system
 
 Radix is the palette source.
-OpenWork tokens are the product API.
+TeamWork tokens are the product API.
 
 ### Rule 4: app and Cloud should share primitives even if frameworks differ
 
@@ -427,7 +427,7 @@ Use the Den dashboard shell as the reference for:
 
 ### Step D
 
-Restyle one OpenWork app screen fully using the system to prove the direction.
+Restyle one TeamWork app screen fully using the system to prove the direction.
 
 Recommended pilot screens:
 
@@ -454,7 +454,7 @@ We will know this is working when:
 This system should not:
 
 - introduce a trendy visual reboot disconnected from the current product
-- replace the OpenWork mood described in `DESIGN-LANGUAGE.md`
+- replace the TeamWork mood described in `DESIGN-LANGUAGE.md`
 - depend on a large new dependency just to manage styling
 - force a shared package too early
 - block incremental improvements until a perfect system exists

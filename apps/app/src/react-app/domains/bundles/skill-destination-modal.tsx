@@ -35,7 +35,7 @@ export type SkillDestinationModalProps = {
 
 const displayName = (workspace: WorkspaceInfo, fallback: string): string =>
   workspace.displayName?.trim() ||
-  workspace.openworkWorkspaceName?.trim() ||
+  workspace.teamworkWorkspaceName?.trim() ||
   workspace.name?.trim() ||
   workspace.directory?.trim() ||
   workspace.path?.trim() ||
@@ -76,7 +76,7 @@ export function SkillDestinationModal(props: SkillDestinationModalProps) {
     }
     return (
       workspace.directory?.trim() ||
-      workspace.openworkHostUrl?.trim() ||
+      workspace.teamworkHostUrl?.trim() ||
       workspace.baseUrl?.trim() ||
       workspace.path?.trim() ||
       t("share_skill_destination.remote_badge")

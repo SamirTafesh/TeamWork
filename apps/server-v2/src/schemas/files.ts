@@ -3,33 +3,33 @@ import { identifierSchema, successResponseSchema, workspaceIdParamsSchema } from
 
 const fileSessionIdParamsSchema = workspaceIdParamsSchema.extend({
   fileSessionId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2FileSessionIdParams" });
+}).meta({ ref: "TeamWorkServerV2FileSessionIdParams" });
 
 const jsonRecordSchema = z.record(z.string(), z.unknown());
 
 export const workspaceActivationDataSchema = z.object({
   activeWorkspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2WorkspaceActivationData" });
+}).meta({ ref: "TeamWorkServerV2WorkspaceActivationData" });
 
 export const engineReloadDataSchema = z.object({
   reloadedAt: z.number().int().nonnegative(),
-}).meta({ ref: "OpenWorkServerV2EngineReloadData" });
+}).meta({ ref: "TeamWorkServerV2EngineReloadData" });
 
 export const workspaceDeleteDataSchema = z.object({
   deleted: z.boolean(),
   workspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2WorkspaceDeleteData" });
+}).meta({ ref: "TeamWorkServerV2WorkspaceDeleteData" });
 
 export const workspaceDisposeDataSchema = z.object({
   disposed: z.boolean(),
   workspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2WorkspaceDisposeData" });
+}).meta({ ref: "TeamWorkServerV2WorkspaceDisposeData" });
 
 export const workspaceCreateLocalRequestSchema = z.object({
   folderPath: z.string().min(1),
   name: z.string().min(1),
   preset: z.string().min(1).optional(),
-}).meta({ ref: "OpenWorkServerV2WorkspaceCreateLocalRequest" });
+}).meta({ ref: "TeamWorkServerV2WorkspaceCreateLocalRequest" });
 
 export const reloadEventSchema = z.object({
   id: identifierSchema,
@@ -43,17 +43,17 @@ export const reloadEventSchema = z.object({
     type: z.enum(["agent", "command", "config", "mcp", "plugin", "skill"]),
   }).optional(),
   workspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2ReloadEvent" });
+}).meta({ ref: "TeamWorkServerV2ReloadEvent" });
 
 export const reloadEventsDataSchema = z.object({
   cursor: z.number().int().nonnegative(),
   items: z.array(reloadEventSchema),
-}).meta({ ref: "OpenWorkServerV2ReloadEventsData" });
+}).meta({ ref: "TeamWorkServerV2ReloadEventsData" });
 
 export const fileSessionCreateRequestSchema = z.object({
   ttlSeconds: z.number().positive().optional(),
   write: z.boolean().optional(),
-}).meta({ ref: "OpenWorkServerV2FileSessionCreateRequest" });
+}).meta({ ref: "TeamWorkServerV2FileSessionCreateRequest" });
 
 export const fileSessionDataSchema = z.object({
   canWrite: z.boolean(),
@@ -62,7 +62,7 @@ export const fileSessionDataSchema = z.object({
   id: identifierSchema,
   ttlMs: z.number().int().nonnegative(),
   workspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2FileSessionData" });
+}).meta({ ref: "TeamWorkServerV2FileSessionData" });
 
 export const fileCatalogSnapshotSchema = z.object({
   cursor: z.number().int().nonnegative(),
@@ -79,27 +79,27 @@ export const fileCatalogSnapshotSchema = z.object({
   total: z.number().int().nonnegative(),
   truncated: z.boolean(),
   workspaceId: identifierSchema,
-}).meta({ ref: "OpenWorkServerV2FileCatalogSnapshot" });
+}).meta({ ref: "TeamWorkServerV2FileCatalogSnapshot" });
 
 export const fileBatchReadRequestSchema = z.object({
   paths: z.array(z.string()).min(1),
-}).meta({ ref: "OpenWorkServerV2FileBatchReadRequest" });
+}).meta({ ref: "TeamWorkServerV2FileBatchReadRequest" });
 
 export const fileBatchReadResponseSchema = successResponseSchema(
-  "OpenWorkServerV2FileBatchReadResponse",
+  "TeamWorkServerV2FileBatchReadResponse",
   z.object({ items: z.array(jsonRecordSchema) }),
 );
 
 export const fileBatchWriteRequestSchema = z.object({
   writes: z.array(jsonRecordSchema).min(1),
-}).meta({ ref: "OpenWorkServerV2FileBatchWriteRequest" });
+}).meta({ ref: "TeamWorkServerV2FileBatchWriteRequest" });
 
 export const fileOperationsRequestSchema = z.object({
   operations: z.array(jsonRecordSchema).min(1),
-}).meta({ ref: "OpenWorkServerV2FileOperationsRequest" });
+}).meta({ ref: "TeamWorkServerV2FileOperationsRequest" });
 
 export const fileMutationResultSchema = successResponseSchema(
-  "OpenWorkServerV2FileMutationResult",
+  "TeamWorkServerV2FileMutationResult",
   z.object({
     cursor: z.number().int().nonnegative(),
     items: z.array(jsonRecordSchema),
@@ -108,14 +108,14 @@ export const fileMutationResultSchema = successResponseSchema(
 
 export const simpleContentQuerySchema = z.object({
   path: z.string().min(1),
-}).meta({ ref: "OpenWorkServerV2SimpleContentQuery" });
+}).meta({ ref: "TeamWorkServerV2SimpleContentQuery" });
 
 export const simpleContentWriteRequestSchema = z.object({
   baseUpdatedAt: z.number().nullable().optional(),
   content: z.string(),
   force: z.boolean().optional(),
   path: z.string().min(1),
-}).meta({ ref: "OpenWorkServerV2SimpleContentWriteRequest" });
+}).meta({ ref: "TeamWorkServerV2SimpleContentWriteRequest" });
 
 export const simpleContentDataSchema = z.object({
   bytes: z.number().int().nonnegative(),
@@ -123,7 +123,7 @@ export const simpleContentDataSchema = z.object({
   path: z.string(),
   revision: z.string().optional(),
   updatedAt: z.number(),
-}).meta({ ref: "OpenWorkServerV2SimpleContentData" });
+}).meta({ ref: "TeamWorkServerV2SimpleContentData" });
 
 export const binaryItemSchema = z.object({
   id: z.string(),
@@ -131,60 +131,60 @@ export const binaryItemSchema = z.object({
   path: z.string(),
   size: z.number().int().nonnegative(),
   updatedAt: z.number(),
-}).meta({ ref: "OpenWorkServerV2BinaryItem" });
+}).meta({ ref: "TeamWorkServerV2BinaryItem" });
 
 export const binaryListResponseSchema = successResponseSchema(
-  "OpenWorkServerV2BinaryListResponse",
+  "TeamWorkServerV2BinaryListResponse",
   z.object({ items: z.array(binaryItemSchema) }),
 );
 
 export const binaryUploadDataSchema = z.object({
   bytes: z.number().int().nonnegative(),
   path: z.string(),
-}).meta({ ref: "OpenWorkServerV2BinaryUploadData" });
+}).meta({ ref: "TeamWorkServerV2BinaryUploadData" });
 
 export const workspaceActivationResponseSchema = successResponseSchema(
-  "OpenWorkServerV2WorkspaceActivationResponse",
+  "TeamWorkServerV2WorkspaceActivationResponse",
   workspaceActivationDataSchema,
 );
 
 export const engineReloadResponseSchema = successResponseSchema(
-  "OpenWorkServerV2EngineReloadResponse",
+  "TeamWorkServerV2EngineReloadResponse",
   engineReloadDataSchema,
 );
 
 export const workspaceDeleteResponseSchema = successResponseSchema(
-  "OpenWorkServerV2WorkspaceDeleteResponse",
+  "TeamWorkServerV2WorkspaceDeleteResponse",
   workspaceDeleteDataSchema,
 );
 
 export const workspaceDisposeResponseSchema = successResponseSchema(
-  "OpenWorkServerV2WorkspaceDisposeResponse",
+  "TeamWorkServerV2WorkspaceDisposeResponse",
   workspaceDisposeDataSchema,
 );
 
 export const reloadEventsResponseSchema = successResponseSchema(
-  "OpenWorkServerV2ReloadEventsResponse",
+  "TeamWorkServerV2ReloadEventsResponse",
   reloadEventsDataSchema,
 );
 
 export const fileSessionResponseSchema = successResponseSchema(
-  "OpenWorkServerV2FileSessionResponse",
+  "TeamWorkServerV2FileSessionResponse",
   fileSessionDataSchema,
 );
 
 export const fileCatalogSnapshotResponseSchema = successResponseSchema(
-  "OpenWorkServerV2FileCatalogSnapshotResponse",
+  "TeamWorkServerV2FileCatalogSnapshotResponse",
   fileCatalogSnapshotSchema,
 );
 
 export const simpleContentResponseSchema = successResponseSchema(
-  "OpenWorkServerV2SimpleContentResponse",
+  "TeamWorkServerV2SimpleContentResponse",
   simpleContentDataSchema,
 );
 
 export const binaryUploadResponseSchema = successResponseSchema(
-  "OpenWorkServerV2BinaryUploadResponse",
+  "TeamWorkServerV2BinaryUploadResponse",
   binaryUploadDataSchema,
 );
 

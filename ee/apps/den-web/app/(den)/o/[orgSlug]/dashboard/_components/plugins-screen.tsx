@@ -13,7 +13,7 @@ import {
   Users,
   Webhook,
 } from "lucide-react";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { UnderlineTabs } from "../../../../_components/ui/tabs";
 import { DashboardPageTemplate } from "../../../../_components/ui/dashboard-page-template";
 import { DenInput } from "../../../../_components/ui/input";

@@ -23,18 +23,18 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(DEFAULT_PUBLIC_BASE_URL),
   title: {
-    default: "OpenWork Share",
-    template: "%s - OpenWork Share"
+    default: "TeamWork Share",
+    template: "%s - TeamWork Share"
   },
-  description: "Publish OpenWork worker packages and shareable import links.",
-  icons: { icon: "/openwork-mark.svg" },
+  description: "Publish TeamWork worker packages and shareable import links.",
+  icons: { icon: "/teamwork-mark.svg" },
   openGraph: {
     type: "website",
-    siteName: "OpenWork Share",
+    siteName: "TeamWork Share",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@getopenwork",
+    site: "@getteamwork",
   },
 };
 

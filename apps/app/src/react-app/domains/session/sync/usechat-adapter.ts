@@ -3,14 +3,14 @@ import type { UIMessage, UIMessageChunk, ChatTransport, DynamicToolUIPart } from
 import type { Part } from "@opencode-ai/sdk/v2/client";
 
 import { abortSessionSafe } from "../../../../app/lib/opencode-session";
-import type { OpenworkSessionMessage, OpenworkSessionSnapshot } from "../../../../app/lib/openwork-server";
+import type { TeamworkSessionMessage, TeamworkSessionSnapshot } from "../../../../app/lib/teamwork-server";
 import { normalizeEvent, safeStringify } from "../../../../app/utils";
 import type { OpencodeEvent } from "../../../../app/types";
 import { createClient } from "../../../../app/lib/opencode";
 
 type TransportOptions = {
   baseUrl: string;
-  openworkToken: string;
+  teamworkToken: string;
   sessionId: string;
 };
 
@@ -81,7 +81,7 @@ function mapToolPart(part: Part): DynamicToolUIPart {
   };
 }
 
-export function snapshotToUIMessages(snapshot: OpenworkSessionSnapshot): UIMessage[] {
+export function snapshotToUIMessages(snapshot: TeamworkSessionSnapshot): UIMessage[] {
   return snapshot.messages.map((message) => ({
     id: message.info.id,
     role: message.info.role,
@@ -357,12 +357,12 @@ function handleEventChunk(
   }
 }
 
-export function createOpenworkChatTransport(options: TransportOptions): ChatTransport<UIMessage> {
+export function createTeamworkChatTransport(options: TransportOptions): ChatTransport<UIMessage> {
   return {
     async sendMessages({ messages, abortSignal }) {
       const client = createClient(options.baseUrl, undefined, {
-        token: options.openworkToken,
-        mode: "openwork",
+        token: options.teamworkToken,
+        mode: "teamwork",
       });
 
       return new ReadableStream<UIMessageChunk>({

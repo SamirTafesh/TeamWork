@@ -9,15 +9,15 @@ const repoRoot = resolve(desktopRoot, "../..");
 const electronSidecarDir = resolve(desktopRoot, "resources", "sidecars");
 const defaultDevDataDir = resolve(
   process.env.HOME ?? process.env.USERPROFILE ?? repoRoot,
-  ".openwork",
-  "openwork-orchestrator-dev",
+  ".teamwork",
+  "teamwork-orchestrator-dev",
 );
 
 const pnpmCmd = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const nodeCmd = process.execPath;
 const portValue = Number.parseInt(process.env.PORT ?? "", 10);
 const devPort = Number.isFinite(portValue) && portValue > 0 ? portValue : 5173;
-const explicitStartUrl = process.env.OPENWORK_ELECTRON_START_URL?.trim() || "";
+const explicitStartUrl = process.env.TEAMWORK_ELECTRON_START_URL?.trim() || "";
 const startUrl = explicitStartUrl || `http://localhost:${devPort}`;
 const viteProbeUrls = explicitStartUrl
   ? [explicitStartUrl]
@@ -194,8 +194,8 @@ process.once("SIGTERM", () => void stopAll(143));
 runSync(nodeCmd, [resolve(__dirname, "prepare-sidecar.mjs"), "--force", "--outdir", electronSidecarDir], { cwd: desktopRoot });
 
 // Build the server TS → JS so Electron can import it in-process
-console.log("[electron-dev] Building openwork-server (tsc)...");
-runSync(pnpmCmd, ["--filter", "openwork-server", "build"], { cwd: repoRoot });
+console.log("[electron-dev] Building teamwork-server (tsc)...");
+runSync(pnpmCmd, ["--filter", "teamwork-server", "build"], { cwd: repoRoot });
 
 const initialProbeUrls = [startUrl, ...viteProbeUrls].filter(Boolean);
 let viteReady = false;
@@ -221,8 +221,8 @@ if (!viteReady) {
     env: {
       ...process.env,
       PORT: String(devPort),
-      OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE ?? "1",
-      OPENWORK_DATA_DIR: process.env.OPENWORK_DATA_DIR ?? defaultDevDataDir,
+      TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE ?? "1",
+      TEAMWORK_DATA_DIR: process.env.TEAMWORK_DATA_DIR ?? defaultDevDataDir,
     },
   });
 }
@@ -231,24 +231,24 @@ const resolvedStartUrl = await waitForVite(startUrl);
 
 // Default Electron CDP on a stable dev port so chrome-devtools MCP / raw CDP
 // clients can attach without each launch picking a random port. Override with
-// OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=<port> or set to "0" to disable.
+// TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT=<port> or set to "0" to disable.
 const defaultCdpPort = "9823";
-const cdpPortRaw = process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? defaultCdpPort;
+const cdpPortRaw = process.env.TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? defaultCdpPort;
 const cdpPort = cdpPortRaw === "" || cdpPortRaw === "0" ? "" : cdpPortRaw;
 
 electronChild = run(pnpmCmd, ["exec", "electron", "./electron/main.mjs"], {
   cwd: desktopRoot,
   env: {
     ...process.env,
-    OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE ?? "1",
-    OPENWORK_DATA_DIR: process.env.OPENWORK_DATA_DIR ?? defaultDevDataDir,
-    OPENWORK_ELECTRON_START_URL: resolvedStartUrl,
-    ...(cdpPort ? { OPENWORK_ELECTRON_REMOTE_DEBUG_PORT: cdpPort } : {}),
+    TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE ?? "1",
+    TEAMWORK_DATA_DIR: process.env.TEAMWORK_DATA_DIR ?? defaultDevDataDir,
+    TEAMWORK_ELECTRON_START_URL: resolvedStartUrl,
+    ...(cdpPort ? { TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT: cdpPort } : {}),
   },
 });
 
 if (cdpPort) {
-  console.log(`[openwork] Electron CDP exposed at http://127.0.0.1:${cdpPort}`);
+  console.log(`[teamwork] Electron CDP exposed at http://127.0.0.1:${cdpPort}`);
 }
 
 electronChild.on("exit", (code) => {

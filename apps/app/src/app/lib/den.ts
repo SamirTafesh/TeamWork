@@ -1,7 +1,7 @@
 import {
   normalizeDesktopConfig,
   type DesktopConfig as SharedDesktopConfig,
-} from "@openwork/types/den/desktop-app-restrictions";
+} from "@teamwork/types/den/desktop-app-restrictions";
 
 // Re-export the shared schema under the local alias so React consumers
 // (e.g. the cloud domain's desktop-config provider) can import it alongside
@@ -10,7 +10,7 @@ import {
 export type { SharedDesktopConfig };
 export { normalizeDesktopConfig };
 
-import { isDesktopDeployment } from "./openwork-deployment";
+import { isDesktopDeployment } from "./teamwork-deployment";
 import {
   dispatchDenSettingsChanged,
 } from "./den-session-events";
@@ -23,19 +23,19 @@ import {
 import { isDesktopRuntime } from "../utils";
 import type { DenOrgSkillCard } from "../types";
 
-const STORAGE_BASE_URL = "openwork.den.baseUrl";
-const STORAGE_API_BASE_URL = "openwork.den.apiBaseUrl";
-const STORAGE_AUTH_TOKEN = "openwork.den.authToken";
-const STORAGE_ACTIVE_ORG_ID = "openwork.den.activeOrgId";
-const STORAGE_ACTIVE_ORG_SLUG = "openwork.den.activeOrgSlug";
-const STORAGE_ACTIVE_ORG_NAME = "openwork.den.activeOrgName";
+const STORAGE_BASE_URL = "teamwork.den.baseUrl";
+const STORAGE_API_BASE_URL = "teamwork.den.apiBaseUrl";
+const STORAGE_AUTH_TOKEN = "teamwork.den.authToken";
+const STORAGE_ACTIVE_ORG_ID = "teamwork.den.activeOrgId";
+const STORAGE_ACTIVE_ORG_SLUG = "teamwork.den.activeOrgSlug";
+const STORAGE_ACTIVE_ORG_NAME = "teamwork.den.activeOrgName";
 const DEFAULT_DEN_TIMEOUT_MS = 12_000;
 
-export const DEFAULT_DEN_AUTH_NAME = "OpenWork User";
+export const DEFAULT_DEN_AUTH_NAME = "TeamWork User";
 const BUILD_DEN_BASE_URL =
   (typeof import.meta !== "undefined" && typeof import.meta.env?.VITE_DEN_BASE_URL === "string"
     ? import.meta.env.VITE_DEN_BASE_URL
-    : "").trim() || "https://app.openworklabs.com";
+    : "").trim() || "https://app.teamworklabs.com";
 const BUILD_DEN_API_BASE_URL =
   (typeof import.meta !== "undefined" && typeof import.meta.env?.VITE_DEN_API_BASE_URL === "string"
     ? import.meta.env.VITE_DEN_API_BASE_URL
@@ -94,7 +94,7 @@ export type DenWorkerTokens = {
   clientToken: string | null;
   ownerToken: string | null;
   hostToken: string | null;
-  openworkUrl: string | null;
+  teamworkUrl: string | null;
   workspaceId: string | null;
 };
 
@@ -336,7 +336,7 @@ function isWebAppHost(hostname: string): boolean {
     }
   }
 
-  return normalized === "app.openworklabs.com" || normalized === "app.openwork.software" || normalized.startsWith("app.");
+  return normalized === "app.teamworklabs.com" || normalized === "app.teamwork.software" || normalized.startsWith("app.");
 }
 
 function stripDenApiBasePath(input: string | null | undefined): string | null {
@@ -501,7 +501,7 @@ export function buildDenAuthUrl(baseUrl: string, mode: "sign-in" | "sign-up"): s
   target.searchParams.set("mode", mode);
   if (isDesktopDeployment()) {
     target.searchParams.set("desktopAuth", "1");
-    target.searchParams.set("desktopScheme", "openwork");
+    target.searchParams.set("desktopScheme", "teamwork");
   }
   return target.toString();
 }
@@ -785,7 +785,7 @@ function getWorkerTokens(payload: unknown): DenWorkerTokens | null {
     clientToken: typeof tokens.client === "string" ? tokens.client : null,
     ownerToken: typeof tokens.owner === "string" ? tokens.owner : null,
     hostToken: typeof tokens.host === "string" ? tokens.host : null,
-    openworkUrl: connect && typeof connect.openworkUrl === "string" ? connect.openworkUrl : null,
+    teamworkUrl: connect && typeof connect.teamworkUrl === "string" ? connect.teamworkUrl : null,
     workspaceId: connect && typeof connect.workspaceId === "string" ? connect.workspaceId : null,
   };
 }

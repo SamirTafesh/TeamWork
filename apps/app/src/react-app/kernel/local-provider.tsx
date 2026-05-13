@@ -51,8 +51,8 @@ type LocalContextValue = {
 
 const LocalContext = createContext<LocalContextValue | undefined>(undefined);
 
-const UI_STORAGE_KEY = "openwork.ui";
-const PREFS_STORAGE_KEY = "openwork.preferences";
+const UI_STORAGE_KEY = "teamwork.ui";
+const PREFS_STORAGE_KEY = "teamwork.preferences";
 
 const INITIAL_UI: LocalUIState = { view: "settings", tab: "general" };
 const INITIAL_PREFS: LocalPreferences = {

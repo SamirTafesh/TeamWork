@@ -10,10 +10,10 @@ type SeedMessage = {
   text: string;
 };
 
-const DEFAULT_AGENT = "openwork";
+const DEFAULT_AGENT = "teamwork";
 const DEFAULT_PROVIDER = "openai";
 const DEFAULT_MODEL = "gpt-5.4";
-const OPENWORK_DEV_DATA_DIRS = ["openwork-dev-data", "opencode-dev"];
+const TEAMWORK_DEV_DATA_DIRS = ["teamwork-dev-data", "opencode-dev"];
 
 function truthy(value: string | undefined): boolean {
   if (!value) return false;
@@ -22,7 +22,7 @@ function truthy(value: string | undefined): boolean {
 }
 
 function opencodeOrchestratorDataDirs(): string[] {
-  const root = process.env.OPENWORK_DATA_DIR?.trim();
+  const root = process.env.TEAMWORK_DATA_DIR?.trim();
   if (!root) return [];
 
   const dirs: string[] = [];
@@ -30,7 +30,7 @@ function opencodeOrchestratorDataDirs(): string[] {
     if (existsSync(dir)) dirs.push(dir);
   };
 
-  for (const name of OPENWORK_DEV_DATA_DIRS) {
+  for (const name of TEAMWORK_DEV_DATA_DIRS) {
     const base = join(root, name);
     pushIfExists(join(base, "xdg", "data", "opencode"));
     if (!existsSync(base)) continue;

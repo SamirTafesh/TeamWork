@@ -1,16 +1,16 @@
 {
-  "name": "@openwork-ee/landing",
+  "name": "@teamwork-ee/landing",
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "OPENWORK_DEV_MODE=1 next dev --hostname 0.0.0.0",
+    "dev": "TEAMWORK_DEV_MODE=1 next dev --hostname 0.0.0.0",
     "prebuild": "pnpm --dir ../../../packages/ui build",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "lint": "next lint"
   },
   "dependencies": {
-    "@openwork/ui": "workspace:*",
+    "@teamwork/ui": "workspace:*",
     "botid": "^1.5.11",
     "framer-motion": "^12.35.1",
     "lucide-react": "^0.577.0",

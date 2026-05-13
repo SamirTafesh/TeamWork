@@ -1,6 +1,6 @@
-import { and, eq, gt } from "@openwork-ee/den-db/drizzle"
-import { AuthUserTable, InvitationTable, MemberTable } from "@openwork-ee/den-db/schema"
-import { normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+import { and, eq, gt } from "@teamwork-ee/den-db/drizzle"
+import { AuthUserTable, InvitationTable, MemberTable } from "@teamwork-ee/den-db/schema"
+import { normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"
@@ -159,7 +159,7 @@ export function registerOrgInvitationRoutes<T extends { Variables: OrgRouteVaria
       await sendDenOrganizationInvitationEmail({
         email,
         inviteLink: buildInvitationLink(invitationId),
-        invitedByName: user.name ?? user.email ?? "OpenWork",
+        invitedByName: user.name ?? user.email ?? "TeamWork",
         invitedByEmail: user.email ?? "",
         organizationName: payload.organization.name,
         role,

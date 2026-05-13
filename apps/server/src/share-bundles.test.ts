@@ -4,7 +4,7 @@ import { ApiError } from "./errors.js";
 import { normalizeSharedBundleFetchUrl, resolveTrustedSharedBundleFetchUrl } from "./share-bundles.js";
 
 const VALID_SKILL_BUNDLE_ID = "01KNBQDQAK41VZSZDF5G9MW4MW";
-const VALID_SKILL_SHARE_URL = `https://share.openworklabs.com/b/${VALID_SKILL_BUNDLE_ID}`;
+const VALID_SKILL_SHARE_URL = `https://share.teamworklabs.com/b/${VALID_SKILL_BUNDLE_ID}`;
 const VALID_SKILL_DATA_URL = `${VALID_SKILL_SHARE_URL}/data`;
 
 describe("normalizeSharedBundleFetchUrl", () => {
@@ -33,13 +33,13 @@ describe("resolveTrustedSharedBundleFetchUrl", () => {
       new ApiError(
         400,
         "untrusted_bundle_url",
-        "Shared bundle URLs must use the configured OpenWork publisher (https://share.openworklabs.com). Import only bundles from trusted sources.",
+        "Shared bundle URLs must use the configured TeamWork publisher (https://share.teamworklabs.com). Import only bundles from trusted sources.",
       ),
     );
   });
 
   test("rejects bundle URLs without a bundle id path", () => {
-    expect(() => resolveTrustedSharedBundleFetchUrl("https://share.openworklabs.com/not-a-bundle")).toThrow(
+    expect(() => resolveTrustedSharedBundleFetchUrl("https://share.teamworklabs.com/not-a-bundle")).toThrow(
       new ApiError(400, "invalid_bundle_url", "Shared bundle URL must point to a bundle id"),
     );
   });

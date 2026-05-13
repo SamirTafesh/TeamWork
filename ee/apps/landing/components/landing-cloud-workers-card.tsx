@@ -31,7 +31,7 @@ export function LandingCloudWorkersCard(props: Props) {
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <span className="truncate text-[11px] text-gray-400">
-            share.openworklabs.com/b/01KNB...
+            share.teamworklabs.com/b/01KNB...
           </span>
         </div>
       </div>
@@ -73,7 +73,7 @@ export function LandingCloudWorkersCard(props: Props) {
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
-          Open in OpenWork
+          Open in TeamWork
         </button>
       </div>
     </div>

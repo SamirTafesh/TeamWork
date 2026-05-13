@@ -1,6 +1,6 @@
-import { desc, eq } from "@openwork-ee/den-db/drizzle"
-import { WorkerTable, WorkerTokenTable } from "@openwork-ee/den-db/schema"
-import { createDenTypeId } from "@openwork-ee/utils/typeid"
+import { desc, eq } from "@teamwork-ee/den-db/drizzle"
+import { WorkerTable, WorkerTokenTable } from "@teamwork-ee/den-db/schema"
+import { createDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"
@@ -84,7 +84,7 @@ const workerTokensResponseSchema = z.object({
     client: z.string(),
   }),
   connect: z.object({
-    openworkUrl: z.string().nullable(),
+    teamworkUrl: z.string().nullable(),
     workspaceId: z.string().nullable(),
   }).nullable(),
 }).meta({ ref: "WorkerTokensResponse" })
@@ -396,7 +396,7 @@ export function registerWorkerCoreRoutes<T extends { Variables: WorkerRouteVaria
     describeRoute({
       tags: ["Workers"],
       summary: "Get worker connection tokens",
-      description: "Returns connection tokens and the resolved OpenWork connect URL for an existing worker.",
+      description: "Returns connection tokens and the resolved TeamWork connect URL for an existing worker.",
       responses: {
         200: jsonResponse("Worker connection tokens returned successfully.", workerTokensResponseSchema),
         400: jsonResponse("The worker token path parameters were invalid.", invalidRequestSchema),

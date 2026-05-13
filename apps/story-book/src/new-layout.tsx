@@ -15,7 +15,7 @@ import {
 import { MCP_QUICK_CONNECT, SUGGESTED_PLUGINS } from "../../app/src/app/constants";
 import { createWorkspaceShellLayout } from "../../app/src/app/lib/workspace-shell-layout";
 import { getModelBehaviorSummary, sanitizeModelBehaviorValue } from "../../app/src/app/lib/model-behavior";
-import type { OpenworkServerClient } from "../../app/src/app/lib/openwork-server";
+import type { TeamworkServerClient } from "../../app/src/app/lib/teamwork-server";
 import ExtensionsView from "../../app/src/app/pages/extensions";
 import IdentitiesView from "../../app/src/app/pages/identities";
 import {
@@ -58,8 +58,8 @@ type CommandPaletteItem = {
 const localWorkspace = storyWorkspaces[0] ?? {
   id: "local-foundation",
   name: "Local Foundation",
-  displayName: "OpenWork App",
-  path: "~/OpenWork/app",
+  displayName: "TeamWork App",
+  path: "~/TeamWork/app",
   preset: "starter",
   workspaceType: "local" as const,
 };
@@ -71,12 +71,12 @@ const remoteWorkspace = storyWorkspaces[1] ?? {
   path: "remote://ops-worker",
   preset: "automation",
   workspaceType: "remote" as const,
-  remoteType: "openwork" as const,
-  baseUrl: "https://worker.openworklabs.com/opencode",
-  openworkHostUrl: "https://worker.openworklabs.com",
-  openworkWorkspaceName: "Ops Worker",
+  remoteType: "teamwork" as const,
+  baseUrl: "https://worker.teamworklabs.com/opencode",
+  teamworkHostUrl: "https://worker.teamworklabs.com",
+  teamworkWorkspaceName: "Ops Worker",
   sandboxBackend: "docker" as const,
-  sandboxContainerName: "openwork-ops-worker",
+  sandboxContainerName: "teamwork-ops-worker",
 };
 
 const now = Date.now();
@@ -217,7 +217,7 @@ const storyModels: Array<{
 const mockShareFields = [
   {
     label: "Worker URL",
-    value: "https://worker.openworklabs.com/opencode",
+    value: "https://worker.teamworklabs.com/opencode",
     hint: "Paste this into Add worker -> Connect remote.",
   },
   {
@@ -263,7 +263,7 @@ const initialSkillContents: Record<string, string> = {
 
 const initialHubRepo: HubSkillRepo = {
   owner: "different-ai",
-  repo: "openwork-hub",
+  repo: "teamwork-hub",
   ref: "main",
 };
 
@@ -272,13 +272,13 @@ const initialHubSkills: HubSkillCard[] = [
     name: "worker-smoke",
     description: "Smoke-test remote worker setup and report any blockers.",
     trigger: "worker smoke",
-    source: { owner: "different-ai", repo: "openwork-hub", ref: "main", path: "skills/worker-smoke/SKILL.md" },
+    source: { owner: "different-ai", repo: "teamwork-hub", ref: "main", path: "skills/worker-smoke/SKILL.md" },
   },
   {
     name: "share-review",
     description: "Review share links, field labeling, and copy clarity.",
     trigger: "share review",
-    source: { owner: "different-ai", repo: "openwork-hub", ref: "main", path: "skills/share-review/SKILL.md" },
+    source: { owner: "different-ai", repo: "teamwork-hub", ref: "main", path: "skills/share-review/SKILL.md" },
   },
 ];
 
@@ -345,7 +345,7 @@ export default function NewLayoutApp() {
   const [hubSkills] = createSignal<HubSkillCard[]>(initialHubSkills);
   const [pluginScope, setPluginScope] = createSignal<PluginScope>("project");
   const [pluginInput, setPluginInput] = createSignal("");
-  const [pluginList, setPluginList] = createSignal<string[]>(["@openwork/browser-mcp"]);
+  const [pluginList, setPluginList] = createSignal<string[]>(["@teamwork/browser-mcp"]);
   const [pluginStatus, setPluginStatus] = createSignal<string | null>("Sandbox plugin config loaded.");
   const [activePluginGuide, setActivePluginGuide] = createSignal<string | null>(null);
   const [selectedMcp, setSelectedMcp] = createSignal<string | null>("notion");
@@ -435,7 +435,7 @@ export default function NewLayoutApp() {
   const tabDescription = (tab: SettingsTab) => {
     switch (tab) {
       case "den":
-        return "Manage your OpenWork Cloud connection, hosted workers, and workspace access.";
+        return "Manage your TeamWork Cloud connection, hosted workers, and workspace access.";
       case "model":
         return "Tune the default model, runtime behavior, and assistant output settings.";
       case "skills":
@@ -447,7 +447,7 @@ export default function NewLayoutApp() {
       case "advanced":
         return "Inspect runtime health, connection state, and developer-facing controls.";
       case "appearance":
-        return "Adjust how OpenWork looks across desktop, system theme, and app chrome.";
+        return "Adjust how TeamWork looks across desktop, system theme, and app chrome.";
       case "updates":
         return "Keep the app current with quiet background checks and install controls.";
       case "recovery":
@@ -455,7 +455,7 @@ export default function NewLayoutApp() {
       case "debug":
         return "Review runtime diagnostics, logs, and low-level debugging utilities.";
       default:
-        return "Connect providers, authorize folders, and control the active OpenWork workspace.";
+        return "Connect providers, authorize folders, and control the active TeamWork workspace.";
     }
   };
 
@@ -661,7 +661,7 @@ export default function NewLayoutApp() {
   const buildRouterHealth = () => ({
     ok: true,
     opencode: {
-      url: "https://worker.openworklabs.com/opencode",
+      url: "https://worker.teamworklabs.com/opencode",
       healthy: true,
       version: "0.1.0-story",
     },
@@ -683,12 +683,12 @@ export default function NewLayoutApp() {
       scope: "workspace" as const,
       path: ".opencode/agents/opencode-router.md",
       loaded: true,
-      selected: "openwork-router",
+      selected: "teamwork-router",
     },
   });
 
-  const mockOpenworkServerClient = {
-    getConfig: async () => ({ openwork: { messaging: { enabled: messagingModuleEnabled() } } }),
+  const mockTeamworkServerClient = {
+    getConfig: async () => ({ teamwork: { messaging: { enabled: messagingModuleEnabled() } } }),
     getOpenCodeRouterHealth: async () => ({ ok: true, status: 200, json: buildRouterHealth() }),
     getOpenCodeRouterTelegramIdentities: async () => ({ ok: true, items: telegramIdentityRows() }),
     getOpenCodeRouterSlackIdentities: async () => ({ ok: true, items: slackIdentityRows() }),
@@ -696,7 +696,7 @@ export default function NewLayoutApp() {
       ok: true,
       configured: true,
       enabled: messagingModuleEnabled(),
-      bot: { id: 1, username: "openwork_storybot", name: "OpenWork Story Bot" },
+      bot: { id: 1, username: "teamwork_storybot", name: "TeamWork Story Bot" },
     }),
     readWorkspaceFile: async (_workspaceId: string, path: string) => ({
       path,
@@ -724,9 +724,9 @@ export default function NewLayoutApp() {
     }),
     patchConfig: async (
       _workspaceId: string,
-      payload: { openwork?: { messaging?: { enabled?: boolean } } },
+      payload: { teamwork?: { messaging?: { enabled?: boolean } } },
     ) => {
-      const enabled = payload.openwork?.messaging?.enabled;
+      const enabled = payload.teamwork?.messaging?.enabled;
       if (typeof enabled === "boolean") setMessagingModuleEnabled(enabled);
       return { ok: true };
     },
@@ -750,7 +750,7 @@ export default function NewLayoutApp() {
           access: next.access,
           pairingRequired: next.pairingRequired,
           pairingCode: next.pairingRequired ? "STORY42" : undefined,
-          bot: { id: 1, username: "openwork_storybot", name: "OpenWork Story Bot" },
+          bot: { id: 1, username: "teamwork_storybot", name: "TeamWork Story Bot" },
         },
       };
     },
@@ -767,7 +767,7 @@ export default function NewLayoutApp() {
       setSlackIdentityRows((current) => current.filter((item) => item.id !== identityId));
       return { ok: true, slack: { id: identityId, deleted: true } };
     },
-  } as unknown as OpenworkServerClient;
+  } as unknown as TeamworkServerClient;
 
   const agentLabel = createMemo(() => {
     const name = selectedAgent() ?? "Default agent";
@@ -844,9 +844,9 @@ export default function NewLayoutApp() {
 
   const pickMockWorkspaceFolder = async () => {
     const folders = [
-      "/Users/demo/OpenWork/client-foundation",
-      "/Users/demo/OpenWork/automation-lab",
-      "/Users/demo/OpenWork/starter-sandbox",
+      "/Users/demo/TeamWork/client-foundation",
+      "/Users/demo/TeamWork/automation-lab",
+      "/Users/demo/TeamWork/starter-sandbox",
     ];
     const next = folders[mockFolderPickCount() % folders.length] ?? folders[0];
     setMockFolderPickCount((count) => count + 1);
@@ -1332,7 +1332,7 @@ export default function NewLayoutApp() {
                       isStreaming={false}
                       expandedStepIds={expandedStepIds()}
                       setExpandedStepIds={(updater) => setExpandedStepIds((current) => updater(current))}
-                      workspaceRoot="/Users/benjaminshafii/openwork-enterprise/_repos/openwork"
+                      workspaceRoot="/Users/benjaminshafii/teamwork-enterprise/_repos/teamwork"
                     />
                   }
                 >
@@ -1407,7 +1407,7 @@ export default function NewLayoutApp() {
                         <div class="rounded-[20px] border border-dls-border bg-dls-surface p-6 text-[14px] text-dls-secondary">
                           Skills (installed, team catalog, GitHub hub) runs in the full app with{" "}
                           <code class="rounded bg-dls-hover px-1 py-0.5 font-mono text-[12px]">ExtensionsProvider</code>.
-                          Use the OpenWork app shell to exercise this surface.
+                          Use the TeamWork app shell to exercise this surface.
                         </div>
                       </Show>
 
@@ -1457,11 +1457,11 @@ export default function NewLayoutApp() {
                         <div class="space-y-4">
                           <IdentitiesView
                             busy={false}
-                            openworkServerStatus="connected"
-                            openworkServerUrl="https://worker.openworklabs.com/opencode"
-                            openworkServerClient={mockOpenworkServerClient}
-                            openworkReconnectBusy={false}
-                            reconnectOpenworkServer={async () => true}
+                            teamworkServerStatus="connected"
+                            teamworkServerUrl="https://worker.teamworklabs.com/opencode"
+                            teamworkServerClient={mockTeamworkServerClient}
+                            teamworkReconnectBusy={false}
+                            reconnectTeamworkServer={async () => true}
                             restartLocalServer={async () => true}
                             runtimeWorkspaceId={selectedWorkspaceId()}
                             selectedWorkspaceRoot={selectedWorkspaceRoot()}
@@ -1602,7 +1602,7 @@ export default function NewLayoutApp() {
 
           <StatusBar
             clientConnected
-            openworkServerStatus="connected"
+            teamworkServerStatus="connected"
             developerMode
             settingsOpen={showingSettings()}
             showSettingsButton={true}

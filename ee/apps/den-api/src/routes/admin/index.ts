@@ -1,5 +1,5 @@
-import { asc, desc, eq, isNotNull, sql } from "@openwork-ee/den-db/drizzle"
-import { AuthAccountTable, AuthSessionTable, AuthUserTable, WorkerTable, AdminAllowlistTable } from "@openwork-ee/den-db/schema"
+import { asc, desc, eq, isNotNull, sql } from "@teamwork-ee/den-db/drizzle"
+import { AuthAccountTable, AuthSessionTable, AuthUserTable, WorkerTable, AdminAllowlistTable } from "@teamwork-ee/den-db/schema"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"

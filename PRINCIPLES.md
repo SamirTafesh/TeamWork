@@ -1,4 +1,4 @@
-# OpenWork Principles
+# TeamWork Principles
 
 ## Decision framework for adding new features or fixing bugs:
 
@@ -9,12 +9,12 @@
 ## Constraints
 
 - Work with **only the folders the user authorizes**.
-- Treat **plugins + skills + commands + mcp** as the primary extensibility system. These are native to OpenCode and OpenWork must be a thin layer on top of them. They're mostly fs based.
+- Treat **plugins + skills + commands + mcp** as the primary extensibility system. These are native to OpenCode and TeamWork must be a thin layer on top of them. They're mostly fs based.
 
 ## Principles
 
 - **Parity**: UI actions map to OpenCode server APIs.
-- **Server-consumption first**: OpenWork app consumes OpenWork server surfaces (desktop-hosted, orchestrator-hosted, or cloud-hosted) instead of inventing parallel behavior.
+- **Server-consumption first**: TeamWork app consumes TeamWork server surfaces (desktop-hosted, orchestrator-hosted, or cloud-hosted) instead of inventing parallel behavior.
 - **Transparency**: plans, steps, tool calls, permissions are visible.
 - **Least privilege**: only user-authorized folders + explicit approvals.
 - **Prompt is the workflow**: product logic lives in prompts, rules, and skills.

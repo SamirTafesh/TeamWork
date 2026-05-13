@@ -5,7 +5,7 @@
  * process — no sidecar binary, no npx, no absolute paths.
  *
  * Two servers:
- *   1. "openwork-browser" — controls the embedded WebContentsView
+ *   1. "teamwork-browser" — controls the embedded WebContentsView
  *   2. "chrome"           — connects to the user's external Chrome via CDP
  *
  * Both are exposed as HTTP MCP endpoints that OpenCode connects to as
@@ -61,13 +61,13 @@ const EXTERNAL_TARGET_FILTER = (target) => {
 
 /**
  * Target filter for the BUILT-IN browser server — only accept pages that
- * are NOT the main OpenWork renderer.  The main renderer loads from
+ * are NOT the main TeamWork renderer.  The main renderer loads from
  * localhost (dev) or file:// (prod).  The WebContentsView loads real
  * websites (https://, http:// on non-localhost).
  */
 const BUILTIN_TARGET_FILTER = (target) => {
   const url = target.url();
-  // Skip the main OpenWork renderer
+  // Skip the main TeamWork renderer
   if (url.startsWith("file://")) return false;
   if (url.startsWith("http://localhost")) return false;
   if (url.startsWith("http://127.0.0.1")) return false;
@@ -109,7 +109,7 @@ async function connectExternalBrowser(browserURL) {
  * Create an MCP server backed by chrome-devtools-mcp tools.
  *
  * @param {object}   opts
- * @param {string}   opts.name       — server name (e.g. "openwork-browser")
+ * @param {string}   opts.name       — server name (e.g. "teamwork-browser")
  * @param {string}   opts.version    — server version
  * @param {Function} opts.getBrowser — async () => Puppeteer.Browser
  * @param {Function} [opts.onToolCall] — called before each tool (e.g. to show browser panel)
@@ -152,7 +152,7 @@ function createBrowserMcpServer({ name, version, getBrowser, onToolCall }) {
 
   // Skip performance / extension / emulation categories that don't make
   // sense for the built-in browser.  Keep the full set for external Chrome.
-  const skipCategories = name === "openwork-browser"
+  const skipCategories = name === "teamwork-browser"
     ? new Set(["extensions", "performance"])
     : new Set();
 
@@ -164,7 +164,7 @@ function createBrowserMcpServer({ name, version, getBrowser, onToolCall }) {
     // can complete the navigation while that extra wait never resolves, which
     // makes built-in browser navigation hang. Use a simpler built-in-specific
     // handler that waits for DOMContentLoaded and returns promptly.
-    if (name === "openwork-browser" && tool.name === "navigate_page") {
+    if (name === "teamwork-browser" && tool.name === "navigate_page") {
       server.tool(
         tool.name,
         tool.description,
@@ -189,13 +189,13 @@ function createBrowserMcpServer({ name, version, getBrowser, onToolCall }) {
               // wrapped in a hard timeout.  Electron's loadURL sometimes
               // fails in the WebContentsView sandboxed partition while
               // Puppeteer's CDP-based navigation succeeds.
-              await withTimeout(page.goto(url, options), timeout + 1_000, "openwork-browser/navigate_page");
+              await withTimeout(page.goto(url, options), timeout + 1_000, "teamwork-browser/navigate_page");
             } else if (type === "back") {
-              await withTimeout(page.goBack(options), timeout + 1_000, "openwork-browser/navigate_page(back)");
+              await withTimeout(page.goBack(options), timeout + 1_000, "teamwork-browser/navigate_page(back)");
             } else if (type === "forward") {
-              await withTimeout(page.goForward(options), timeout + 1_000, "openwork-browser/navigate_page(forward)");
+              await withTimeout(page.goForward(options), timeout + 1_000, "teamwork-browser/navigate_page(forward)");
             } else if (type === "reload") {
-              await withTimeout(page.reload({ ...options, ignoreCache: params?.ignoreCache }), timeout + 1_000, "openwork-browser/navigate_page(reload)");
+              await withTimeout(page.reload({ ...options, ignoreCache: params?.ignoreCache }), timeout + 1_000, "teamwork-browser/navigate_page(reload)");
             } else {
               throw new Error(`Unsupported navigation type: ${type}`);
             }
@@ -376,7 +376,7 @@ export async function startBrowserMcpServers({ electronCdpPort, onBuiltinToolCal
   // Factory: each new MCP session gets a fresh server instance.
   function createBuiltinFactory() {
     const server = createBrowserMcpServer({
-      name: "openwork-browser",
+      name: "teamwork-browser",
       version: "0.1.0",
       getBrowser: async () => {
         // Preserve the Puppeteer browser/context across sequential tool calls.
@@ -393,7 +393,7 @@ export async function startBrowserMcpServers({ electronCdpPort, onBuiltinToolCal
 
     server.tool(
       "show_browser",
-      "Open the built-in browser panel inside the OpenWork app. " +
+      "Open the built-in browser panel inside the TeamWork app. " +
       "Called automatically when any browser tool runs, but can also be " +
       "called explicitly to show the panel before interacting.",
       {},
@@ -488,7 +488,7 @@ export async function startBrowserMcpServers({ electronCdpPort, onBuiltinToolCal
               hint: "Chrome is not reachable. Ask the user to enable remote debugging: " +
                 "open chrome://inspect/#remote-debugging in Chrome, enable it, and allow " +
                 "incoming connections. No restart needed on Chrome 144+. " +
-                "Alternatively, offer to use the built-in openwork-browser instead.",
+                "Alternatively, offer to use the built-in teamwork-browser instead.",
             }),
           }],
         };

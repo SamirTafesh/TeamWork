@@ -31,7 +31,7 @@ export type ForcedSigninPageProps = {
 
 /**
  * Parse a pasted manual-auth input. Accepts either a raw handoff grant
- * string (>= 12 chars) or an `openwork://den-auth?grant=…` deep link.
+ * string (>= 12 chars) or an `teamwork://den-auth?grant=…` deep link.
  * Matches the Solid ForcedSigninPage exactly so flows stay fungible.
  */
 function parseManualAuthInput(value: string) {
@@ -46,7 +46,7 @@ function parseManualAuthInput(value: string) {
     const routeSegments = routePath.split("/").filter(Boolean);
     const routeTail = routeSegments[routeSegments.length - 1] ?? "";
     if (
-      (protocol === "openwork:" || protocol === "openwork-dev:") &&
+      (protocol === "teamwork:" || protocol === "teamwork-dev:") &&
       (routeHost === "den-auth" ||
         routePath === "den-auth" ||
         routeTail === "den-auth")

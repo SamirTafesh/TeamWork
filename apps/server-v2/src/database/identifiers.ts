@@ -25,10 +25,10 @@ export function createRemoteWorkspaceId(input: {
   baseUrl: string;
   directory?: string | null;
   remoteWorkspaceId?: string | null;
-  remoteType: "openwork" | "opencode";
+  remoteType: "teamwork" | "opencode";
 }) {
-  if (input.remoteType === "openwork") {
-    const key = ["openwork", input.baseUrl, input.remoteWorkspaceId?.trim() ?? ""]
+  if (input.remoteType === "teamwork") {
+    const key = ["teamwork", input.baseUrl, input.remoteWorkspaceId?.trim() ?? ""]
       .filter(Boolean)
       .join("::");
     return createStableId("ws", key);

@@ -1,5 +1,5 @@
 /**
- * Single entry point for embedding the OpenWork server in-process.
+ * Single entry point for embedding the TeamWork server in-process.
  *
  * Handles config resolution, managed OpenCode spawn, and server start
  * in one call -- mirrors what cli.ts does but returns a handle instead
@@ -15,7 +15,7 @@ import type { ServerConfig } from "./types.js";
 export type EmbeddedServerOptions = CliArgs & {
   /** When true, spawn a managed OpenCode child process. */
   manageOpencode?: boolean;
-  /** Path to the OpenCode binary. Falls back to OPENWORK_OPENCODE_BIN env. */
+  /** Path to the OpenCode binary. Falls back to TEAMWORK_OPENCODE_BIN env. */
   opencodeBin?: string;
   /** Working directory for the managed OpenCode process. */
   opencodeCwd?: string;
@@ -42,15 +42,15 @@ export async function startEmbeddedServer(options: EmbeddedServerOptions): Promi
     const workspace = config.workspaces[0];
     if (workspace?.path) {
       const cwd = options.opencodeCwd
-        || process.env.OPENWORK_MANAGED_OPENCODE_CWD?.trim()
+        || process.env.TEAMWORK_MANAGED_OPENCODE_CWD?.trim()
         || workspace.path;
       await mkdir(cwd, { recursive: true });
 
       managedOpencode = await createManagedOpencodeServer({
-        bin: options.opencodeBin || process.env.OPENWORK_OPENCODE_BIN,
+        bin: options.opencodeBin || process.env.TEAMWORK_OPENCODE_BIN,
         cwd,
         env: {
-          ...(process.env.OPENWORK_DEV_MODE ? { OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE } : {}),
+          ...(process.env.TEAMWORK_DEV_MODE ? { TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE } : {}),
         },
       });
 

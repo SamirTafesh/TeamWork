@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, or } from "@openwork-ee/den-db/drizzle"
+import { and, desc, eq, inArray, isNotNull, or } from "@teamwork-ee/den-db/drizzle"
 import {
   AuthUserTable,
   MemberTable,
@@ -7,9 +7,9 @@ import {
   SkillHubTable,
   SkillTable,
   TeamTable,
-} from "@openwork-ee/den-db/schema"
-import { hasSkillFrontmatterName, parseSkillMarkdown } from "@openwork-ee/utils"
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+} from "@teamwork-ee/den-db/schema"
+import { hasSkillFrontmatterName, parseSkillMarkdown } from "@teamwork-ee/utils"
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"

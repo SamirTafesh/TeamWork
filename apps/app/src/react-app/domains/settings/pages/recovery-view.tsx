@@ -20,7 +20,7 @@ export type RecoveryViewProps = {
   onRepairOpencodeCache: () => void | Promise<void>;
   dockerCleanupBusy: boolean;
   dockerCleanupResult: string | null;
-  onCleanupOpenworkDockerContainers: () => void | Promise<void>;
+  onCleanupTeamworkDockerContainers: () => void | Promise<void>;
 };
 
 export function RecoveryView(props: RecoveryViewProps) {
@@ -88,7 +88,7 @@ export function RecoveryView(props: RecoveryViewProps) {
         <Button
           variant="danger"
           className="h-8 shrink-0 px-3 py-0 text-xs"
-          onClick={() => void props.onCleanupOpenworkDockerContainers()}
+          onClick={() => void props.onCleanupTeamworkDockerContainers()}
           disabled={props.dockerCleanupBusy || props.anyActiveRuns || !isDesktopRuntime()}
           title={
             !isDesktopRuntime()

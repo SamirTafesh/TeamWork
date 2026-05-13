@@ -17,7 +17,7 @@ EXTRA_ARGS=()
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/start-team-host.sh [options] [-- <extra openwork args>]
+  scripts/start-team-host.sh [options] [-- <extra teamwork args>]
 
 Defaults:
   --workspace <repo-root>
@@ -26,7 +26,7 @@ Defaults:
 
 Options:
   --workspace <path>        Workspace directory to host
-  --approval <manual|auto>  OpenWork approval mode (default: manual)
+  --approval <manual|auto>  TeamWork approval mode (default: manual)
   --no-remote-access        Keep host loopback-only (disable sharing)
   --read-only               Start host in read-only mode
   --json                    Print machine-readable orchestrator payload
@@ -36,8 +36,8 @@ Options:
 Examples:
   scripts/start-team-host.sh
   scripts/start-team-host.sh --workspace /path/to/project --detach
-  scripts/start-team-host.sh --json > /tmp/openwork-session.json
-  scripts/start-team-host.sh -- --openwork-port 8787 --connect-host 10.0.0.2
+  scripts/start-team-host.sh --json > /tmp/teamwork-session.json
+  scripts/start-team-host.sh -- --teamwork-port 8787 --connect-host 10.0.0.2
 EOF
 }
 
@@ -146,7 +146,7 @@ fi
 CMD=(
   pnpm
   --filter
-  openwork-orchestrator
+  teamwork-orchestrator
   dev
   --
   start

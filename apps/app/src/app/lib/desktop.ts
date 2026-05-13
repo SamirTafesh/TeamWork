@@ -3,18 +3,18 @@ import { nativeDeepLinkEvent } from "./deep-link-bridge";
 export type * from "./desktop-types";
 export type {
   EngineInfo,
-  OpenworkServerInfo,
+  TeamworkServerInfo,
   EngineDoctorResult,
   WorkspaceInfo,
   WorkspaceList,
   WorkspaceExportSummary,
   OpencodeCommandDraft,
-  WorkspaceOpenworkConfig,
+  WorkspaceTeamworkConfig,
   AppBuildInfo,
   DesktopBootstrapConfig,
   OrchestratorDetachedHost,
   SandboxDoctorResult,
-  OpenworkDockerCleanupResult,
+  TeamworkDockerCleanupResult,
   SandboxDebugProbeResult,
   ExecResult,
   LocalSkillCard,
@@ -32,7 +32,7 @@ import type { WorkspaceList } from "./desktop-types";
 
 declare global {
   interface Window {
-    __OPENWORK_ELECTRON__?: {
+    __TEAMWORK_ELECTRON__?: {
       invokeDesktop?: (command: string, ...args: unknown[]) => Promise<unknown>;
       shell?: {
         openExternal?: (url: string) => Promise<void>;
@@ -94,7 +94,7 @@ declare global {
 // ---------------------------------------------------------------------------
 
 async function invokeElectronHelper<T>(command: string, ...args: unknown[]): Promise<T> {
-  const invokeDesktop = window.__OPENWORK_ELECTRON__?.invokeDesktop;
+  const invokeDesktop = window.__TEAMWORK_ELECTRON__?.invokeDesktop;
   if (!invokeDesktop) {
     throw new Error(`Electron desktop helper is unavailable: ${command}`);
   }
@@ -181,7 +181,7 @@ export const desktopFetch: typeof globalThis.fetch = (input, init) => {
 // ---------------------------------------------------------------------------
 
 export async function openDesktopUrl(url: string): Promise<void> {
-  const openExternal = window.__OPENWORK_ELECTRON__?.shell?.openExternal;
+  const openExternal = window.__TEAMWORK_ELECTRON__?.shell?.openExternal;
   if (openExternal) {
     await openExternal(url);
     return;
@@ -203,7 +203,7 @@ export async function revealDesktopItemInDir(target: string): Promise<void> {
 }
 
 export async function relaunchDesktopApp(): Promise<void> {
-  await window.__OPENWORK_ELECTRON__?.shell?.relaunch?.();
+  await window.__TEAMWORK_ELECTRON__?.shell?.relaunch?.();
 }
 
 export async function getDesktopHomeDir(): Promise<string> {
@@ -228,7 +228,7 @@ export async function subscribeDesktopDeepLinks(
     }
   };
   window.addEventListener(nativeDeepLinkEvent, listener as EventListener);
-  const initialUrls = window.__OPENWORK_ELECTRON__?.meta?.initialDeepLinks;
+  const initialUrls = window.__TEAMWORK_ELECTRON__?.meta?.initialDeepLinks;
   if (Array.isArray(initialUrls) && initialUrls.length > 0) {
     handler(initialUrls);
   }
@@ -254,8 +254,8 @@ const {
   workspaceAddAuthorizedRoot,
   workspaceExportConfig,
   workspaceImportConfig,
-  workspaceOpenworkRead,
-  workspaceOpenworkWrite,
+  workspaceTeamworkRead,
+  workspaceTeamworkWrite,
   opencodeCommandList,
   opencodeCommandWrite,
   opencodeCommandDelete,
@@ -264,14 +264,14 @@ const {
   appBuildInfo,
   getDesktopBootstrapConfig,
   setDesktopBootstrapConfig,
-  nukeOpenworkAndOpencodeConfigAndExit,
+  nukeTeamworkAndOpencodeConfigAndExit,
   orchestratorStartDetached,
   sandboxDoctor,
   sandboxStop,
-  sandboxCleanupOpenworkContainers,
+  sandboxCleanupTeamworkContainers,
   sandboxDebugProbe,
-  openworkServerInfo,
-  openworkServerRestart,
+  teamworkServerInfo,
+  teamworkServerRestart,
   runtimeBootstrap,
   engineInfo,
   engineDoctor,
@@ -288,7 +288,7 @@ const {
   updaterEnvironment,
   readOpencodeConfig,
   writeOpencodeConfig,
-  resetOpenworkState,
+  resetTeamworkState,
   resetOpencodeCache,
   opencodeMcpAuth,
   setWindowDecorations,
@@ -307,8 +307,8 @@ export {
   workspaceAddAuthorizedRoot,
   workspaceExportConfig,
   workspaceImportConfig,
-  workspaceOpenworkRead,
-  workspaceOpenworkWrite,
+  workspaceTeamworkRead,
+  workspaceTeamworkWrite,
   opencodeCommandList,
   opencodeCommandWrite,
   opencodeCommandDelete,
@@ -317,14 +317,14 @@ export {
   appBuildInfo,
   getDesktopBootstrapConfig,
   setDesktopBootstrapConfig,
-  nukeOpenworkAndOpencodeConfigAndExit,
+  nukeTeamworkAndOpencodeConfigAndExit,
   orchestratorStartDetached,
   sandboxDoctor,
   sandboxStop,
-  sandboxCleanupOpenworkContainers,
+  sandboxCleanupTeamworkContainers,
   sandboxDebugProbe,
-  openworkServerInfo,
-  openworkServerRestart,
+  teamworkServerInfo,
+  teamworkServerRestart,
   runtimeBootstrap,
   engineInfo,
   engineDoctor,
@@ -341,7 +341,7 @@ export {
   updaterEnvironment,
   readOpencodeConfig,
   writeOpencodeConfig,
-  resetOpenworkState,
+  resetTeamworkState,
   resetOpencodeCache,
   opencodeMcpAuth,
   setWindowDecorations,

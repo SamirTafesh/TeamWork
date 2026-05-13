@@ -6,11 +6,11 @@ import { buildBundleOgImageModel, renderBundleOgImage, renderRootOgImage } from 
 test("renderRootOgImage uses the simplified metadata-first card", () => {
   const svg = renderRootOgImage();
 
-  assert.match(svg, /Share OpenWork skills/);
+  assert.match(svg, /Share TeamWork skills/);
   assert.match(svg, />beautifully</);
   assert.match(svg, /#257CE9/);
   assert.doesNotMatch(svg, /agent-creator\.md/);
-  assert.match(svg, /openwork preview/);
+  assert.match(svg, /teamwork preview/);
   assert.doesNotMatch(svg, /Before we start, use the question tool/);
 });
 

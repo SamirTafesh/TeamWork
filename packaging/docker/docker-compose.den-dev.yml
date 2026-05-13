@@ -40,7 +40,7 @@ services:
       - --max-heap-table-size=16M
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: openwork_den
+      MYSQL_DATABASE: teamwork_den
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -ppassword --silent"]
       interval: 5s
@@ -70,8 +70,8 @@ services:
       start_period: 120s
     environment:
       CI: "true"
-      OPENWORK_DEV_MODE: ${OPENWORK_DEV_MODE:-1}
-      DATABASE_URL: mysql://root:password@mysql:3306/openwork_den
+      TEAMWORK_DEV_MODE: ${TEAMWORK_DEV_MODE:-1}
+      DATABASE_URL: mysql://root:password@mysql:3306/teamwork_den
       BETTER_AUTH_SECRET: ${DEN_BETTER_AUTH_SECRET:-dev-den-local-auth-secret-please-override-1234567890}
       DEN_DB_ENCRYPTION_KEY: ${DEN_DB_ENCRYPTION_KEY:-dev-den-db-encryption-key-please-change-1234567890}
       BETTER_AUTH_URL: ${DEN_BETTER_AUTH_URL:-http://localhost:3005}
@@ -112,13 +112,13 @@ services:
       start_period: 90s
     environment:
       CI: "true"
-      DATABASE_URL: mysql://root:password@mysql:3306/openwork_den
+      DATABASE_URL: mysql://root:password@mysql:3306/teamwork_den
       PORT: "8789"
-      OPENWORK_DAYTONA_ENV_PATH: ${OPENWORK_DAYTONA_ENV_PATH:-}
+      TEAMWORK_DAYTONA_ENV_PATH: ${TEAMWORK_DAYTONA_ENV_PATH:-}
       DAYTONA_API_URL: ${DAYTONA_API_URL:-}
       DAYTONA_API_KEY: ${DAYTONA_API_KEY:-}
       DAYTONA_TARGET: ${DAYTONA_TARGET:-}
-      DAYTONA_OPENWORK_PORT: ${DAYTONA_OPENWORK_PORT:-8787}
+      DAYTONA_TEAMWORK_PORT: ${DAYTONA_TEAMWORK_PORT:-8787}
       DAYTONA_SIGNED_PREVIEW_EXPIRES_SECONDS: ${DAYTONA_SIGNED_PREVIEW_EXPIRES_SECONDS:-86400}
 
   web:
@@ -140,11 +140,11 @@ services:
       start_period: 180s
     environment:
       CI: "true"
-      OPENWORK_DEV_MODE: "1"
+      TEAMWORK_DEV_MODE: "1"
       DEN_API_BASE: http://den:8788
       DEN_AUTH_FALLBACK_BASE: http://den:8788
       DEN_AUTH_ORIGIN: ${DEN_BETTER_AUTH_URL:-http://localhost:3005}
-      NEXT_PUBLIC_OPENWORK_AUTH_CALLBACK_URL: ${DEN_BETTER_AUTH_URL:-http://localhost:3005}
+      NEXT_PUBLIC_TEAMWORK_AUTH_CALLBACK_URL: ${DEN_BETTER_AUTH_URL:-http://localhost:3005}
 
 volumes:
   den-mysql-data:

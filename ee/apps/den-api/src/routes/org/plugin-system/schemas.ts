@@ -14,7 +14,7 @@ import {
   marketplaceStatusValues,
   membershipSourceValues,
   pluginStatusValues,
-} from "@openwork-ee/den-db/schema"
+} from "@teamwork-ee/den-db/schema"
 import { z } from "zod"
 import { denTypeIdSchema } from "../../../openapi.js"
 import { idParamSchema } from "../shared.js"

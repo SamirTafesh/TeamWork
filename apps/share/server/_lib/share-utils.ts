@@ -19,9 +19,9 @@ import {
   type OgImageVariant,
 } from "./og-image-variants.ts";
 
-export const OPENWORK_SITE_URL = "https://openworklabs.com";
-export const OPENWORK_DOWNLOAD_URL = "https://openworklabs.com/download";
-export const DEFAULT_PUBLIC_BASE_URL = "https://share.openworklabs.com";
+export const TEAMWORK_SITE_URL = "https://teamworklabs.com";
+export const TEAMWORK_DOWNLOAD_URL = "https://teamworklabs.com/download";
+export const DEFAULT_PUBLIC_BASE_URL = "https://share.teamworklabs.com";
 export const SHARE_EASE = "cubic-bezier(0.31, 0.325, 0, 0.92)";
 
 export function maybeString(value: unknown): string {
@@ -58,7 +58,7 @@ export function setCors(
   res.setHeader(
     "Access-Control-Allow-Headers",
     options.headers ??
-      "Content-Type,Accept,X-OpenWork-Bundle-Type,X-OpenWork-Schema-Version,X-OpenWork-Name",
+      "Content-Type,Accept,X-TeamWork-Bundle-Type,X-TeamWork-Schema-Version,X-TeamWork-Name",
   );
 }
 
@@ -160,7 +160,7 @@ export function buildOpenInAppUrls(shareUrl: string, options: { label?: string }
   const label = String(options.label ?? "").trim();
   if (label) query.set("ow_label", label.slice(0, 120));
 
-  const appScheme = (getEnv("PUBLIC_OPENWORK_APP_SCHEME", "openwork") || "openwork").trim().toLowerCase();
+  const appScheme = (getEnv("PUBLIC_TEAMWORK_APP_SCHEME", "teamwork") || "teamwork").trim().toLowerCase();
   return {
     openInAppDeepLink: `${appScheme}://import-bundle?${query.toString()}`,
   };
@@ -349,7 +349,7 @@ export function buildBundlePreview(bundle: NormalizedBundle): {
   if (bundle.type === "skill") {
     return buildBundlePreviewSelection({
       filename: slugifyPreviewFilename(bundle.name || "skill", "skill", "md"),
-      text: buildTextPreview(bundle.content, `# ${bundle.name || "OpenWork skill"}`),
+      text: buildTextPreview(bundle.content, `# ${bundle.name || "TeamWork skill"}`),
       tone: "skill",
       label: bundle.trigger ? `Trigger: ${bundle.trigger}` : "Skill preview",
     });
@@ -387,7 +387,7 @@ export function buildBundlePreviewSelections(bundle: NormalizedBundle): {
         id: "skill-0",
         name: bundle.name || "Untitled skill",
         filename: slugifyPreviewFilename(bundle.name || "skill", "skill", "md"),
-        text: buildTextPreview(bundle.content, `# ${bundle.name || "OpenWork skill"}`),
+        text: buildTextPreview(bundle.content, `# ${bundle.name || "TeamWork skill"}`),
         tone: "skill",
         label: bundle.trigger ? `Trigger · ${bundle.trigger}` : "Skill",
       },
@@ -409,7 +409,7 @@ export function buildBundlePreviewSelections(bundle: NormalizedBundle): {
   return [
     {
       id: "preview-0",
-      name: bundle.name || "OpenWork bundle",
+      name: bundle.name || "TeamWork bundle",
       filename: preview.filename,
       text: preview.text,
       tone: preview.tone,
@@ -443,8 +443,8 @@ export function buildBundleNarrative(bundle: NormalizedBundle): string {
   if (counts.configCount) parts.push(`${counts.configCount} config${counts.configCount === 1 ? "" : "s"}`);
   if (counts.fileCount) parts.push(`${counts.fileCount} portable file${counts.fileCount === 1 ? "" : "s"}`);
   return parts.length
-    ? `${parts.join(", ")} bundled into a worker package that imports through OpenWork with one step.`
-    : "Worker configuration bundle prepared for OpenWork import.";
+    ? `${parts.join(", ")} bundled into a worker package that imports through TeamWork with one step.`
+    : "Worker configuration bundle prepared for TeamWork import.";
 }
 
 export function buildStatusMarkup({
@@ -463,11 +463,11 @@ export function buildStatusMarkup({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)} - OpenWork Share</title>
+  <title>${escapeHtml(title)} - TeamWork Share</title>
   <style>
     @font-face {
       font-family: "FK Raster Roman Compact Smooth";
-      src: url("https://openworklabs.com/fonts/FKRasterRomanCompact-Smooth.woff2") format("woff2");
+      src: url("https://teamworklabs.com/fonts/FKRasterRomanCompact-Smooth.woff2") format("woff2");
       font-weight: 400;
       font-style: normal;
       font-display: swap;

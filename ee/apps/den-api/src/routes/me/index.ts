@@ -1,6 +1,6 @@
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
-import { desktopConfigSchema } from "@openwork/types/den/desktop-app-restrictions"
+import { desktopConfigSchema } from "@teamwork/types/den/desktop-app-restrictions"
 import { z } from "zod"
 import { requireUserMiddleware, resolveOrganizationContextMiddleware, resolveUserOrganizationsMiddleware, type OrganizationContextVariables, type UserOrganizationsContext } from "../../middleware/index.js"
 import { denTypeIdSchema, jsonResponse, unauthorizedSchema } from "../../openapi.js"

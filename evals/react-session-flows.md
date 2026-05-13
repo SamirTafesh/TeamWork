@@ -7,29 +7,29 @@ during the React port cutover. Run them before shipping any change that touches:
 - `apps/app/src/react-app/shell/settings-route.tsx`
 - `apps/app/src/react-app/domains/session/**`
 - `apps/app/src/react-app/domains/settings/**`
-- OpenWork server proxy endpoints for `/w/:workspaceId/opencode/session/**`
+- TeamWork server proxy endpoints for `/w/:workspaceId/opencode/session/**`
 
 ## Preflight
 
 Before running any eval:
 
-1. Install dependencies in the OpenWork repo:
+1. Install dependencies in the TeamWork repo:
    ```bash
    pnpm install --frozen-lockfile
    ```
 2. Start the Electron dev app:
    ```bash
-   nohup pnpm dev:electron > .openwork-run/electron.log 2>&1 &
+   nohup pnpm dev:electron > .teamwork-run/electron.log 2>&1 &
    ```
    Wait ~15s for Vite + Electron to boot. The log will show
-   `[openwork] Electron CDP exposed at http://127.0.0.1:9823` when ready.
+   `[teamwork] Electron CDP exposed at http://127.0.0.1:9823` when ready.
 3. Chrome MCP automatically connects to the Electron renderer via CDP on
    port 9823. Verify by taking a snapshot:
    ```
    chrome-devtools_take_snapshot
    ```
-   You should see the full OpenWork UI tree (sidebar, composer, footer).
-4. Confirm the footer shows **"OpenWork Ready"**.
+   You should see the full TeamWork UI tree (sidebar, composer, footer).
+4. Confirm the footer shows **"TeamWork Ready"**.
 5. Check the JS console for errors with
    `chrome-devtools_list_console_messages { types: ["error"] }`. It must be
    empty of `Maximum update depth exceeded` warnings. Any of those means the

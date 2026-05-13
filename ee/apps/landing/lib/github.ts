@@ -15,7 +15,7 @@ type Repo = {
   stargazers_count?: number;
 };
 
-const FALLBACK_RELEASE = "https://github.com/different-ai/openwork/releases";
+const FALLBACK_RELEASE = "https://github.com/SamirTafesh/TeamWork/releases";
 
 const formatCompact = (value: number) => {
   try {
@@ -71,9 +71,9 @@ const fetchJson = async <T,>(url: string): Promise<T | null> => {
 
 export const getGithubData = async () => {
   const [repo, releases] = await Promise.all([
-    fetchJson<Repo>("https://api.github.com/repos/different-ai/openwork"),
+    fetchJson<Repo>("https://api.github.com/repos/SamirTafesh/TeamWork"),
     fetchJson<Release[]>(
-      "https://api.github.com/repos/different-ai/openwork/releases?per_page=50"
+      "https://api.github.com/repos/SamirTafesh/TeamWork/releases?per_page=50"
     )
   ]);
 
@@ -88,15 +88,15 @@ export const getGithubData = async () => {
     return assets.some((asset) => asset?.browser_download_url);
   };
   const isElectronDesktopAsset = (name: string) =>
-    name.startsWith("openwork-mac-") ||
-    name.startsWith("openwork-win-") ||
-    name.startsWith("openwork-linux-");
+    name.startsWith("teamwork-mac-") ||
+    name.startsWith("teamwork-win-") ||
+    name.startsWith("teamwork-linux-");
 
   const hasWindowsDesktopAsset = (release: Release) => {
     const assets = Array.isArray(release?.assets) ? release.assets : [];
     return assets.some((asset) => {
       const name = String(asset?.name || "").toLowerCase();
-      return name.startsWith("openwork-win-x64-") && name.endsWith(".exe");
+      return name.startsWith("teamwork-win-x64-") && name.endsWith(".exe");
     });
   };
 
@@ -123,8 +123,8 @@ export const getGithubData = async () => {
   const releaseUrl = pick?.html_url || FALLBACK_RELEASE;
   const windowsAssets = Array.isArray(windowsPick?.assets) ? windowsPick.assets : assets;
   const windowsReleaseUrl = windowsPick?.html_url || releaseUrl;
-  const dmg = selectAsset(assets, [".dmg"], ["openwork-mac-"]);
-  const exe = selectAsset(windowsAssets, [".exe"], ["openwork-win-"]);
+  const dmg = selectAsset(assets, [".dmg"], ["teamwork-mac-"]);
+  const exe = selectAsset(windowsAssets, [".exe"], ["teamwork-win-"]);
   const macosApple = selectAsset(assets, [".dmg"], ["mac-arm64"]);
   const macosIntel = selectAsset(assets, [".dmg"], ["mac-x64"]);
   const windowsX64 =

@@ -151,7 +151,7 @@ const flattenSessionRows = (
 
 const workspaceLabel = (workspace: WorkspaceInfo) =>
   workspace.displayName?.trim() ||
-  workspace.openworkWorkspaceName?.trim() ||
+  workspace.teamworkWorkspaceName?.trim() ||
   workspace.name?.trim() ||
   workspace.path?.trim() ||
   t("workspace_list.workspace_fallback");

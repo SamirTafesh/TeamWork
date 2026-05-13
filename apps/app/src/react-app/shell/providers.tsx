@@ -1,8 +1,8 @@
 /** @jsxImportSource react */
 import { useEffect, type ReactNode } from "react";
 
-import { isWebDeployment } from "../../app/lib/openwork-deployment";
-import { hydrateOpenworkServerSettingsFromEnv } from "../../app/lib/openwork-server";
+import { isWebDeployment } from "../../app/lib/teamwork-deployment";
+import { hydrateTeamworkServerSettingsFromEnv } from "../../app/lib/teamwork-server";
 import { isDesktopRuntime } from "../../app/utils";
 import { DenAuthProvider } from "../domains/cloud/den-auth-provider";
 import { DesktopConfigProvider } from "../domains/cloud/desktop-config-provider";
@@ -13,18 +13,18 @@ import { ServerProvider } from "../kernel/server-provider";
 import { BootStateProvider } from "./boot-state";
 import { DesktopRuntimeBoot } from "./desktop-runtime-boot";
 import { startDebugLogger, stopDebugLogger } from "./debug-logger";
-import { resolveOpenworkConnection } from "./openwork-connection";
+import { resolveTeamworkConnection } from "./teamwork-connection";
 import { ReloadCoordinatorProvider } from "./reload-coordinator";
 
 function resolveDefaultServerUrl(): string {
   if (isDesktopRuntime()) return "http://127.0.0.1:4096";
 
-  const openworkUrl =
-    typeof import.meta.env?.VITE_OPENWORK_URL === "string"
-      ? import.meta.env.VITE_OPENWORK_URL.trim()
+  const teamworkUrl =
+    typeof import.meta.env?.VITE_TEAMWORK_URL === "string"
+      ? import.meta.env.VITE_TEAMWORK_URL.trim()
       : "";
-  if (openworkUrl) {
-    return `${openworkUrl.replace(/\/+$/, "")}/opencode`;
+  if (teamworkUrl) {
+    return `${teamworkUrl.replace(/\/+$/, "")}/opencode`;
   }
 
   if (isWebDeployment() && import.meta.env.PROD && typeof window !== "undefined") {
@@ -43,14 +43,14 @@ type AppProvidersProps = {
 };
 
 export function AppProviders({ children }: AppProvidersProps) {
-  hydrateOpenworkServerSettingsFromEnv();
+  hydrateTeamworkServerSettingsFromEnv();
 
   useEffect(() => {
-    // Start the dev observability forwarder. Reads the current openwork-server
+    // Start the dev observability forwarder. Reads the current teamwork-server
     // URL on every flush so reconnects after port changes still work. In prod
     // builds `startDebugLogger` is a no-op.
     startDebugLogger({
-      serverUrl: async () => (await resolveOpenworkConnection()).normalizedBaseUrl,
+      serverUrl: async () => (await resolveTeamworkConnection()).normalizedBaseUrl,
     });
     return () => {
       stopDebugLogger();

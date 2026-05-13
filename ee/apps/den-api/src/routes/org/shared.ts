@@ -1,4 +1,4 @@
-import { createDenTypeId, type DenTypeIdName } from "@openwork-ee/utils/typeid"
+import { createDenTypeId, type DenTypeIdName } from "@teamwork-ee/utils/typeid"
 import { z } from "zod"
 import type { MemberTeamsContext, OrganizationContextVariables, UserOrganizationsContext } from "../../middleware/index.js"
 import { env } from "../../env.js"

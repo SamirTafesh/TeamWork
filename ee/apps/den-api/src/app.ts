@@ -1,5 +1,5 @@
 import "./load-env.js"
-import { createDenTypeId } from "@openwork-ee/utils/typeid"
+import { createDenTypeId } from "@teamwork-ee/utils/typeid"
 import { swaggerUI } from "@hono/swagger-ui"
 import { cors } from "hono/cors"
 import { Hono } from "hono"
@@ -74,13 +74,13 @@ app.get(
     tags: ["System"],
     hide: true,
     summary: "Redirect API root",
-    description: "Redirects the API root to the OpenWork marketing site instead of serving API content.",
+    description: "Redirects the API root to the TeamWork marketing site instead of serving API content.",
     responses: {
-      302: emptyResponse("Redirect to the OpenWork marketing site."),
+      302: emptyResponse("Redirect to the TeamWork marketing site."),
     },
   }),
   (c) => {
-    return c.redirect("https://openworklabs.com", 302)
+    return c.redirect("https://teamworklabs.com", 302)
   },
 )
 
@@ -144,7 +144,7 @@ app.get(
         ].join("\n"),
       },
       servers: [
-        { url: "https://api.openworklabs.com" },
+        { url: "https://api.teamworklabs.com" },
       ],
       tags: [
         { name: "System", description: "Service health and operational routes." },

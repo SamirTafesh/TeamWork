@@ -31,14 +31,14 @@ const EnvSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
   SMTP_REPLY_TO: z.string().optional(),
-  OPENWORK_DEV_MODE: z.string().optional(),
+  TEAMWORK_DEV_MODE: z.string().optional(),
   PORT: z.string().optional(),
   CORS_ORIGINS: z.string().optional(),
   WORKER_PROXY_PORT: z.string().optional(),
   PROVISIONER_MODE: z.enum(["stub", "render", "daytona"]).optional(),
   WORKER_URL_TEMPLATE: z.string().optional(),
   WORKER_ACTIVITY_BASE_URL: z.string().optional(),
-  OPENWORK_DAYTONA_ENV_PATH: z.string().optional(),
+  TEAMWORK_DAYTONA_ENV_PATH: z.string().optional(),
   RENDER_API_BASE: z.string().optional(),
   RENDER_API_KEY: z.string().optional(),
   RENDER_OWNER_ID: z.string().optional(),
@@ -47,7 +47,7 @@ const EnvSchema = z.object({
   RENDER_WORKER_ROOT_DIR: z.string().optional(),
   RENDER_WORKER_PLAN: z.string().optional(),
   RENDER_WORKER_REGION: z.string().optional(),
-  RENDER_WORKER_OPENWORK_VERSION: z.string().optional(),
+  RENDER_WORKER_TEAMWORK_VERSION: z.string().optional(),
   RENDER_WORKER_NAME_PREFIX: z.string().optional(),
   RENDER_WORKER_PUBLIC_DOMAIN_SUFFIX: z.string().optional(),
   RENDER_CUSTOM_DOMAIN_READY_TIMEOUT_MS: z.string().optional(),
@@ -88,7 +88,7 @@ const EnvSchema = z.object({
   DAYTONA_RUNTIME_WORKSPACE_PATH: z.string().optional(),
   DAYTONA_RUNTIME_DATA_PATH: z.string().optional(),
   DAYTONA_SIDECAR_DIR: z.string().optional(),
-  DAYTONA_OPENWORK_PORT: z.string().optional(),
+  DAYTONA_TEAMWORK_PORT: z.string().optional(),
   DAYTONA_OPENCODE_PORT: z.string().optional(),
   DAYTONA_CREATE_TIMEOUT_SECONDS: z.string().optional(),
   DAYTONA_DELETE_TIMEOUT_SECONDS: z.string().optional(),
@@ -146,7 +146,7 @@ const betterAuthTrustedOrigins = splitCsv(parsed.DEN_BETTER_AUTH_TRUSTED_ORIGINS
 const polarFeatureGateEnabled =
   (parsed.POLAR_FEATURE_GATE_ENABLED ?? "false").toLowerCase() === "true"
 
-const devMode = (parsed.OPENWORK_DEV_MODE ?? "0").trim() === "1"
+const devMode = (parsed.TEAMWORK_DEV_MODE ?? "0").trim() === "1"
 const port = Number(parsed.PORT ?? "8790")
 const smtpSecure = (parsed.SMTP_SECURE ?? "false").toLowerCase() === "true"
 const smtpPort = Number(parsed.SMTP_PORT ?? "587")
@@ -219,13 +219,13 @@ export const env = {
     apiKey: parsed.RENDER_API_KEY,
     ownerId: parsed.RENDER_OWNER_ID,
     workerRepo:
-      parsed.RENDER_WORKER_REPO ?? "https://github.com/different-ai/openwork",
+      parsed.RENDER_WORKER_REPO ?? "https://github.com/SamirTafesh/TeamWork",
     workerBranch: parsed.RENDER_WORKER_BRANCH ?? "dev",
     workerRootDir:
       parsed.RENDER_WORKER_ROOT_DIR ?? "ee/apps/den-worker-runtime",
     workerPlan: parsed.RENDER_WORKER_PLAN ?? "standard",
     workerRegion: parsed.RENDER_WORKER_REGION ?? "oregon",
-    workerOpenworkVersion: parsed.RENDER_WORKER_OPENWORK_VERSION,
+    workerTeamworkVersion: parsed.RENDER_WORKER_TEAMWORK_VERSION,
     workerNamePrefix: parsed.RENDER_WORKER_NAME_PREFIX ?? "den-worker",
     workerPublicDomainSuffix: parsed.RENDER_WORKER_PUBLIC_DOMAIN_SUFFIX,
     customDomainReadyTimeoutMs: Number(
@@ -254,7 +254,7 @@ export const env = {
     returnUrl: parsed.POLAR_RETURN_URL,
   },
   daytona: {
-    envPath: optionalString(parsed.OPENWORK_DAYTONA_ENV_PATH),
+    envPath: optionalString(parsed.TEAMWORK_DAYTONA_ENV_PATH),
     apiUrl: optionalString(parsed.DAYTONA_API_URL) ?? "https://app.daytona.io/api",
     apiKey: optionalString(parsed.DAYTONA_API_KEY),
     target: optionalString(parsed.DAYTONA_TARGET),
@@ -277,7 +277,7 @@ export const env = {
       parsed.DAYTONA_SIGNED_PREVIEW_EXPIRES_SECONDS ?? "86400",
     ),
     workerProxyBaseUrl:
-      optionalString(parsed.DAYTONA_WORKER_PROXY_BASE_URL) ?? "https://workers.den.openworklabs",
+      optionalString(parsed.DAYTONA_WORKER_PROXY_BASE_URL) ?? "https://workers.den.teamworklabs",
     sandboxNamePrefix:
       optionalString(parsed.DAYTONA_SANDBOX_NAME_PREFIX) ?? "den-daytona-worker",
     sharedVolumeName:
@@ -287,15 +287,15 @@ export const env = {
     workspaceMountPath:
       optionalString(parsed.DAYTONA_WORKSPACE_MOUNT_PATH) ?? "/workspace",
     dataMountPath:
-      optionalString(parsed.DAYTONA_DATA_MOUNT_PATH) ?? "/persist/openwork",
+      optionalString(parsed.DAYTONA_DATA_MOUNT_PATH) ?? "/persist/teamwork",
     runtimeWorkspacePath:
       optionalString(parsed.DAYTONA_RUNTIME_WORKSPACE_PATH) ??
-      "/tmp/openwork-workspace",
+      "/tmp/teamwork-workspace",
     runtimeDataPath:
-      optionalString(parsed.DAYTONA_RUNTIME_DATA_PATH) ?? "/tmp/openwork-data",
+      optionalString(parsed.DAYTONA_RUNTIME_DATA_PATH) ?? "/tmp/teamwork-data",
     sidecarDir:
-      optionalString(parsed.DAYTONA_SIDECAR_DIR) ?? "/tmp/openwork-sidecars",
-    openworkPort: Number(parsed.DAYTONA_OPENWORK_PORT ?? "8787"),
+      optionalString(parsed.DAYTONA_SIDECAR_DIR) ?? "/tmp/teamwork-sidecars",
+    teamworkPort: Number(parsed.DAYTONA_TEAMWORK_PORT ?? "8787"),
     opencodePort: Number(parsed.DAYTONA_OPENCODE_PORT ?? "4096"),
     createTimeoutSeconds: Number(parsed.DAYTONA_CREATE_TIMEOUT_SECONDS ?? "300"),
     deleteTimeoutSeconds: Number(parsed.DAYTONA_DELETE_TIMEOUT_SECONDS ?? "120"),

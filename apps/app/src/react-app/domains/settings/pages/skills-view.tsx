@@ -28,7 +28,7 @@ import {
 
 import { t } from "../../../../i18n";
 import type { SkillBundleV1 } from "../../../../app/bundles/types";
-import { saveInstalledSkillToOpenWorkOrg } from "../../../../app/bundles/skill-org-publish";
+import { saveInstalledSkillToTeamWorkOrg } from "../../../../app/bundles/skill-org-publish";
 import {
   buildDenAuthUrl,
   createDenClient,
@@ -37,8 +37,8 @@ import {
   type DenOrgSkillHubSummary,
 } from "../../../../app/lib/den";
 import {
-  DEFAULT_OPENWORK_PUBLISHER_BASE_URL,
-  publishOpenworkBundleJson,
+  DEFAULT_TEAMWORK_PUBLISHER_BASE_URL,
+  publishTeamworkBundleJson,
 } from "../../../../app/lib/publisher";
 import type {
   DenOrgSkillCard,
@@ -81,7 +81,7 @@ const sectionTitleClass = "text-[15px] font-medium tracking-[-0.2px] text-dls-te
 const panelCardClass =
   "rounded-[20px] border border-dls-border bg-dls-surface p-5 transition-all hover:border-dls-border hover:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)]";
 
-const OPENWORK_DEFAULT_SKILL_NAMES = new Set([
+const TEAMWORK_DEFAULT_SKILL_NAMES = new Set([
   "workspace-guide",
   "get-started",
   "skill-creator",
@@ -197,8 +197,8 @@ export function SkillsView(props: SkillsViewProps) {
       setCloudSessionNonce((value) => value + 1);
       void extensions.refreshCloudOrgSkills({ force: true });
     };
-    window.addEventListener("openwork-den-session-updated", onDenSession);
-    return () => window.removeEventListener("openwork-den-session-updated", onDenSession);
+    window.addEventListener("teamwork-den-session-updated", onDenSession);
+    return () => window.removeEventListener("teamwork-den-session-updated", onDenSession);
   }, [extensions]);
 
   useEffect(() => {
@@ -396,7 +396,7 @@ export function SkillsView(props: SkillsViewProps) {
   );
 
   const hasDefaultHubRepo = useMemo(
-    () => hubRepos.some((repo) => `${repo.owner}/${repo.repo}@${repo.ref}` === "different-ai/openwork-hub@main"),
+    () => hubRepos.some((repo) => `${repo.owner}/${repo.repo}@${repo.ref}` === "SamirTafesh/TeamWork-hub@main"),
     [hubRepos],
   );
 
@@ -556,14 +556,14 @@ export function SkillsView(props: SkillsViewProps) {
       const skill = await extensions.readSkill(shareTarget.name);
       if (!skill) throw new Error("Failed to load skill");
       const sharing = resolveSharePermission();
-      const { orgName, orgId } = await saveInstalledSkillToOpenWorkOrg({
+      const { orgName, orgId } = await saveInstalledSkillToTeamWorkOrg({
         skillText: skill.content,
         shared: sharing.shared,
         skillHubId: sharing.hubId,
       });
       setShareTeamSuccess(t("skills.share_team_uploaded_success", undefined, { org: orgName }));
       window.dispatchEvent(
-        new CustomEvent<{ orgId: string }>("openwork-den-org-skills-changed", {
+        new CustomEvent<{ orgId: string }>("teamwork-den-org-skills-changed", {
           detail: { orgId },
         }),
       );
@@ -591,7 +591,7 @@ export function SkillsView(props: SkillsViewProps) {
         description: shareTarget.description ?? undefined,
         trigger: shareTarget.trigger ?? undefined,
       };
-      const result = await publishOpenworkBundleJson({
+      const result = await publishTeamworkBundleJson({
         payload,
         bundleType: "skill",
         name: shareTarget.name,
@@ -699,11 +699,11 @@ export function SkillsView(props: SkillsViewProps) {
     closeCustomRepoModal();
   }, [closeCustomRepoModal, customRepoName, customRepoOwner, customRepoRef, extensions]);
 
-  const isOpenworkInjectedSkill = (skill: SkillCard) => {
+  const isTeamworkInjectedSkill = (skill: SkillCard) => {
     const normalizedName = skill.name.trim().toLowerCase();
     const normalizedPath = skill.path.replace(/\\/g, "/").toLowerCase();
     return normalizedPath.includes("/.opencode/skills/") &&
-      (OPENWORK_DEFAULT_SKILL_NAMES.has(normalizedName) || normalizedName.endsWith("-creator"));
+      (TEAMWORK_DEFAULT_SKILL_NAMES.has(normalizedName) || normalizedName.endsWith("-creator"));
   };
 
   const handleSkillCardKeyDown = (
@@ -839,7 +839,7 @@ export function SkillsView(props: SkillsViewProps) {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h4 className="truncate text-[14px] font-semibold text-dls-text">{skill.name}</h4>
-                          {isOpenworkInjectedSkill(skill) ? <span className={tagClass}>OpenWork</span> : null}
+                          {isTeamworkInjectedSkill(skill) ? <span className={tagClass}>TeamWork</span> : null}
                         </div>
                         <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-dls-secondary">
                           {skill.description || t("skills.no_description")}
@@ -1030,7 +1030,7 @@ export function SkillsView(props: SkillsViewProps) {
               <button
                 type="button"
                 onClick={() => {
-                  void Promise.resolve(extensions.addHubRepo({ owner: "different-ai", repo: "openwork-hub", ref: "main" })).then(() => {
+                  void Promise.resolve(extensions.addHubRepo({ owner: "different-ai", repo: "teamwork-hub", ref: "main" })).then(() => {
                     void extensions.refreshHubSkills({ force: true });
                   });
                 }}
@@ -1038,7 +1038,7 @@ export function SkillsView(props: SkillsViewProps) {
                 disabled={props.busy || hasDefaultHubRepo}
               >
                 <Plus size={14} />
-                {t("skills.add_openwork_hub")}
+                {t("skills.add_teamwork_hub")}
               </button>
               <button type="button" onClick={openCustomRepoModal} disabled={props.busy} className={pillSecondaryClass}>
                 <Plus size={14} />
@@ -1271,7 +1271,7 @@ export function SkillsView(props: SkillsViewProps) {
                   <p className="text-[14px] leading-relaxed text-dls-secondary">{t("skills.share_public_intro")}</p>
                   <div className={surfaceCardClass}>
                     <div className="mb-3 break-all font-mono text-[12px] text-dls-secondary">
-                      {t("skills.share_publisher_label")}: {DEFAULT_OPENWORK_PUBLISHER_BASE_URL}
+                      {t("skills.share_publisher_label")}: {DEFAULT_TEAMWORK_PUBLISHER_BASE_URL}
                     </div>
                     {shareError ? <div className={`mb-3 ${modalNoticeErrorClass}`}>{shareError}</div> : null}
                     {!shareUrl ? (
@@ -1393,7 +1393,7 @@ export function SkillsView(props: SkillsViewProps) {
                     type="text"
                     value={customRepoName}
                     onChange={(event) => setCustomRepoName(event.currentTarget.value)}
-                    placeholder="openwork-hub"
+                    placeholder="teamwork-hub"
                     className="w-full rounded-lg border border-dls-border bg-dls-hover px-3 py-2 text-xs font-mono text-dls-text focus:outline-none"
                     spellCheck={false}
                   />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { ArrowLeft, FileText, Pencil } from "lucide-react";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { buttonVariants } from "../../../../_components/ui/button";
 import {
   getEditSkillRoute,

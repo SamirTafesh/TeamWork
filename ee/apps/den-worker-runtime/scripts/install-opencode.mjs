@@ -36,7 +36,7 @@ function resolveOrchestratorPackageJson() {
   });
 
   if (globalRoot.status === 0) {
-    const candidate = resolve(globalRoot.stdout.trim(), "openwork-orchestrator", "package.json");
+    const candidate = resolve(globalRoot.stdout.trim(), "teamwork-orchestrator", "package.json");
     if (existsSync(candidate)) {
       return candidate;
     }
@@ -47,7 +47,7 @@ function resolveOrchestratorPackageJson() {
     return repoCandidate;
   }
 
-  throw new Error("Unable to locate openwork-orchestrator package.json");
+  throw new Error("Unable to locate teamwork-orchestrator package.json");
 }
 
 function resolveOpencodeVersion() {
@@ -166,7 +166,7 @@ if (
 }
 
 const assetName = resolveAssetName();
-const downloadUrl = process.env.OPENWORK_OPENCODE_DOWNLOAD_URL?.trim()
+const downloadUrl = process.env.TEAMWORK_OPENCODE_DOWNLOAD_URL?.trim()
   || (version
     ? `https://github.com/anomalyco/opencode/releases/download/v${version}/${assetName}`
     : null);

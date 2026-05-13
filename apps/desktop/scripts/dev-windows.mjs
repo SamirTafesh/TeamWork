@@ -22,7 +22,7 @@ const stopStaleSidecars = () => {
   const targetDir = tauriDebugDir.replace(/\\/g, "\\\\");
   const command = [
     `$targetDir = \"${targetDir}\"`,
-    "$names = @('opencode.exe','openwork-server.exe','openwork-orchestrator.exe')",
+    "$names = @('opencode.exe','teamwork-server.exe','teamwork-orchestrator.exe')",
     "Get-CimInstance Win32_Process | Where-Object {",
     "  $_.ExecutablePath -and $_.ExecutablePath.StartsWith($targetDir, [System.StringComparison]::OrdinalIgnoreCase) -and $names.Contains([System.IO.Path]::GetFileName($_.ExecutablePath))",
     "} | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }",
@@ -74,11 +74,11 @@ const mergedPath = [
 const env = {
   ...process.env,
   ...windowsBuildEnv,
-  OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE || "1",
-  OPENWORK_DATA_DIR:
-    process.env.OPENWORK_DATA_DIR ||
-    `${homedir()}${process.platform === "win32" ? "\\" : "/"}.openwork${process.platform === "win32" ? "\\" : "/"}openwork-orchestrator-dev`,
-  OPENWORK_USE_COREPACK_PNPM: "1",
+  TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE || "1",
+  TEAMWORK_DATA_DIR:
+    process.env.TEAMWORK_DATA_DIR ||
+    `${homedir()}${process.platform === "win32" ? "\\" : "/"}.teamwork${process.platform === "win32" ? "\\" : "/"}teamwork-orchestrator-dev`,
+  TEAMWORK_USE_COREPACK_PNPM: "1",
   PORT: String(resolvedPort),
   CC: process.env.CC || "clang",
   CXX: process.env.CXX || "clang++",

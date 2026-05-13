@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import type { UIMessage } from "ai";
 
-import type { OpenworkSessionSnapshot } from "../src/app/lib/openwork-server";
+import type { TeamworkSessionSnapshot } from "../src/app/lib/teamwork-server";
 import {
   deriveRenderedSessionMessages,
   resolveRenderedSessionSnapshot,
@@ -11,7 +11,7 @@ import { mergeSnapshotIntoCachedMessages } from "../src/react-app/domains/sessio
 function snapshotWithMessages(
   messages: Array<{ id: string; role: "user" | "assistant"; text: string }>,
   sessionId = "ses_test",
-): OpenworkSessionSnapshot {
+): TeamworkSessionSnapshot {
   return {
     session: {
       id: sessionId,
@@ -40,7 +40,7 @@ function snapshotWithMessages(
     })),
     todos: [],
     status: { type: "idle" },
-  } as unknown as OpenworkSessionSnapshot;
+  } as unknown as TeamworkSessionSnapshot;
 }
 
 function uiMessage(id: string, role: "user" | "assistant", text: string): UIMessage {
@@ -51,7 +51,7 @@ function uiMessage(id: string, role: "user" | "assistant", text: string): UIMess
   };
 }
 
-function snapshotWithText(text: string, sessionId = "ses_test"): OpenworkSessionSnapshot {
+function snapshotWithText(text: string, sessionId = "ses_test"): TeamworkSessionSnapshot {
   return snapshotWithMessages([{ id: "msg_user", role: "user", text }], sessionId);
 }
 

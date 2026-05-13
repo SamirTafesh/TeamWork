@@ -24,7 +24,7 @@ afterEach(async () => {
 });
 
 async function createWorkspaceRoot() {
-  const root = await mkdtemp(join(tmpdir(), "openwork-session-read-"));
+  const root = await mkdtemp(join(tmpdir(), "teamwork-session-read-"));
   await mkdir(join(root, ".opencode"), { recursive: true });
   roots.push(root);
   return root;
@@ -120,7 +120,7 @@ function startMockOpencode(input?: { invalidList?: boolean; holdCommand?: Promis
   return { server, requests };
 }
 
-async function startOpenworkServer(input: { workspaceRoot: string; opencodeBaseUrl: string }) {
+async function startTeamworkServer(input: { workspaceRoot: string; opencodeBaseUrl: string }) {
   const config: ServerConfig = {
     host: "127.0.0.1",
     port: 0,
@@ -171,15 +171,15 @@ describe("workspace session read APIs", () => {
   test("lists sessions and returns session details, messages, and snapshot", async () => {
     const workspaceRoot = await createWorkspaceRoot();
     const mock = startMockOpencode();
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
-    const base = `http://127.0.0.1:${openwork.server.port}`;
+    const base = `http://127.0.0.1:${teamwork.server.port}`;
 
     const listResponse = await fetch(`${base}/workspace/ws_1/sessions?roots=true&limit=1&search=host&start=10`, {
-      headers: auth(openwork.token),
+      headers: auth(teamwork.token),
     });
     expect(listResponse.status).toBe(200);
     const listBody = await listResponse.json();
@@ -196,7 +196,7 @@ describe("workspace session read APIs", () => {
     });
 
     const detailResponse = await fetch(`${base}/workspace/ws_1/sessions/ses_1`, {
-      headers: auth(openwork.token),
+      headers: auth(teamwork.token),
     });
     expect(detailResponse.status).toBe(200);
     const detailBody = await detailResponse.json();
@@ -204,7 +204,7 @@ describe("workspace session read APIs", () => {
     expect(detailBody.item.directory).toBe(workspaceRoot);
 
     const messagesResponse = await fetch(`${base}/workspace/ws_1/sessions/ses_1/messages?limit=5`, {
-      headers: auth(openwork.token),
+      headers: auth(teamwork.token),
     });
     expect(messagesResponse.status).toBe(200);
     const messagesBody = await messagesResponse.json();
@@ -213,7 +213,7 @@ describe("workspace session read APIs", () => {
     expect(messagesBody.items[0]?.parts[0]?.text).toBe("hostname: mock-host");
 
     const snapshotResponse = await fetch(`${base}/workspace/ws_1/sessions/ses_1/snapshot?limit=5`, {
-      headers: auth(openwork.token),
+      headers: auth(teamwork.token),
     });
     expect(snapshotResponse.status).toBe(200);
     const snapshotBody = await snapshotResponse.json();
@@ -240,13 +240,13 @@ describe("workspace session read APIs", () => {
   test("returns 404 when the upstream session is missing", async () => {
     const workspaceRoot = await createWorkspaceRoot();
     const mock = startMockOpencode();
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
-    const response = await fetch(`http://127.0.0.1:${openwork.server.port}/workspace/ws_1/sessions/ses_missing/snapshot`, {
-      headers: auth(openwork.token),
+    const response = await fetch(`http://127.0.0.1:${teamwork.server.port}/workspace/ws_1/sessions/ses_missing/snapshot`, {
+      headers: auth(teamwork.token),
     });
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toMatchObject({
@@ -260,15 +260,15 @@ describe("workspace session read APIs", () => {
     const workspaceRoot = await createWorkspaceRoot();
     const command = deferred();
     const mock = startMockOpencode({ holdCommand: command.promise });
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
     const response = await Promise.race([
-      fetch(`http://127.0.0.1:${openwork.server.port}/workspace/ws_1/opencode/session/ses_1/command`, {
+      fetch(`http://127.0.0.1:${teamwork.server.port}/workspace/ws_1/opencode/session/ses_1/command`, {
         method: "POST",
-        headers: { ...auth(openwork.token), "Content-Type": "application/json" },
+        headers: { ...auth(teamwork.token), "Content-Type": "application/json" },
         body: JSON.stringify({ command: "review", arguments: "" }),
       }),
       new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
@@ -285,13 +285,13 @@ describe("workspace session read APIs", () => {
   test("keeps legacy /w workspace opencode proxy alias", async () => {
     const workspaceRoot = await createWorkspaceRoot();
     const mock = startMockOpencode();
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
-    const response = await fetch(`http://127.0.0.1:${openwork.server.port}/w/ws_1/opencode/session`, {
-      headers: auth(openwork.token),
+    const response = await fetch(`http://127.0.0.1:${teamwork.server.port}/w/ws_1/opencode/session`, {
+      headers: auth(teamwork.token),
     });
 
     expect(response.status).toBe(200);
@@ -303,13 +303,13 @@ describe("workspace session read APIs", () => {
   test("returns 502 when OpenCode returns an invalid session list payload", async () => {
     const workspaceRoot = await createWorkspaceRoot();
     const mock = startMockOpencode({ invalidList: true });
-    const openwork = await startOpenworkServer({
+    const teamwork = await startTeamworkServer({
       workspaceRoot,
       opencodeBaseUrl: `http://127.0.0.1:${mock.server.port}`,
     });
 
-    const response = await fetch(`http://127.0.0.1:${openwork.server.port}/workspace/ws_1/sessions`, {
-      headers: auth(openwork.token),
+    const response = await fetch(`http://127.0.0.1:${teamwork.server.port}/workspace/ws_1/sessions`, {
+      headers: auth(teamwork.token),
     });
     expect(response.status).toBe(502);
     await expect(response.json()).resolves.toMatchObject({

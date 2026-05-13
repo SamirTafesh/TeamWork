@@ -18,7 +18,7 @@ export type EngineInfo = {
   lastStderr: string | null;
 };
 
-export type OpenworkServerInfo = {
+export type TeamworkServerInfo = {
   running: boolean;
   remoteAccessEnabled: boolean;
   host: string | null;
@@ -56,16 +56,16 @@ export type WorkspaceInfo = {
   path: string;
   preset: string;
   workspaceType: "local" | "remote";
-  remoteType?: "openwork" | "opencode" | null;
+  remoteType?: "teamwork" | "opencode" | null;
   baseUrl?: string | null;
   directory?: string | null;
   displayName?: string | null;
-  openworkHostUrl?: string | null;
-  openworkToken?: string | null;
-  openworkClientToken?: string | null;
-  openworkHostToken?: string | null;
-  openworkWorkspaceId?: string | null;
-  openworkWorkspaceName?: string | null;
+  teamworkHostUrl?: string | null;
+  teamworkToken?: string | null;
+  teamworkClientToken?: string | null;
+  teamworkHostToken?: string | null;
+  teamworkWorkspaceId?: string | null;
+  teamworkWorkspaceName?: string | null;
   sandboxBackend?: "docker" | "microsandbox" | null;
   sandboxRunId?: string | null;
   sandboxContainerName?: string | null;
@@ -93,7 +93,7 @@ export type OpencodeCommandDraft = {
   subtask?: boolean;
 };
 
-export type WorkspaceOpenworkConfig = {
+export type WorkspaceTeamworkConfig = {
   version: number;
   workspace?: {
     name?: string | null;
@@ -111,7 +111,7 @@ export type AppBuildInfo = {
   version: string;
   gitSha?: string | null;
   buildEpoch?: string | null;
-  openworkDevMode?: boolean;
+  teamworkDevMode?: boolean;
   os?: string | null;
   arch?: string | null;
 };
@@ -123,7 +123,7 @@ export type DesktopBootstrapConfig = {
 };
 
 export type OrchestratorDetachedHost = {
-  openworkUrl: string;
+  teamworkUrl: string;
   token: string;
   ownerToken?: string | null;
   hostToken: string;
@@ -157,7 +157,7 @@ export type SandboxDoctorResult = {
   } | null;
 };
 
-export type OpenworkDockerCleanupResult = {
+export type TeamworkDockerCleanupResult = {
   candidates: string[];
   removed: string[];
   errors: string[];

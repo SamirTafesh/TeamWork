@@ -1,6 +1,6 @@
 import * as crypto from "node:crypto"
-import { eq } from "@openwork-ee/den-db/drizzle"
-import { OAuthAccessTokenTable } from "@openwork-ee/den-db/schema"
+import { eq } from "@teamwork-ee/den-db/drizzle"
+import { OAuthAccessTokenTable } from "@teamwork-ee/den-db/schema"
 import { verifyJwsAccessToken } from "better-auth/oauth2"
 import {
   auth,

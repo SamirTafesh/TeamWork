@@ -1,5 +1,5 @@
-import { eq } from "@openwork-ee/den-db/drizzle"
-import { OAuthClientTable } from "@openwork-ee/den-db/schema"
+import { eq } from "@teamwork-ee/den-db/drizzle"
+import { OAuthClientTable } from "@teamwork-ee/den-db/schema"
 import type { Hono } from "hono"
 import { oauthProviderAuthServerMetadata, oauthProviderOpenIdConfigMetadata } from "@better-auth/oauth-provider"
 import { describeRoute } from "hono-openapi"

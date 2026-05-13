@@ -9,10 +9,10 @@ import { resolveRuntimeTarget, type RuntimeManifest } from "./manifest.js";
 
 const cleanupPaths: string[] = [];
 const ENV_KEYS = [
-  "OPENWORK_SERVER_V2_RUNTIME_BUNDLE_DIR",
-  "OPENWORK_SERVER_V2_RUNTIME_SOURCE",
-  "OPENWORK_SERVER_V2_RUNTIME_RELEASE_DIR",
-  "OPENWORK_SERVER_V2_RUNTIME_MANIFEST_PATH",
+  "TEAMWORK_SERVER_V2_RUNTIME_BUNDLE_DIR",
+  "TEAMWORK_SERVER_V2_RUNTIME_SOURCE",
+  "TEAMWORK_SERVER_V2_RUNTIME_RELEASE_DIR",
+  "TEAMWORK_SERVER_V2_RUNTIME_MANIFEST_PATH",
 ];
 const originalEnv = new Map(ENV_KEYS.map((key) => [key, process.env[key]]));
 
@@ -64,7 +64,7 @@ test("release runtime assets use manifest versions without reading repo metadata
     throw new Error("Unsupported test target.");
   }
 
-  const releaseRoot = makeTempDir("openwork-server-v2-release-assets");
+  const releaseRoot = makeTempDir("teamwork-server-v2-release-assets");
   const opencodePath = path.join(releaseRoot, process.platform === "win32" ? "opencode.exe" : "opencode");
   const routerPath = path.join(releaseRoot, process.platform === "win32" ? "opencode-router.exe" : "opencode-router");
   writeVersionedBinary(opencodePath, "1.14.38");
@@ -95,9 +95,9 @@ test("release runtime assets use manifest versions without reading repo metadata
   const manifestPath = path.join(releaseRoot, "manifest.json");
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 
-  process.env.OPENWORK_SERVER_V2_RUNTIME_SOURCE = "release";
-  process.env.OPENWORK_SERVER_V2_RUNTIME_RELEASE_DIR = releaseRoot;
-  process.env.OPENWORK_SERVER_V2_RUNTIME_MANIFEST_PATH = manifestPath;
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_SOURCE = "release";
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_RELEASE_DIR = releaseRoot;
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_MANIFEST_PATH = manifestPath;
 
   const service = createRuntimeAssetService({
     environment: "test",
@@ -129,8 +129,8 @@ test("release runtime assets extract into the managed runtime directory and surv
     throw new Error("Unsupported test target.");
   }
 
-  const bundleRoot = makeTempDir("openwork-server-v2-release-bundle");
-  const runtimeRoot = makeTempDir("openwork-server-v2-runtime-root");
+  const bundleRoot = makeTempDir("teamwork-server-v2-release-bundle");
+  const runtimeRoot = makeTempDir("teamwork-server-v2-runtime-root");
   const runtimeDir = path.join(runtimeRoot, "runtime");
   fs.mkdirSync(runtimeDir, { recursive: true });
 
@@ -163,8 +163,8 @@ test("release runtime assets extract into the managed runtime directory and surv
   };
   fs.writeFileSync(path.join(bundleRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 
-  process.env.OPENWORK_SERVER_V2_RUNTIME_SOURCE = "release";
-  process.env.OPENWORK_SERVER_V2_RUNTIME_BUNDLE_DIR = bundleRoot;
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_SOURCE = "release";
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_BUNDLE_DIR = bundleRoot;
 
   const workingDirectory = {
     databaseDir: runtimeRoot,
@@ -205,8 +205,8 @@ test("release runtime assets can extract from an embedded runtime bundle", async
     throw new Error("Unsupported test target.");
   }
 
-  const bundleRoot = makeTempDir("openwork-server-v2-embedded-bundle");
-  const runtimeRoot = makeTempDir("openwork-server-v2-embedded-runtime-root");
+  const bundleRoot = makeTempDir("teamwork-server-v2-embedded-bundle");
+  const runtimeRoot = makeTempDir("teamwork-server-v2-embedded-runtime-root");
   const runtimeDir = path.join(runtimeRoot, "runtime");
   fs.mkdirSync(runtimeDir, { recursive: true });
 
@@ -240,8 +240,8 @@ test("release runtime assets can extract from an embedded runtime bundle", async
   };
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 
-  process.env.OPENWORK_SERVER_V2_RUNTIME_SOURCE = "release";
-  delete process.env.OPENWORK_SERVER_V2_RUNTIME_BUNDLE_DIR;
+  process.env.TEAMWORK_SERVER_V2_RUNTIME_SOURCE = "release";
+  delete process.env.TEAMWORK_SERVER_V2_RUNTIME_BUNDLE_DIR;
 
   registerEmbeddedRuntimeBundle({
     manifestPath,

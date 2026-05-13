@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { storeBundleJson } from "../_lib/blob-store.ts";
-import { packageOpenworkFiles } from "../_lib/package-openwork-files.ts";
+import { packageTeamworkFiles } from "../_lib/package-teamwork-files.ts";
 import { buildCanonicalRequest, buildRequestLike } from "../_lib/request-like.ts";
 import { buildCorsHeaders, rateLimitPublishRequest, validateTrustedOrigin, verifyShareBotProtection } from "../_lib/publish-security.ts";
 import { buildBundleUrls, getEnv, readBody } from "../_lib/share-utils.ts";
@@ -105,7 +105,7 @@ export default async function handler(req: LegacyApiRequest, res: LegacyApiRespo
   }
 
   try {
-    const packaged = packageOpenworkFiles(body);
+    const packaged = packageTeamworkFiles(body);
     if (body?.preview) {
       json(res, packaged);
       return;

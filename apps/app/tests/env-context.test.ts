@@ -1,26 +1,26 @@
 import { describe, expect, test } from "bun:test";
 
-import type { OpenworkServerClient } from "../src/app/lib/openwork-server";
+import type { TeamworkServerClient } from "../src/app/lib/teamwork-server";
 import {
-  buildOpenworkEnvSystemContext,
-  clearOpenworkEnvSystemContextCache,
+  buildTeamworkEnvSystemContext,
+  clearTeamworkEnvSystemContextCache,
 } from "../src/react-app/domains/session/sync/env-context";
 
-function client(keys: string[], calls: { count: number }): OpenworkServerClient {
+function client(keys: string[], calls: { count: number }): TeamworkServerClient {
   return {
     baseUrl: "http://127.0.0.1:3000",
     listUserEnvKeys: async () => {
       calls.count += 1;
       return { keys };
     },
-  } as OpenworkServerClient;
+  } as TeamworkServerClient;
 }
 
-describe("buildOpenworkEnvSystemContext", () => {
+describe("buildTeamworkEnvSystemContext", () => {
   test("lists configured key names without inventing secret values", async () => {
-    clearOpenworkEnvSystemContextCache();
+    clearTeamworkEnvSystemContextCache();
     const calls = { count: 0 };
-    const context = await buildOpenworkEnvSystemContext(
+    const context = await buildTeamworkEnvSystemContext(
       client(["NBA_LIVE_KEY", "bad-key", "ANTHROPIC_API_KEY", "NBA_LIVE_KEY"], calls),
       {
         cacheKey: "session-a",
@@ -36,19 +36,19 @@ describe("buildOpenworkEnvSystemContext", () => {
   });
 
   test("caches key context per session", async () => {
-    clearOpenworkEnvSystemContextCache();
+    clearTeamworkEnvSystemContextCache();
     const calls = { count: 0 };
     const server = client(["OPENROUTER_API_KEY"], calls);
 
-    await buildOpenworkEnvSystemContext(server, {
+    await buildTeamworkEnvSystemContext(server, {
       cacheKey: "session-a",
       readPendingChanges: () => false,
     });
-    await buildOpenworkEnvSystemContext(server, {
+    await buildTeamworkEnvSystemContext(server, {
       cacheKey: "session-a",
       readPendingChanges: () => false,
     });
-    await buildOpenworkEnvSystemContext(server, {
+    await buildTeamworkEnvSystemContext(server, {
       cacheKey: "session-b",
       readPendingChanges: () => false,
     });
@@ -57,10 +57,10 @@ describe("buildOpenworkEnvSystemContext", () => {
   });
 
   test("does not truncate long key lists", async () => {
-    clearOpenworkEnvSystemContextCache();
+    clearTeamworkEnvSystemContextCache();
     const calls = { count: 0 };
     const keys = Array.from({ length: 90 }, (_, index) => `KEY_${index}`);
-    const context = await buildOpenworkEnvSystemContext(client(keys, calls), {
+    const context = await buildTeamworkEnvSystemContext(client(keys, calls), {
       cacheKey: "session-a",
       readPendingChanges: () => false,
     });
@@ -71,9 +71,9 @@ describe("buildOpenworkEnvSystemContext", () => {
   });
 
   test("skips context while environment changes are pending", async () => {
-    clearOpenworkEnvSystemContextCache();
+    clearTeamworkEnvSystemContextCache();
     const calls = { count: 0 };
-    const context = await buildOpenworkEnvSystemContext(client(["ANTHROPIC_API_KEY"], calls), {
+    const context = await buildTeamworkEnvSystemContext(client(["ANTHROPIC_API_KEY"], calls), {
       cacheKey: "session-a",
       readPendingChanges: () => true,
     });

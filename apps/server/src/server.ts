@@ -15,7 +15,7 @@ import { readJsoncFile, updateJsoncPath, updateJsoncTopLevel, writeJsoncFile } f
 import { recordAudit, readAuditEntries, readLastAudit } from "./audit.js";
 import { ReloadEventStore } from "./events.js";
 import { startReloadWatchers } from "./reload-watcher.js";
-import { opencodeConfigPath, openworkConfigPath, projectCommandsDir, projectSkillsDir } from "./workspace-files.js";
+import { opencodeConfigPath, teamworkConfigPath, projectCommandsDir, projectSkillsDir } from "./workspace-files.js";
 import { ensureDir, exists, hashToken, shortId } from "./utils.js";
 import { workspaceIdForPath } from "./workspaces.js";
 import { ensureWorkspaceFiles, readRawOpencodeConfig } from "./workspace-init.js";
@@ -28,7 +28,7 @@ import {
   applyMaterializedBlueprintSessions,
   normalizeBlueprintSessionTemplates,
   readMaterializedBlueprintSessions,
-  sanitizeOpenworkTemplateConfig,
+  sanitizeTeamworkTemplateConfig,
 } from "./blueprint-sessions.js";
 import { inheritWorkspaceOpencodeConnection, resolveWorkspaceOpencodeConnection } from "./opencode-connection.js";
 import { fetchSharedBundle, publishSharedBundle } from "./share-bundles.js";
@@ -85,10 +85,10 @@ function toUnixNano(): string {
 }
 
 export function createServerLogger(config: ServerConfig): ServerLogger {
-  const runId = process.env.OPENWORK_RUN_ID ?? shortId();
+  const runId = process.env.TEAMWORK_RUN_ID ?? shortId();
   const host = hostname().trim();
   const resource: Record<string, string> = {
-    "service.name": "openwork-server",
+    "service.name": "teamwork-server",
     "service.version": SERVER_VERSION,
     "service.instance.id": runId,
   };
@@ -373,7 +373,7 @@ export async function startServer(config: ServerConfig): Promise<ServeResult> {
         return finalize(response);
       } catch (error) {
         if (!(error instanceof ApiError)) {
-          console.error("[openwork-server] Unhandled error:", error);
+          console.error("[teamwork-server] Unhandled error:", error);
         }
         const apiError = error instanceof ApiError
           ? error
@@ -512,8 +512,8 @@ async function proxyOpencodeRequest(input: {
   const targetUrl = buildOpencodeProxyUrl(baseUrl, proxyPath, input.url.search);
   const headers = new Headers(input.request.headers);
   headers.delete("authorization");
-  headers.delete("x-openwork-host-token");
-  headers.delete("x-openwork-client-id");
+  headers.delete("x-teamwork-host-token");
+  headers.delete("x-teamwork-client-id");
   headers.delete("host");
   headers.delete("origin");
 
@@ -594,7 +594,7 @@ function withCors(response: Response, request: Request, config: ServerConfig) {
   headers.set("Access-Control-Allow-Origin", allowOrigin);
   headers.set(
     "Access-Control-Allow-Headers",
-    "Authorization, Content-Type, X-OpenWork-Host-Token, X-OpenWork-Client-Id, X-OpenCode-Directory, X-Opencode-Directory, x-opencode-directory",
+    "Authorization, Content-Type, X-TeamWork-Host-Token, X-TeamWork-Client-Id, X-OpenCode-Directory, X-Opencode-Directory, x-opencode-directory",
   );
   headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
   headers.set("Vary", "Origin");
@@ -612,12 +612,12 @@ async function requireClient(request: Request, config: ServerConfig, tokens: Tok
   if (!scope) {
     throw new ApiError(401, "unauthorized", "Invalid bearer token");
   }
-  const clientId = request.headers.get("x-openwork-client-id") ?? undefined;
+  const clientId = request.headers.get("x-teamwork-client-id") ?? undefined;
   return { type: "remote", clientId, tokenHash: hashToken(token), scope };
 }
 
 function requireHostToken(request: Request, config: ServerConfig): Actor {
-  const hostToken = request.headers.get("x-openwork-host-token");
+  const hostToken = request.headers.get("x-teamwork-host-token");
   if (hostToken && hostToken === config.hostToken) {
     return { type: "host", tokenHash: hashToken(hostToken), scope: "owner" };
   }
@@ -625,7 +625,7 @@ function requireHostToken(request: Request, config: ServerConfig): Actor {
 }
 
 async function requireHost(request: Request, config: ServerConfig, tokens: TokenService): Promise<Actor> {
-  const hostToken = request.headers.get("x-openwork-host-token");
+  const hostToken = request.headers.get("x-teamwork-host-token");
   if (hostToken && hostToken === config.hostToken) {
     return { type: "host", tokenHash: hashToken(hostToken), scope: "owner" };
   }
@@ -640,7 +640,7 @@ async function requireHost(request: Request, config: ServerConfig, tokens: Token
   if (scope !== "owner") {
     throw new ApiError(401, "unauthorized", "Invalid host token");
   }
-  const clientId = request.headers.get("x-openwork-client-id") ?? undefined;
+  const clientId = request.headers.get("x-teamwork-client-id") ?? undefined;
   return { type: "remote", clientId, tokenHash: hashToken(bearer), scope };
 }
 
@@ -659,12 +659,12 @@ function buildCapabilities(config: ServerConfig): Capabilities {
     schemaVersion,
     serverVersion: SERVER_VERSION,
     opencodeVersion: OPENCODE_VERSION,
-    skills: { read: true, write: writeEnabled, source: "openwork" },
+    skills: { read: true, write: writeEnabled, source: "teamwork" },
     hub: {
       skills: {
         read: true,
         install: writeEnabled,
-        repo: { owner: "different-ai", name: "openwork-hub", ref: "main" },
+        repo: { owner: "different-ai", name: "teamwork-hub", ref: "main" },
       },
     },
     plugins: { read: true, write: writeEnabled },
@@ -684,8 +684,8 @@ function buildCapabilities(config: ServerConfig): Capabilities {
       files: {
         injection: writeEnabled && inboxEnabled,
         outbox: outboxEnabled,
-        inboxPath: ".opencode/openwork/inbox/",
-        outboxPath: ".opencode/openwork/outbox/",
+        inboxPath: ".opencode/teamwork/inbox/",
+        outboxPath: ".opencode/teamwork/outbox/",
         maxBytes,
       },
     },
@@ -693,33 +693,33 @@ function buildCapabilities(config: ServerConfig): Capabilities {
 }
 
 function resolveSandboxBackend(): Capabilities["sandbox"]["backend"] {
-  const raw = (process.env.OPENWORK_SANDBOX_BACKEND ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_SANDBOX_BACKEND ?? "").trim().toLowerCase();
   if (raw === "docker") return "docker";
   if (raw === "container") return "container";
   return "none";
 }
 
 function resolveSandboxEnabled(backend: Capabilities["sandbox"]["backend"]): boolean {
-  const raw = (process.env.OPENWORK_SANDBOX_ENABLED ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_SANDBOX_ENABLED ?? "").trim().toLowerCase();
   if (["1", "true", "yes", "on"].includes(raw)) return true;
   if (["0", "false", "no", "off"].includes(raw)) return false;
   return backend !== "none";
 }
 
 function resolveInboxEnabled(): boolean {
-  const raw = (process.env.OPENWORK_INBOX_ENABLED ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_INBOX_ENABLED ?? "").trim().toLowerCase();
   if (!raw) return true;
   return ["1", "true", "yes", "on"].includes(raw);
 }
 
 function resolveOutboxEnabled(): boolean {
-  const raw = (process.env.OPENWORK_OUTBOX_ENABLED ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_OUTBOX_ENABLED ?? "").trim().toLowerCase();
   if (!raw) return true;
   return ["1", "true", "yes", "on"].includes(raw);
 }
 
 function resolveInboxMaxBytes(): number {
-  const raw = (process.env.OPENWORK_INBOX_MAX_BYTES ?? "").trim();
+  const raw = (process.env.TEAMWORK_INBOX_MAX_BYTES ?? "").trim();
   const parsed = raw ? Number(raw) : NaN;
   if (Number.isFinite(parsed) && parsed > 0) {
     return Math.min(Math.trunc(parsed), 250_000_000);
@@ -728,22 +728,22 @@ function resolveInboxMaxBytes(): number {
 }
 
 function resolveToyUiEnabled(): boolean {
-  const raw = (process.env.OPENWORK_TOY_UI ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_TOY_UI ?? "").trim().toLowerCase();
   if (!raw) return true;
   return ["1", "true", "yes", "on"].includes(raw);
 }
 
-// Dev-only log sink target. When OPENWORK_DEV_LOG_FILE is set to a path, the
+// Dev-only log sink target. When TEAMWORK_DEV_LOG_FILE is set to a path, the
 // /dev/log endpoint accepts JSON payloads and appends them to that file so an
 // operator can `tail -f` the file to see live browser activity. Returning null
 // disables the endpoint entirely.
 function resolveDevLogPath(): string | null {
-  const raw = (process.env.OPENWORK_DEV_LOG_FILE ?? "").trim();
+  const raw = (process.env.TEAMWORK_DEV_LOG_FILE ?? "").trim();
   return raw.length > 0 ? raw : null;
 }
 
 function resolveBrowserProvider(): Capabilities["toolProviders"]["browser"] {
-  const raw = (process.env.OPENWORK_BROWSER_PROVIDER ?? "").trim().toLowerCase();
+  const raw = (process.env.TEAMWORK_BROWSER_PROVIDER ?? "").trim().toLowerCase();
   if (raw === "sandbox-headless") {
     return { enabled: true, placement: "in-sandbox", mode: "headless" };
   }
@@ -757,11 +757,11 @@ function resolveBrowserProvider(): Capabilities["toolProviders"]["browser"] {
 }
 
 function resolveInboxDir(workspaceRoot: string): string {
-  return join(workspaceRoot, ".opencode", "openwork", "inbox");
+  return join(workspaceRoot, ".opencode", "teamwork", "inbox");
 }
 
 function resolveOutboxDir(workspaceRoot: string): string {
-  return join(workspaceRoot, ".opencode", "openwork", "outbox");
+  return join(workspaceRoot, ".opencode", "teamwork", "outbox");
 }
 
 export function normalizeWorkspaceRelativePath(input: string, options: { allowSubdirs: boolean }): string {
@@ -1137,7 +1137,7 @@ function createRoutes(
   // Dev log sink: append browser console + error events to a file that an
   // operator (or an AI driver) can tail. Unauth on purpose because this is
   // scoped to the dev host and needs to work before clients finish wiring
-  // tokens; it is also a no-op when OPENWORK_DEV_LOG_FILE is unset.
+  // tokens; it is also a no-op when TEAMWORK_DEV_LOG_FILE is unset.
   addRoute(routes, "POST", "/dev/log", "none", async (ctx) => {
     const target = resolveDevLogPath();
     if (!target) {
@@ -1209,7 +1209,7 @@ function createRoutes(
     return jsResponse(TOY_UI_JS);
   });
 
-  addRoute(routes, "GET", "/ui/assets/openwork-mark.svg", "none", async () => {
+  addRoute(routes, "GET", "/ui/assets/teamwork-mark.svg", "none", async () => {
     if (!resolveToyUiEnabled()) {
       throw new ApiError(404, "ui_disabled", "Toy UI is disabled");
     }
@@ -1399,7 +1399,7 @@ function createRoutes(
           400,
           error.code,
           error.code === "reserved_env_key"
-            ? "Environment variable name is reserved for OpenWork internals"
+            ? "Environment variable name is reserved for TeamWork internals"
             : "Invalid environment variable name",
         );
       }
@@ -1551,7 +1551,7 @@ function createRoutes(
       actor: ctx.actor ?? { type: "host" },
       action: "workspace.delete",
       target: "workspace",
-      summary: "Deleted workspace from OpenWork server",
+      summary: "Deleted workspace from TeamWork server",
       timestamp: Date.now(),
     });
 
@@ -1569,9 +1569,9 @@ function createRoutes(
   addRoute(routes, "GET", "/workspace/:id/config", "client", async (ctx) => {
     const workspace = await resolveWorkspace(config, ctx.params.id);
     const opencode = await readOpencodeConfig(workspace.path);
-    const openwork = await readOpenworkConfig(workspace.path);
+    const teamwork = await readTeamworkConfig(workspace.path);
     const lastAudit = await readLastAudit(workspace.path, workspace.id);
-    return jsonResponse({ opencode, openwork, updatedAt: lastAudit?.timestamp ?? null });
+    return jsonResponse({ opencode, teamwork, updatedAt: lastAudit?.timestamp ?? null });
   });
 
   addRoute(routes, "GET", "/workspace/:id/opencode-config", "client", async (ctx) => {
@@ -1704,17 +1704,17 @@ function createRoutes(
     const workspace = await resolveWorkspace(config, ctx.params.id);
     const body = await readJsonBody(ctx.request);
     const opencode = body.opencode as Record<string, unknown> | undefined;
-    const openwork = body.openwork as Record<string, unknown> | undefined;
+    const teamwork = body.teamwork as Record<string, unknown> | undefined;
 
-    if (!opencode && !openwork) {
-      throw new ApiError(400, "invalid_payload", "opencode or openwork updates required");
+    if (!opencode && !teamwork) {
+      throw new ApiError(400, "invalid_payload", "opencode or teamwork updates required");
     }
 
     await requireApproval(ctx, {
       workspaceId: workspace.id,
       action: "config.patch",
       summary: "Patch workspace config",
-      paths: [opencode ? opencodeConfigPath(workspace.path) : null, openwork ? openworkConfigPath(workspace.path) : null].filter(Boolean) as string[],
+      paths: [opencode ? opencodeConfigPath(workspace.path) : null, teamwork ? teamworkConfigPath(workspace.path) : null].filter(Boolean) as string[],
     });
 
     if (opencode) {
@@ -1744,8 +1744,8 @@ function createRoutes(
         }
       }
     }
-    if (openwork) {
-      await writeOpenworkConfig(workspace.path, openwork, true);
+    if (teamwork) {
+      await writeTeamworkConfig(workspace.path, teamwork, true);
     }
 
     await recordAudit(workspace.path, {
@@ -2450,7 +2450,7 @@ function createRoutes(
     const ref = ctx.url.searchParams.get("ref")?.trim();
     const items = await listHubSkills({
       owner: owner || "different-ai",
-      repo: repo || "openwork-hub",
+      repo: repo || "teamwork-hub",
       ref: ref || "main",
     });
     return jsonResponse({ items });
@@ -2948,7 +2948,7 @@ function createRoutes(
       throw new ApiError(
         400,
         "publisher_base_url_forbidden",
-        "Bundle publishing always uses the configured OpenWork publisher. Remove baseUrl from the request.",
+        "Bundle publishing always uses the configured TeamWork publisher. Remove baseUrl from the request.",
       );
     }
     const result = await publishSharedBundle({
@@ -3203,19 +3203,19 @@ function ensurePlainObject(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-type OpenworkServerConfigFile = Record<string, unknown> & {
+type TeamworkServerConfigFile = Record<string, unknown> & {
   workspaces?: Array<Record<string, unknown>>;
   authorizedRoots?: string[];
 };
 
-async function readServerConfigFile(configPath: string): Promise<OpenworkServerConfigFile> {
+async function readServerConfigFile(configPath: string): Promise<TeamworkServerConfigFile> {
   if (!(await exists(configPath))) {
     return {};
   }
 
   try {
     const raw = await readFile(configPath, "utf8");
-    return ensurePlainObject(JSON.parse(raw)) as OpenworkServerConfigFile;
+    return ensurePlainObject(JSON.parse(raw)) as TeamworkServerConfigFile;
   } catch (error) {
     throw new ApiError(422, "invalid_json", "Failed to parse server config", {
       path: configPath,
@@ -3235,10 +3235,10 @@ function serializeWorkspaceConfigEntry(workspace: WorkspaceInfo): Record<string,
     ...(workspace.baseUrl ? { baseUrl: workspace.baseUrl } : {}),
     ...(workspace.directory ? { directory: workspace.directory } : {}),
     ...(workspace.displayName ? { displayName: workspace.displayName } : {}),
-    ...(workspace.openworkHostUrl ? { openworkHostUrl: workspace.openworkHostUrl } : {}),
-    ...(workspace.openworkToken ? { openworkToken: workspace.openworkToken } : {}),
-    ...(workspace.openworkWorkspaceId ? { openworkWorkspaceId: workspace.openworkWorkspaceId } : {}),
-    ...(workspace.openworkWorkspaceName ? { openworkWorkspaceName: workspace.openworkWorkspaceName } : {}),
+    ...(workspace.teamworkHostUrl ? { teamworkHostUrl: workspace.teamworkHostUrl } : {}),
+    ...(workspace.teamworkToken ? { teamworkToken: workspace.teamworkToken } : {}),
+    ...(workspace.teamworkWorkspaceId ? { teamworkWorkspaceId: workspace.teamworkWorkspaceId } : {}),
+    ...(workspace.teamworkWorkspaceName ? { teamworkWorkspaceName: workspace.teamworkWorkspaceName } : {}),
     ...(workspace.sandboxBackend ? { sandboxBackend: workspace.sandboxBackend } : {}),
     ...(workspace.sandboxRunId ? { sandboxRunId: workspace.sandboxRunId } : {}),
     ...(workspace.sandboxContainerName ? { sandboxContainerName: workspace.sandboxContainerName } : {}),
@@ -3253,7 +3253,7 @@ async function persistServerWorkspaceState(config: ServerConfig): Promise<boolea
   if (!(await exists(configPath))) return false;
 
   const parsed = await readServerConfigFile(configPath);
-  const next: OpenworkServerConfigFile = {
+  const next: TeamworkServerConfigFile = {
     ...parsed,
     workspaces: config.workspaces.map(serializeWorkspaceConfigEntry),
     authorizedRoots: Array.from(new Set(config.authorizedRoots.map((root) => resolve(root)))),
@@ -3291,8 +3291,8 @@ function resolveOpencodeConfigFilePath(scope: "project" | "global", workspaceRoo
 }
 
 function getRuntimeControlConfig(): { baseUrl: string; token: string } | null {
-  const baseUrl = process.env.OPENWORK_CONTROL_BASE_URL?.trim() ?? "";
-  const token = process.env.OPENWORK_CONTROL_TOKEN?.trim() ?? "";
+  const baseUrl = process.env.TEAMWORK_CONTROL_BASE_URL?.trim() ?? "";
+  const token = process.env.TEAMWORK_CONTROL_TOKEN?.trim() ?? "";
   if (!baseUrl || !token) return null;
   return { baseUrl: baseUrl.replace(/\/+$/, ""), token };
 }
@@ -3323,14 +3323,14 @@ async function readOpencodeConfig(workspaceRoot: string): Promise<Record<string,
   return data;
 }
 
-async function readOpenworkConfig(workspaceRoot: string): Promise<Record<string, unknown>> {
-  const path = openworkConfigPath(workspaceRoot);
+async function readTeamworkConfig(workspaceRoot: string): Promise<Record<string, unknown>> {
+  const path = teamworkConfigPath(workspaceRoot);
   if (!(await exists(path))) return {};
   try {
     const raw = await readFile(path, "utf8");
     return JSON.parse(raw) as Record<string, unknown>;
   } catch {
-    throw new ApiError(422, "invalid_json", "Failed to parse openwork.json");
+    throw new ApiError(422, "invalid_json", "Failed to parse teamwork.json");
   }
 }
 
@@ -3387,9 +3387,9 @@ async function reloadOpencodeEngine(config: ServerConfig, workspace: WorkspaceIn
   });
 }
 
-async function writeOpenworkConfig(workspaceRoot: string, payload: Record<string, unknown>, merge: boolean): Promise<void> {
-  const path = openworkConfigPath(workspaceRoot);
-  const next = merge ? { ...(await readOpenworkConfig(workspaceRoot)), ...payload } : payload;
+async function writeTeamworkConfig(workspaceRoot: string, payload: Record<string, unknown>, merge: boolean): Promise<void> {
+  const path = teamworkConfigPath(workspaceRoot);
+  const next = merge ? { ...(await readTeamworkConfig(workspaceRoot)), ...payload } : payload;
   await ensureDir(join(workspaceRoot, ".opencode"));
   await writeFile(path, JSON.stringify(next, null, 2) + "\n", "utf8");
 }
@@ -3415,7 +3415,7 @@ async function exportWorkspace(
   const sensitiveMode = options?.sensitiveMode ?? "auto";
   const rawOpencode = await readOpencodeConfig(workspace.path);
   let opencode = sanitizePortableOpencodeConfig(rawOpencode);
-  const openwork = sanitizeOpenworkTemplateConfig(await readOpenworkConfig(workspace.path));
+  const teamwork = sanitizeTeamworkTemplateConfig(await readTeamworkConfig(workspace.path));
   const skills = await listSkills(workspace.path, false);
   const commands = await listCommands(workspace.path, "workspace");
   let files = await listPortableFiles(workspace.path);
@@ -3452,7 +3452,7 @@ async function exportWorkspace(
     workspaceId: workspace.id,
     exportedAt: Date.now(),
     opencode,
-    openwork,
+    teamwork,
     skills: skillContents,
     commands: commandContents,
     ...(files.length ? { files } : {}),
@@ -3506,13 +3506,13 @@ async function importWorkspace(workspace: WorkspaceInfo, payload: Record<string,
   }
 
   if (
-    input.openwork !== undefined &&
-    changedPath("openwork", workspaceImportRelativePath(workspace, openworkConfigPath(workspace.path)))
+    input.teamwork !== undefined &&
+    changedPath("teamwork", workspaceImportRelativePath(workspace, teamworkConfigPath(workspace.path)))
   ) {
-    if (input.modes.openwork === "replace") {
-      await writeOpenworkConfig(workspace.path, input.openwork, false);
+    if (input.modes.teamwork === "replace") {
+      await writeTeamworkConfig(workspace.path, input.teamwork, false);
     } else {
-      await writeOpenworkConfig(workspace.path, input.openwork, true);
+      await writeTeamworkConfig(workspace.path, input.teamwork, true);
     }
   }
 
@@ -3569,13 +3569,13 @@ async function materializeBlueprintSessions(config: ServerConfig, workspace: Wor
   existing: Array<{ templateId: string; sessionId: string }>;
   openSessionId: string | null;
 }> {
-  const openwork = await readOpenworkConfig(workspace.path);
-  const templates = normalizeBlueprintSessionTemplates(openwork);
+  const teamwork = await readTeamworkConfig(workspace.path);
+  const templates = normalizeBlueprintSessionTemplates(teamwork);
   if (!templates.length) {
     return { ok: true, created: [], existing: [], openSessionId: null };
   }
 
-  const existing = readMaterializedBlueprintSessions(openwork);
+  const existing = readMaterializedBlueprintSessions(teamwork);
   if (existing.length > 0) {
     const preferredTemplate = templates.find((template) => template.openOnFirstLoad) ?? templates[0] ?? null;
     const openSessionId = preferredTemplate
@@ -3604,12 +3604,12 @@ async function materializeBlueprintSessions(config: ServerConfig, workspace: Wor
   }
 
   const now = Date.now();
-  const nextOpenwork = applyMaterializedBlueprintSessions(
-    openwork,
+  const nextTeamwork = applyMaterializedBlueprintSessions(
+    teamwork,
     created.map(({ templateId, sessionId }) => ({ templateId, sessionId })),
     now,
   );
-  await writeOpenworkConfig(workspace.path, nextOpenwork, false);
+  await writeTeamworkConfig(workspace.path, nextTeamwork, false);
 
   const preferredTemplate = templates.find((template) => template.openOnFirstLoad) ?? templates[0] ?? null;
   const openSessionId = preferredTemplate

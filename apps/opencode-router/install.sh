@@ -2,8 +2,8 @@
 set -euo pipefail
 
 OPENCODE_ROUTER_REF="${OPENCODE_ROUTER_REF:-dev}"
-OPENCODE_ROUTER_REPO="${OPENCODE_ROUTER_REPO:-https://github.com/different-ai/openwork.git}"
-OPENCODE_ROUTER_INSTALL_DIR="${OPENCODE_ROUTER_INSTALL_DIR:-$HOME/.openwork/opencode-router/openwork}"
+OPENCODE_ROUTER_REPO="${OPENCODE_ROUTER_REPO:-https://github.com/SamirTafesh/TeamWork.git}"
+OPENCODE_ROUTER_INSTALL_DIR="${OPENCODE_ROUTER_INSTALL_DIR:-$HOME/.teamwork/opencode-router/teamwork}"
 OPENCODE_ROUTER_BIN_DIR="${OPENCODE_ROUTER_BIN_DIR:-$HOME/.local/bin}"
 OPENCODE_ROUTER_INSTALL_METHOD="${OPENCODE_ROUTER_INSTALL_METHOD:-npm}"
 
@@ -14,14 +14,14 @@ opencode-router installer
 Requires: bun (runtime) and node/npm.
 
 Environment variables:
-  OPENCODE_ROUTER_INSTALL_DIR  Install directory (default: ~/.openwork/opencode-router/openwork)
-  OPENCODE_ROUTER_REPO         Git repo (default: https://github.com/different-ai/openwork.git)
+  OPENCODE_ROUTER_INSTALL_DIR  Install directory (default: ~/.teamwork/opencode-router/teamwork)
+  OPENCODE_ROUTER_REPO         Git repo (default: https://github.com/SamirTafesh/TeamWork.git)
   OPENCODE_ROUTER_REF          Git ref/branch (default: dev)
   OPENCODE_ROUTER_BIN_DIR      Bin directory for shims (default: ~/.local/bin)
   OPENCODE_ROUTER_INSTALL_METHOD  Install method: npm|git (default: npm)
 
 Example:
-  OPENCODE_ROUTER_INSTALL_DIR=~/opencode-router curl -fsSL https://raw.githubusercontent.com/different-ai/openwork/dev/apps/opencode-router/install.sh | bash
+  OPENCODE_ROUTER_INSTALL_DIR=~/opencode-router curl -fsSL https://raw.githubusercontent.com/SamirTafesh/TeamWork/dev/apps/opencode-router/install.sh | bash
 EOF
 }
 

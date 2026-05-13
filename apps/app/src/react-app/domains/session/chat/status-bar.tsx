@@ -4,16 +4,16 @@ import { BookOpen, MessageCircle, Settings } from "lucide-react";
 
 import { t } from "../../../../i18n";
 import { usePlatform } from "../../../kernel/platform";
-import { useControlAction, type OpenworkControlAction } from "../../../shell/control/control-provider";
-import type { OpenworkServerStatus } from "../../../../app/lib/openwork-server";
+import { useControlAction, type TeamworkControlAction } from "../../../shell/control/control-provider";
+import type { TeamworkServerStatus } from "../../../../app/lib/teamwork-server";
 
-const DOCS_URL = "https://openworklabs.com/docs";
+const DOCS_URL = "https://teamworklabs.com/docs";
 const STATUS_BAR_BOOT_STARTED_AT = Date.now();
 const STATUS_BAR_INITIALIZING_MS = 15_000;
 
 export type StatusBarProps = {
   clientConnected: boolean;
-  openworkServerStatus: OpenworkServerStatus;
+  teamworkServerStatus: TeamworkServerStatus;
   developerMode: boolean;
   settingsOpen: boolean;
   onSendFeedback: () => void;
@@ -50,7 +50,7 @@ function deriveStatusCopy(props: StatusBarProps): StatusCopy {
 
   const mcp = props.mcpConnectedCount;
 
-  if (!props.clientConnected && props.openworkServerStatus === "disconnected" && props.initializing) {
+  if (!props.clientConnected && props.teamworkServerStatus === "disconnected" && props.initializing) {
     return {
       label: "Preparing workspace",
       detail: t("session.loading_detail"),
@@ -72,7 +72,7 @@ function deriveStatusCopy(props: StatusBarProps): StatusCopy {
       detailBits.push(t("status.developer_mode"));
     }
     return {
-      label: t("status.openwork_ready"),
+      label: t("status.teamwork_ready"),
       detail: detailBits.join(" · "),
       dotClass: "bg-green-9",
       pingClass: "bg-green-9/45 animate-ping",
@@ -80,7 +80,7 @@ function deriveStatusCopy(props: StatusBarProps): StatusCopy {
     };
   }
 
-  if (props.openworkServerStatus === "limited") {
+  if (props.teamworkServerStatus === "limited") {
     return {
       label: t("status.limited_mode"),
       detail:
@@ -122,9 +122,9 @@ export function StatusBar(props: StatusBarProps) {
   }, [initializing]);
 
   const statusCopy = deriveStatusCopy({ ...props, initializing });
-  const docsControlAction = useMemo<OpenworkControlAction>(() => ({
+  const docsControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "status.docs.open",
-    label: "Open OpenWork docs",
+    label: "Open TeamWork docs",
     description: "Open the documentation from the status bar.",
     sideEffect: "external",
     targetRef: docsButtonRef,
@@ -132,17 +132,17 @@ export function StatusBar(props: StatusBarProps) {
   }), [platform]);
   useControlAction(docsControlAction);
 
-  const feedbackControlAction = useMemo<OpenworkControlAction>(() => ({
+  const feedbackControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "status.feedback.open",
     label: "Send feedback",
-    description: "Open the OpenWork feedback surface from the status bar.",
+    description: "Open the TeamWork feedback surface from the status bar.",
     sideEffect: "external",
     targetRef: feedbackButtonRef,
     execute: props.onSendFeedback,
   }), [props.onSendFeedback]);
   useControlAction(feedbackControlAction);
 
-  const settingsControlAction = useMemo<OpenworkControlAction>(() => ({
+  const settingsControlAction = useMemo<TeamworkControlAction>(() => ({
     id: "status.settings.open",
     label: props.settingsOpen ? "Go back from settings" : "Open settings from the status bar",
     description: "Use the visible settings button in the status bar.",

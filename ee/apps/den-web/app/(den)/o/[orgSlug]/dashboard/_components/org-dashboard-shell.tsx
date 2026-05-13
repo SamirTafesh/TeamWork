@@ -38,7 +38,7 @@ import {
 import { useOrgDashboard } from "../_providers/org-dashboard-provider";
 import { buildDenFeedbackUrl } from "../../../../_lib/feedback";
 
-const OPENWORK_DOCS_URL = "https://openworklabs.com/docs";
+const TEAMWORK_DOCS_URL = "https://teamworklabs.com/docs";
 
 function OrgMark({ name }: { name: string }) {
   const initials = useMemo(() => {
@@ -53,14 +53,14 @@ function OrgMark({ name }: { name: string }) {
   );
 }
 
-function OpenWorkMark({ className = "h-9 w-auto" }: { className?: string }) {
+function TeamWorkMark({ className = "h-9 w-auto" }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 834 649"
       fill="none"
       className={className}
-      aria-label="OpenWork"
+      aria-label="TeamWork"
     >
       <path
         fill="#011627"
@@ -230,7 +230,7 @@ export function OrgDashboardShell({ children }: { children: React.ReactNode }) {
         onClick={() => setSwitcherOpen((current) => !current)}
       >
         <div className="flex min-w-0 items-center gap-3">
-          <OrgMark name={activeOrg?.name ?? "OpenWork"} />
+          <OrgMark name={activeOrg?.name ?? "TeamWork"} />
           <div className="min-w-0">
             <p className="truncate text-[14px] font-medium text-gray-900">
               {activeOrg?.name ?? "Loading..."}
@@ -252,7 +252,7 @@ export function OrgDashboardShell({ children }: { children: React.ReactNode }) {
         <div className="absolute bottom-[calc(100%+0.5rem)] left-0 w-[240px] z-30 grid gap-1 rounded-2xl border border-gray-200 bg-white py-2 shadow-[0_12px_24px_-12px_rgba(0,0,0,0.15)]">
           <div className="px-3 py-1.5">
             <p className="truncate text-[13px] font-medium text-gray-900">
-              {user?.email ?? "OpenWork user"}
+              {user?.email ?? "TeamWork user"}
             </p>
           </div>
           
@@ -329,7 +329,7 @@ export function OrgDashboardShell({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col">
           <div className="border-b border-gray-100 px-4 pb-4 pt-5">
             <div className="flex items-center justify-between gap-3">
-              <OpenWorkMark />
+              <TeamWorkMark />
               {orgBusy ? <span className="text-xs text-gray-400">Refreshing...</span> : null}
             </div>
           </div>
@@ -405,7 +405,7 @@ export function OrgDashboardShell({ children }: { children: React.ReactNode }) {
               Feedback
             </a>
             <a
-              href={OPENWORK_DOCS_URL}
+              href={TEAMWORK_DOCS_URL}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"

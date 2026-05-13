@@ -5,7 +5,7 @@ type FeedbackContext = {
   entrypoint?: string;
   deployment?: string;
   appVersion?: string;
-  openworkServerVersion?: string;
+  teamworkServerVersion?: string;
   opencodeVersion?: string;
   orchestratorVersion?: string;
   opencodeRouterVersion?: string;
@@ -24,7 +24,7 @@ type FeedbackPayload = {
 };
 
 const LOOPS_TRANSACTIONAL_API_URL = "https://app.loops.so/api/v1/transactional";
-const DEFAULT_INTERNAL_FEEDBACK_EMAIL = "team@openworklabs.com";
+const DEFAULT_INTERNAL_FEEDBACK_EMAIL = "team@teamworklabs.com";
 
 function sanitizeValue(value: unknown, maxLength = 240) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -36,7 +36,7 @@ function sanitizeContext(input: FeedbackContext | undefined) {
     entrypoint: sanitizeValue(input?.entrypoint),
     deployment: sanitizeValue(input?.deployment),
     appVersion: sanitizeValue(input?.appVersion),
-    openworkServerVersion: sanitizeValue(input?.openworkServerVersion),
+    teamworkServerVersion: sanitizeValue(input?.teamworkServerVersion),
     opencodeVersion: sanitizeValue(input?.opencodeVersion),
     orchestratorVersion: sanitizeValue(input?.orchestratorVersion),
     opencodeRouterVersion: sanitizeValue(input?.opencodeRouterVersion),
@@ -53,7 +53,7 @@ function formatDiagnosticsSummary(context: ReturnType<typeof sanitizeContext>) {
     ["Entrypoint", context.entrypoint],
     ["Deployment", context.deployment],
     ["App version", context.appVersion],
-    ["OpenWork server", context.openworkServerVersion],
+    ["TeamWork server", context.teamworkServerVersion],
     ["OpenCode", context.opencodeVersion],
     ["Orchestrator", context.orchestratorVersion],
     ["Router", context.opencodeRouterVersion],
@@ -174,11 +174,11 @@ export async function POST(request: Request) {
         name,
         email,
         message,
-        source: context.source || "openwork-app",
+        source: context.source || "teamwork-app",
         entrypoint: context.entrypoint || "unknown",
         deployment: context.deployment || "desktop",
         appVersion: context.appVersion || "unknown",
-        openworkServerVersion: context.openworkServerVersion || "unknown",
+        teamworkServerVersion: context.teamworkServerVersion || "unknown",
         opencodeVersion: context.opencodeVersion || "unknown",
         orchestratorVersion: context.orchestratorVersion || "unknown",
         opencodeRouterVersion: context.opencodeRouterVersion || "unknown",

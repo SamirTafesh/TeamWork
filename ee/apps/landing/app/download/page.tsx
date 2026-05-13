@@ -7,11 +7,11 @@ import { baseOpenGraph } from "../../lib/seo";
 const downloadSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "OpenWork",
+  name: "TeamWork",
   description:
     "Open source Claude Cowork alternative. Desktop app for macOS, Windows, and Linux that lets teams use 50+ LLMs with their own provider keys.",
-  url: "https://openworklabs.com/download",
-  downloadUrl: "https://github.com/different-ai/openwork/releases/latest",
+  url: "https://teamworklabs.com/download",
+  downloadUrl: "https://github.com/SamirTafesh/TeamWork/releases/latest",
   applicationCategory: "BusinessApplication",
   operatingSystem: "macOS, Windows, Linux",
   offers: {
@@ -21,21 +21,21 @@ const downloadSchema = {
   },
   publisher: {
     "@type": "Organization",
-    name: "OpenWork",
-    url: "https://openworklabs.com"
+    name: "TeamWork",
+    url: "https://teamworklabs.com"
   }
 };
 
 export const metadata = {
-  title: "Download OpenWork — macOS, Windows, Linux",
+  title: "Download TeamWork — macOS, Windows, Linux",
   description:
-    "Download OpenWork desktop for macOS, Windows, and Linux. Direct Electron build downloads are resolved from the latest GitHub release.",
+    "Download TeamWork desktop for macOS, Windows, and Linux. Direct Electron build downloads are resolved from the latest GitHub release.",
   alternates: {
     canonical: "/download"
   },
   openGraph: {
     ...baseOpenGraph,
-    url: "https://openworklabs.com/download"
+    url: "https://teamworklabs.com/download"
   }
 };
 
@@ -57,13 +57,13 @@ export default async function Download() {
         <div className="content-max-width px-6">
           <div className="animate-fade-up">
             <div className="mb-3 text-[12px] font-bold uppercase tracking-wider text-gray-500">
-              OpenWork desktop
+              TeamWork desktop
             </div>
             <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">
-              Download OpenWork
+              Download TeamWork
             </h1>
             <p className="mb-4 max-w-3xl text-[17px] leading-relaxed text-gray-700">
-              Install OpenWork on macOS, Windows, or Linux. Pick the package that
+              Install TeamWork on macOS, Windows, or Linux. Pick the package that
               matches your distro and architecture.
             </p>
             <p className="mb-10 text-[14px] text-gray-600">
@@ -143,7 +143,7 @@ export default async function Download() {
           <section id="windows" className="py-6">
             <h2 className="mb-2 text-2xl font-bold md:text-3xl">Windows</h2>
             <p className="mb-6 text-[15px] text-gray-700">
-              OpenWork for Windows is available as an x64 Electron installer.
+              TeamWork for Windows is available as an x64 Electron installer.
             </p>
             <a
               href={github.installers.windows.x64}

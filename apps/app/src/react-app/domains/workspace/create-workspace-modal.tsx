@@ -216,12 +216,12 @@ export function CreateWorkspaceModal(props: CreateWorkspaceModalProps) {
       setActiveOrgId(settings.activeOrgId?.trim() ?? "");
     };
     window.addEventListener(
-      "openwork-den-session-updated",
+      "teamwork-den-session-updated",
       handler as EventListener,
     );
     return () =>
       window.removeEventListener(
-        "openwork-den-session-updated",
+        "teamwork-den-session-updated",
         handler as EventListener,
       );
   }, [isInline, props.open]);
@@ -349,8 +349,8 @@ export function CreateWorkspaceModal(props: CreateWorkspaceModalProps) {
     if (!props.onConfirmRemote) return;
     await Promise.resolve(
       props.onConfirmRemote({
-        openworkHostUrl: remoteUrl.trim(),
-        openworkToken: remoteToken.trim() || null,
+        teamworkHostUrl: remoteUrl.trim(),
+        teamworkToken: remoteToken.trim() || null,
         directory: null,
         displayName: remoteDisplayName.trim() || null,
         closeModal: true,
@@ -358,7 +358,7 @@ export function CreateWorkspaceModal(props: CreateWorkspaceModalProps) {
     );
   };
 
-  const handleOpenWorker = async (worker: DenWorkerSummary) => {
+  const handleTeamWorker = async (worker: DenWorkerSummary) => {
     if (!props.onConfirmRemote) return;
     const orgId = activeOrgId.trim();
     if (!orgId) {
@@ -369,18 +369,18 @@ export function CreateWorkspaceModal(props: CreateWorkspaceModalProps) {
     setWorkersError(null);
     try {
       const tokens = await denClient.getWorkerTokens(worker.workerId, orgId);
-      const openworkUrl = tokens.openworkUrl?.trim() ?? "";
+      const teamworkUrl = tokens.teamworkUrl?.trim() ?? "";
       const accessToken =
         tokens.ownerToken?.trim() || tokens.clientToken?.trim() || "";
-      if (!openworkUrl || !accessToken) {
+      if (!teamworkUrl || !accessToken) {
         throw new Error(t("dashboard.error_workspace_not_ready"));
       }
       const ok = await Promise.resolve(
         props.onConfirmRemote({
-          openworkHostUrl: openworkUrl,
-          openworkToken: accessToken,
-          openworkClientToken: tokens.clientToken?.trim() || null,
-          openworkHostToken: tokens.hostToken?.trim() || null,
+          teamworkHostUrl: teamworkUrl,
+          teamworkToken: accessToken,
+          teamworkClientToken: tokens.clientToken?.trim() || null,
+          teamworkHostToken: tokens.hostToken?.trim() || null,
           directory: null,
           displayName: worker.workerName,
           closeModal: true,
@@ -612,7 +612,7 @@ export function CreateWorkspaceModal(props: CreateWorkspaceModalProps) {
           openingWorkerId={openingWorkerId}
           workerStatusMeta={(status) => workerStatusMeta(status)}
           workerSecondaryLine={(worker) => workerSecondaryLine(worker)}
-          onOpenWorker={(worker) => void handleOpenWorker(worker)}
+          onTeamWorker={(worker) => void handleTeamWorker(worker)}
           onOpenCloudSignIn={openCloudSignIn}
           onRefreshWorkers={() => void refreshWorkers()}
           onOpenCloudDashboard={openCloudDashboard}

@@ -1,8 +1,8 @@
-# OpenWork Architecture
+# TeamWork Architecture
 
 ## Design principle: Predictable > Clever
 
-OpenWork optimizes for **predictability** over "clever" auto-detection. Users should be able to form a correct mental model of what will happen.
+TeamWork optimizes for **predictability** over "clever" auto-detection. Users should be able to form a correct mental model of what will happen.
 
 Guidelines:
 
@@ -17,13 +17,13 @@ Guidelines:
 
 When enabling Docker-backed sandbox mode, prefer an explicit, single-path override for the Docker client binary:
 
-- `OPENWORK_DOCKER_BIN` (absolute path to `docker`)
+- `TEAMWORK_DOCKER_BIN` (absolute path to `docker`)
 
 This keeps behavior predictable across environments where GUI apps do not inherit shell PATH (common on macOS).
 
 Auto-detection can exist as a convenience, but should be tiered and explainable:
 
-1. Honor `OPENWORK_DOCKER_BIN` if set.
+1. Honor `TEAMWORK_DOCKER_BIN` if set.
 2. Try the process PATH.
 3. On macOS, try the login PATH from `/usr/libexec/path_helper`.
 4. Last-resort: try well-known locations (Homebrew, Docker Desktop bundle) and validate the binary exists.
@@ -31,13 +31,13 @@ Auto-detection can exist as a convenience, but should be tiered and explainable:
 The readiness check should be a clear, single command (e.g. `docker info`) and the UI should show the exact error output when it fails.
 
 ## Minimal use of Tauri
-We move most of the functionality to the openwork server which interfaces mostly with FS and proxies to opencode.
+We move most of the functionality to the teamwork server which interfaces mostly with FS and proxies to opencode.
 
 
 
 ## Filesystem mutation policy
 
-OpenWork should route filesystem mutations through the OpenWork server whenever possible.
+TeamWork should route filesystem mutations through the TeamWork server whenever possible.
 
 Why:
 
@@ -47,30 +47,30 @@ Why:
 
 Guidelines:
 
-- Any UI feature that changes workspace files or config should call an OpenWork server endpoint first.
+- Any UI feature that changes workspace files or config should call an TeamWork server endpoint first.
 - Local Tauri filesystem commands are a host-mode fallback, not the primary product surface.
-- If a feature cannot yet write through the OpenWork server, treat that as an architecture gap and close it before depending on direct local writes.
-- Reads can fall back locally when necessary, but writes should be designed around the OpenWork server path.
+- If a feature cannot yet write through the TeamWork server, treat that as an architecture gap and close it before depending on direct local writes.
+- Reads can fall back locally when necessary, but writes should be designed around the TeamWork server path.
 
 ## Agent authority map
 
-When OpenWork is edited from `openwork-enterprise`, architecture and runtime behavior should be sourced from this document.
+When TeamWork is edited from `teamwork-enterprise`, architecture and runtime behavior should be sourced from this document.
 
 | Entry point | Role | Architecture authority |
 | --- | --- | --- |
-| `openwork-enterprise/AGENTS.md` | OpenWork Factory multi-repo orchestration | Defers OpenWork runtime flow, server-vs-shell ownership, and filesystem mutation behavior to `_repos/openwork/ARCHITECTURE.md`. |
-| `openwork-enterprise/.opencode/agents/openwork-surgeon.md` | Surgical fix agent for `_repos/openwork` | Uses `_repos/openwork/ARCHITECTURE.md` as the runtime and architecture source of truth before changing product behavior. |
-| `_repos/openwork/AGENTS.md` | Product vocabulary, audience, and repo-local development guidance | Refers to `ARCHITECTURE.md` for runtime flow, server ownership, and architectural boundaries. |
-| Skills / commands / agents that mutate workspace state | Capability layer on top of the product runtime | Should assume the OpenWork server path is canonical for workspace creation, config writes, `.opencode/` mutation, and reload signaling. |
+| `teamwork-enterprise/AGENTS.md` | TeamWork Factory multi-repo orchestration | Defers TeamWork runtime flow, server-vs-shell ownership, and filesystem mutation behavior to `_repos/teamwork/ARCHITECTURE.md`. |
+| `teamwork-enterprise/.opencode/agents/teamwork-surgeon.md` | Surgical fix agent for `_repos/teamwork` | Uses `_repos/teamwork/ARCHITECTURE.md` as the runtime and architecture source of truth before changing product behavior. |
+| `_repos/teamwork/AGENTS.md` | Product vocabulary, audience, and repo-local development guidance | Refers to `ARCHITECTURE.md` for runtime flow, server ownership, and architectural boundaries. |
+| Skills / commands / agents that mutate workspace state | Capability layer on top of the product runtime | Should assume the TeamWork server path is canonical for workspace creation, config writes, `.opencode/` mutation, and reload signaling. |
 
 ### Agent access to server-owned behavior
 
-Agents, skills, and commands should model the following as OpenWork server behavior first:
+Agents, skills, and commands should model the following as TeamWork server behavior first:
 
 - workspace creation and initialization
 - writes to `.opencode/`, `opencode.json`, and `opencode.jsonc`
-- OpenWork workspace config writes (`.opencode/openwork.json`)
-- share-bundle publish/fetch flows for supported OpenWork capability bundles such as skills
+- TeamWork workspace config writes (`.opencode/teamwork.json`)
+- share-bundle publish/fetch flows for supported TeamWork capability bundles such as skills
 - reload event generation after config or capability changes
 - other filesystem-backed capability changes that must work across desktop host mode and remote clients
 
@@ -85,10 +85,10 @@ If an agent needs one of the server-owned behaviors above and only a Tauri path 
 
 ## Release channels
 
-OpenWork desktop ships through two release channels:
+TeamWork desktop ships through two release channels:
 
-- **Stable** (default, all platforms): versioned builds produced by the `Release App` workflow. Each tag `vX.Y.Z` publishes signed, notarized Tauri bundles plus a `latest.json` updater manifest at `https://github.com/different-ai/openwork/releases/latest/download/latest.json`; when Electron publishing is enabled, the same release also carries signed, notarized Electron macOS assets plus `latest-mac.yml` at `https://github.com/different-ai/openwork/releases/latest/download/latest-mac.yml`.
-- **Alpha** (macOS arm64 only, rolling): every merge to `dev` publishes signed, notarized Tauri and Electron builds to the rolling GitHub release tagged `alpha-macos-latest`. The Tauri alpha updater manifest lives at `https://github.com/different-ai/openwork/releases/download/alpha-macos-latest/latest.json`; Electron alpha assets include `latest-mac.yml` at `https://github.com/different-ai/openwork/releases/download/alpha-macos-latest/latest-mac.yml` on the same release.
+- **Stable** (default, all platforms): versioned builds produced by the `Release App` workflow. Each tag `vX.Y.Z` publishes signed, notarized Tauri bundles plus a `latest.json` updater manifest at `https://github.com/SamirTafesh/TeamWork/releases/latest/download/latest.json`; when Electron publishing is enabled, the same release also carries signed, notarized Electron macOS assets plus `latest-mac.yml` at `https://github.com/SamirTafesh/TeamWork/releases/latest/download/latest-mac.yml`.
+- **Alpha** (macOS arm64 only, rolling): every merge to `dev` publishes signed, notarized Tauri and Electron builds to the rolling GitHub release tagged `alpha-macos-latest`. The Tauri alpha updater manifest lives at `https://github.com/SamirTafesh/TeamWork/releases/download/alpha-macos-latest/latest.json`; Electron alpha assets include `latest-mac.yml` at `https://github.com/SamirTafesh/TeamWork/releases/download/alpha-macos-latest/latest-mac.yml` on the same release.
 
 Guidelines:
 
@@ -109,7 +109,7 @@ Code references:
 
 ## Reload-required flow
 
-OpenWork uses a single reload-required flow for changes that only take effect when OpenCode restarts.
+TeamWork uses a single reload-required flow for changes that only take effect when OpenCode restarts.
 
 Key pieces:
 
@@ -134,10 +134,10 @@ Do not invent a separate reload banner per feature. New UI that needs restart se
 
 Current examples that should use this shared flow include MCP changes, auto context compaction, default model changes, authorized folder updates, plugin changes, and other `opencode.json` writes.
 
-When the desktop shell asks the OpenWork server to manage OpenCode, the managed
+When the desktop shell asks the TeamWork server to manage OpenCode, the managed
 OpenCode process starts from a shell-owned local workdir under app data instead
 of the user's selected workspace. Workspace-specific file access still flows
-through the OpenWork server and `x-opencode-directory`, but startup no longer
+through the TeamWork server and `x-opencode-directory`, but startup no longer
 depends on opening a project `opencode.json` from slow cloud-synced folders such
 as iCloud Drive.
 
@@ -176,21 +176,21 @@ use when you need to create tasks that are executed by different models than the
 
 These are all opencode primitives you can read the docs to find out exactly how to set them up.
 
-## Core Concepts of OpenWork
+## Core Concepts of TeamWork
 
 - uses all these primitives
 - uses native OpenCode commands for reusable flows (markdown files in `.opencode/commands`)
 - adds a new abstraction "workspace" is a project folder and a simple .json file that includes a list of opencode primitives that map perfectly to an opencode workdir (not fully implemented)
-  - openwork can open a workpace.json and decide where to populate a folder with thse settings (not implemented today
+  - teamwork can open a workpace.json and decide where to populate a folder with thse settings (not implemented today
 
 ## Repository/component map
 
-- `/apps/app/`: OpenWork app UI (desktop/mobile/web client experience layer).
+- `/apps/app/`: TeamWork app UI (desktop/mobile/web client experience layer).
 - `/apps/desktop/`: Tauri desktop shell that hosts the app UI and manages native process lifecycles.
-- `/apps/server/`: OpenWork server (API/control layer consumed by the app).
-- `/apps/orchestrator/`: OpenWork orchestrator CLI/daemon. In `start`/`serve` host mode it manages OpenWork server + OpenCode; in daemon mode it manages worker/sandbox lifecycle.
-- `/apps/share/`: share-link publisher service for OpenWork bundle imports.
-- `/ee/apps/landing/`: OpenWork landing page surfaces.
+- `/apps/server/`: TeamWork server (API/control layer consumed by the app).
+- `/apps/orchestrator/`: TeamWork orchestrator CLI/daemon. In `start`/`serve` host mode it manages TeamWork server + OpenCode; in daemon mode it manages worker/sandbox lifecycle.
+- `/apps/share/`: share-link publisher service for TeamWork bundle imports.
+- `/ee/apps/landing/`: TeamWork landing page surfaces.
 - `/ee/apps/den-web/`: Den web UI for sign-in, worker creation, and future user-management flows.
 - `/ee/apps/den-api/`: Den control plane API (formerly `/ee/apps/den-controller/`) that provisions/spins up worker runtimes.
 - `/ee/apps/den-worker-proxy/`: proxy layer that keeps Daytona API keys server-side, refreshes signed worker preview URLs, and forwards worker traffic so users do not manage provider keys directly.
@@ -198,12 +198,12 @@ These are all opencode primitives you can read the docs to find out exactly how 
 
 ## Core Architecture
 
-OpenWork is a client experience that consumes OpenWork server surfaces.
+TeamWork is a client experience that consumes TeamWork server surfaces.
 
 ### Provider-neutral app control surface
 
-OpenWork app control mode is owned by the UI runtime. The app exposes a
-provider-neutral action registry through `window.__openworkControl` so external
+TeamWork app control mode is owned by the UI runtime. The app exposes a
+provider-neutral action registry through `window.__teamworkControl` so external
 controllers can inspect the current route, discover visible/safe actions, and
 request an action by ID without depending on DOM scraping or a specific model
 provider.
@@ -216,15 +216,15 @@ Guidelines:
 - Controllers such as MCP bridges, test harnesses, or optional external drivers should
   call the app control surface instead of reaching into app internals.
 - Provider/API secrets and privileged filesystem or server mutations remain
-  server-owned; the app control surface should route those through OpenWork
+  server-owned; the app control surface should route those through TeamWork
   server APIs rather than adding provider-specific behavior to the UI.
 - Raw screenshot or coordinate-based control is a fallback for uninstrumented
   surfaces, not the default architecture.
 
 ### MCP UI Control profile
 
-OpenWork should standardize external app control through MCP where possible. The
-app-local `window.__openworkControl` registry remains the source of current UI
+TeamWork should standardize external app control through MCP where possible. The
+app-local `window.__teamworkControl` registry remains the source of current UI
 affordances, but public integrations should expose those affordances as MCP
 tools that follow `docs/mcp-ui-control-profile.md`:
 
@@ -233,41 +233,41 @@ tools that follow `docs/mcp-ui-control-profile.md`:
 - `ui.execute_action` for running one semantic action by ID
 
 Standalone control clients such as HandsFree should be MCP clients first: they
-can connect to any configured MCP server and call generic MCP tools. OpenWork's
-local UI bridge is an implementation detail behind the OpenWork MCP surface.
+can connect to any configured MCP server and call generic MCP tools. TeamWork's
+local UI bridge is an implementation detail behind the TeamWork MCP surface.
 
-OpenWork supports two product runtime modes for users:
+TeamWork supports two product runtime modes for users:
 
 - desktop
 - web/cloud (also usable from mobile clients)
 
-OpenWork therefore has two runtime connection modes:
+TeamWork therefore has two runtime connection modes:
 
 ### Mode A - Desktop
 
-- OpenWork runs on a desktop/laptop and can host OpenWork server surfaces locally.
+- TeamWork runs on a desktop/laptop and can host TeamWork server surfaces locally.
 - The OpenCode server runs on loopback (default `127.0.0.1:4096`).
-- The OpenWork server also defaults to loopback-only access. Remote sharing is an explicit opt-in that rebinds the OpenWork server to `0.0.0.0` while keeping OpenCode on loopback.
-- OpenWork UI connects via the official SDK and listens to events.
-- OpenWork server is the local API/control layer for this mode and owns the managed OpenCode child lifecycle.
+- The TeamWork server also defaults to loopback-only access. Remote sharing is an explicit opt-in that rebinds the TeamWork server to `0.0.0.0` while keeping OpenCode on loopback.
+- TeamWork UI connects via the official SDK and listens to events.
+- TeamWork server is the local API/control layer for this mode and owns the managed OpenCode child lifecycle.
 
 ### Mode B - Web/Cloud (can be mobile)
 
-- User signs in to hosted OpenWork web/app surfaces (including mobile browser/client access).
+- User signs in to hosted TeamWork web/app surfaces (including mobile browser/client access).
 - User launches a cloud worker from hosted control plane.
-- OpenWork returns remote connect credentials (`/w/ws_*` URL + access token).
-- User connects from OpenWork app using `Add a worker` -> `Connect remote`.
+- TeamWork returns remote connect credentials (`/w/ws_*` URL + access token).
+- User connects from TeamWork app using `Add a worker` -> `Connect remote`.
 
 This model keeps the user experience consistent across self-hosted and hosted paths while preserving OpenCode parity.
 
 ### Mode A composition (Tauri shell + local services)
 
 - `/apps/app/` runs as the product UI; on desktop it is hosted inside `/apps/desktop/` (Tauri webview).
-- `/apps/desktop/` exposes native commands (`engine_*`, `orchestrator_*`, `openwork_server_*`) to start/stop local services and report status to the UI.
-- `/apps/desktop/` is also the source of truth for desktop bootstrap config that must survive updates, including Den server targeting and forced-sign-in startup behavior. The shell reads a predictable external `desktop-bootstrap.json` from the host config directory (or `OPENWORK_DESKTOP_BOOTSTRAP_PATH` when explicitly overridden). Default builds consume that file when present; custom builds seed or overwrite it when their bundled bootstrap differs from the standard default.
-- Desktop host runtime is server-managed: the shell starts OpenWork server with managed OpenCode enabled, and the UI consumes OpenWork server APIs.
-- OpenWork server (`/apps/server/`) is the API surface consumed by the UI; it proxies OpenCode routes for the active workspace.
-- Desktop-launched OpenCode credentials are always random, per-launch values generated by OpenWork. OpenCode stays on loopback and is intended to be reached through OpenWork server rather than exposed directly.
+- `/apps/desktop/` exposes native commands (`engine_*`, `orchestrator_*`, `teamwork_server_*`) to start/stop local services and report status to the UI.
+- `/apps/desktop/` is also the source of truth for desktop bootstrap config that must survive updates, including Den server targeting and forced-sign-in startup behavior. The shell reads a predictable external `desktop-bootstrap.json` from the host config directory (or `TEAMWORK_DESKTOP_BOOTSTRAP_PATH` when explicitly overridden). Default builds consume that file when present; custom builds seed or overwrite it when their bundled bootstrap differs from the standard default.
+- Desktop host runtime is server-managed: the shell starts TeamWork server with managed OpenCode enabled, and the UI consumes TeamWork server APIs.
+- TeamWork server (`/apps/server/`) is the API surface consumed by the UI; it proxies OpenCode routes for the active workspace.
+- Desktop-launched OpenCode credentials are always random, per-launch values generated by TeamWork. OpenCode stays on loopback and is intended to be reached through TeamWork server rather than exposed directly.
 
 ```text
 /apps/app UI
@@ -275,7 +275,7 @@ This model keeps the user experience consistent across self-hosted and hosted pa
     v
 /apps/desktop (Tauri shell)
     |
-    +--> /apps/server (OpenWork API + proxy surface)
+    +--> /apps/server (TeamWork API + proxy surface)
                |
                +--> OpenCode
 ```
@@ -286,9 +286,9 @@ This model keeps the user experience consistent across self-hosted and hosted pa
 - `/ee/apps/den-api/` (formerly `/ee/apps/den-controller/`) is the cloud control plane API (auth/session + worker CRUD + provisioning orchestration).
 - Desktop org runtime config is fetched from Den after sign-in and is treated as server-owned runtime policy. It is stored per organization in Den (`organization.desktop_app_restrictions`) as sparse negative restriction flags (for example `blockZenModel`) and managed from the cloud org settings UI, while install/bootstrap config remains shell-owned in the external bootstrap file and only contains base URL, optional API base URL, and the `forceSignin` startup flag.
 - Daytona-backed workers mount a single shared provider volume and isolate each worker's persistent data by subpaths (`workers/<workerId>/workspace` and `workers/<workerId>/data`) rather than creating dedicated provider volumes per worker.
-- `/ee/apps/den-worker-runtime/` defines the runtime packaging and boot path used inside cloud workers (including Docker/snapshot artifacts and `openwork serve` startup assumptions).
+- `/ee/apps/den-worker-runtime/` defines the runtime packaging and boot path used inside cloud workers (including Docker/snapshot artifacts and `teamwork serve` startup assumptions).
 - `/ee/apps/den-worker-proxy/` fronts Daytona worker preview URLs, refreshes signed links with provider credentials, and proxies traffic to the worker runtime.
-- The OpenWork app (desktop or mobile client) connects to worker OpenWork server surfaces via URL + token (`/w/ws_*` when available).
+- The TeamWork app (desktop or mobile client) connects to worker TeamWork server surfaces via URL + token (`/w/ws_*` when available).
 
 ```text
 /ee/apps/den-web
@@ -299,18 +299,18 @@ This model keeps the user experience consistent across self-hosted and hosted pa
     +--> Daytona/Render provisioning
     |        |
     |        v
-    |      /ee/apps/den-worker-runtime -> openwork serve + OpenCode
+    |      /ee/apps/den-worker-runtime -> teamwork serve + OpenCode
     |
     +--> /ee/apps/den-worker-proxy (signed preview + proxy)
 
-OpenWork app/mobile client
+TeamWork app/mobile client
     -> Connect remote (URL + token)
-    -> worker OpenWork server surface
+    -> worker TeamWork server surface
 ```
 
 ## Messaging Bridge
 
-OpenWork no longer starts or proxies an app-owned local messaging bridge in the desktop host runtime. Messaging surfaces must be provided by an external server/worker surface rather than Tauri, Electron, or OpenWork server launching a local `opencode-router` child.
+TeamWork no longer starts or proxies an app-owned local messaging bridge in the desktop host runtime. Messaging surfaces must be provided by an external server/worker surface rather than Tauri, Electron, or TeamWork server launching a local `opencode-router` child.
 
 Terminology clarification:
 
@@ -320,9 +320,9 @@ Terminology clarification:
 - These states must be treated separately. UI selection can change without implying that the backend has switched roots yet.
 - In practice, `selected workspace` and `runtime active workspace` often converge once the user sends work, but they are allowed to diverge briefly while the UI is browsing another workspace.
 
-Desktop local OpenWork server ports:
+Desktop local TeamWork server ports:
 
-- Desktop-hosted local OpenWork server instances do not assume a fixed `8787` port.
+- Desktop-hosted local TeamWork server instances do not assume a fixed `8787` port.
 - Each workspace gets a persistent preferred localhost port in the `48000-51000` range.
 - On restart, desktop tries to reuse that workspace's saved port first.
 - If that port is unavailable, desktop picks another free port in the same range and avoids ports already reserved by other known workspaces.
@@ -349,11 +349,11 @@ This is intentional for now: predictable scoping beats clever cross-root auto-ro
 
 ## Cloud Worker Connect Flow (Canonical)
 
-1. Authenticate in OpenWork Cloud control surface.
+1. Authenticate in TeamWork Cloud control surface.
 2. Launch worker (with checkout/paywall when needed).
 3. Wait for provisioning and health.
 4. Generate/retrieve connect credentials.
-5. Connect in OpenWork app via deep link or manual URL + token.
+5. Connect in TeamWork app via deep link or manual URL + token.
 
 Technical note:
 
@@ -370,16 +370,16 @@ The browser runtime cannot read or write arbitrary local files. Any feature that
 
 must be routed through a host-side service.
 
-In OpenWork, the long-term direction is:
+In TeamWork, the long-term direction is:
 
-- Use the OpenWork server (`/apps/server/`) as the single API surface for filesystem-backed operations.
+- Use the TeamWork server (`/apps/server/`) as the single API surface for filesystem-backed operations.
 - Treat Tauri-only file operations as an implementation detail / convenience fallback, not a separate feature set.
 
 This ensures the same UI flows work on desktop, mobile, and web clients, with approvals and auditing handled centrally.
 
 ## OpenCode Integration (Exact SDK + APIs)
 
-OpenWork uses the official JavaScript/TypeScript SDK:
+TeamWork uses the official JavaScript/TypeScript SDK:
 
 - Package: `@opencode-ai/sdk/v2` (UI should import `@opencode-ai/sdk/v2/client` to avoid Node-only server code)
 - Purpose: type-safe client generated from OpenAPI spec
@@ -424,7 +424,7 @@ const client = createOpencodeClient({
 
 ### Event Streaming (Real-time UI)
 
-OpenWork must be real-time. It subscribes to SSE events:
+TeamWork must be real-time. It subscribes to SSE events:
 
 - `client.event.subscribe()`
 
@@ -437,7 +437,7 @@ The UI uses these events to drive:
 
 ### Sessions (Primary Primitive)
 
-OpenWork maps a "Task Run" to an OpenCode **Session**.
+TeamWork maps a "Task Run" to an OpenCode **Session**.
 
 Core methods:
 
@@ -451,7 +451,7 @@ Core methods:
 
 ### Files + Search
 
-OpenWork's file browser and "what changed" UI are powered by:
+TeamWork's file browser and "what changed" UI are powered by:
 
 - `client.find.text()`
 - `client.find.files()`
@@ -461,12 +461,12 @@ OpenWork's file browser and "what changed" UI are powered by:
 
 ### Permissions
 
-OpenWork must surface permission requests clearly and respond explicitly.
+TeamWork must surface permission requests clearly and respond explicitly.
 
 - Permission response API:
   - `client.permission.reply({ requestID, reply })` (where `reply` is `once` | `always` | `reject`)
 
-OpenWork UI should:
+TeamWork UI should:
 
 1. Show what is being requested (scope + reason).
 2. Provide choices (allow once / allow for session / deny).
@@ -475,7 +475,7 @@ OpenWork UI should:
 
 ### Config + Providers
 
-OpenWork's settings pages use:
+TeamWork's settings pages use:
 
 - `client.config.get()`
 - `client.config.providers()`
@@ -483,7 +483,7 @@ OpenWork's settings pages use:
 
 ### Extensibility - Skills + Plugins
 
-OpenWork exposes two extension surfaces:
+TeamWork exposes two extension surfaces:
 
 1. **Skills**
    - Installed into `.opencode/skills/*`.
@@ -492,18 +492,18 @@ OpenWork exposes two extension surfaces:
 2. **Plugins (OpenCode)**
    - Plugins are configured via `opencode.json` in the workspace.
    - The format is the same as OpenCode CLI uses today.
-   - OpenWork should show plugin status and instructions; a native plugin manager is planned.
+   - TeamWork should show plugin status and instructions; a native plugin manager is planned.
 
 ### Engine reload (config refresh)
 
-- OpenWork server exposes `POST /workspace/:id/engine/reload`.
+- TeamWork server exposes `POST /workspace/:id/engine/reload`.
 - It calls OpenCode `POST /instance/dispose` with the workspace directory to force a config re-read.
 - Use after skills/plugins/MCP/config edits; reloads can interrupt active sessions.
-- Reload requests follow OpenWork server approval rules.
+- Reload requests follow TeamWork server approval rules.
 
 ### Skill Registry (Current + Future)
 
-- Today, OpenWork only supports **curated lists + manual sources**.
+- Today, TeamWork only supports **curated lists + manual sources**.
 - Future goals:
   - in-app registry search
   - curated list sync (e.g. Awesome Claude Skills)
@@ -514,11 +514,11 @@ OpenWork exposes two extension surfaces:
 - `client.project.list()` / `client.project.current()`
 - `client.path.get()`
 
-OpenWork conceptually treats "workspace" as the current project/path.
+TeamWork conceptually treats "workspace" as the current project/path.
 
 ## Optional TUI Control (Advanced)
 
-The SDK exposes `client.tui.*` methods. OpenWork can optionally provide a "Developer Mode" screen to:
+The SDK exposes `client.tui.*` methods. TeamWork can optionally provide a "Developer Mode" screen to:
 
 - append/submit prompt
 - open help/sessions/themes/models
@@ -528,15 +528,15 @@ This is optional and not required for non-technical MVP.
 
 ## Folder Authorization Model
 
-OpenWork enforces folder access through **two layers**:
+TeamWork enforces folder access through **two layers**:
 
-1. **OpenWork UI authorization**
+1. **TeamWork UI authorization**
    - user explicitly selects allowed folders via native picker
-   - OpenWork remembers allowed roots per profile
+   - TeamWork remembers allowed roots per profile
 
 2. **OpenCode server permissions**
    - OpenCode requests permissions as needed
-   - OpenWork intercepts requests via events and displays them
+   - TeamWork intercepts requests via events and displays them
 
 Rules:
 

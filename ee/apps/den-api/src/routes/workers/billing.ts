@@ -56,7 +56,7 @@ export function registerWorkerBillingRoutes<T extends { Variables: WorkerRouteVa
     const billing = await getWorkerBilling({
       userId: user.id,
       email,
-      name: user.name ?? user.email ?? "OpenWork User",
+      name: user.name ?? user.email ?? "TeamWork User",
       includeCheckoutUrl: queryIncludesFlag(query.includeCheckout),
       includePortalUrl: !queryIncludesFlag(query.excludePortal),
       includeInvoices: !queryIncludesFlag(query.excludeInvoices),
@@ -99,7 +99,7 @@ export function registerWorkerBillingRoutes<T extends { Variables: WorkerRouteVa
     const billingInput = {
       userId: user.id,
       email,
-      name: user.name ?? user.email ?? "OpenWork User",
+      name: user.name ?? user.email ?? "TeamWork User",
     }
 
     const subscription = await setWorkerBillingSubscription({

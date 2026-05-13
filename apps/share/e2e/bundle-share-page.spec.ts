@@ -38,7 +38,7 @@ async function publishSkill(page: Page) {
   return page.url();
 }
 
-test("shows a read-only shared skill page with OpenWork import actions", async ({ page }) => {
+test("shows a read-only shared skill page with TeamWork import actions", async ({ page }) => {
   const shareUrl = await publishSkill(page);
 
   const jsonResponse = await page.request.get(shareUrl, {
@@ -65,16 +65,16 @@ test("shows a read-only shared skill page with OpenWork import actions", async (
   await expect(page.locator(".preview-filename")).toContainText("agent-creator.md");
   await expect(page.locator(".preview-highlight")).toContainText("Any markdown body is acceptable here.");
 
-  const openInAppHref = await page.getByRole("link", { name: /^open in openwork$/i }).getAttribute("href");
+  const openInAppHref = await page.getByRole("link", { name: /^open in teamwork$/i }).getAttribute("href");
   expect(openInAppHref).toBeTruthy();
-  expect(openInAppHref ?? "").toContain("openwork://import-bundle?");
+  expect(openInAppHref ?? "").toContain("teamwork://import-bundle?");
 
-  const openInAppLink = page.getByRole("link", { name: /^open in openwork$/i });
+  const openInAppLink = page.getByRole("link", { name: /^open in teamwork$/i });
   await openInAppLink.dispatchEvent("pointerdown");
   const refreshedOpenInAppHref = await openInAppLink.getAttribute("href");
   expect(refreshedOpenInAppHref ?? "").toContain("ow_nonce=");
 
-  const deepLinkQuery = new URL((openInAppHref ?? "").replace("openwork://import-bundle?", "https://example.test/?"));
+  const deepLinkQuery = new URL((openInAppHref ?? "").replace("teamwork://import-bundle?", "https://example.test/?"));
   expect(deepLinkQuery.searchParams.get("ow_bundle")).toBe(shareUrl);
   expect(deepLinkQuery.searchParams.get("ow_label")).toBe("agent-creator");
 });
@@ -174,7 +174,7 @@ test("publishes a share page with a valid OG preview card for link unfurls", asy
   expect(svg).toContain("Agent Creator");
   expect(svg).not.toContain("agent-creator.md");
   expect(svg).toContain("SKILL.md");
-  expect(svg).toContain("share.openworklabs.com");
+  expect(svg).toContain("share.teamworklabs.com");
   expect(svg).not.toContain("Any markdown body is acceptable here.");
 
   const pastePreviewHtml = await page.content();

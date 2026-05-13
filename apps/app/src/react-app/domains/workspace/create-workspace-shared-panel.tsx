@@ -51,7 +51,7 @@ export type CreateWorkspaceSharedPanelProps = {
   openingWorkerId: string | null;
   workerStatusMeta: (status: string) => WorkerStatusMeta;
   workerSecondaryLine: (worker: DenWorkerSummary) => string;
-  onOpenWorker: (worker: DenWorkerSummary) => void;
+  onTeamWorker: (worker: DenWorkerSummary) => void;
   onOpenCloudSignIn: () => void;
   onRefreshWorkers: () => void;
   onOpenCloudDashboard: () => void;
@@ -76,7 +76,7 @@ export function CreateWorkspaceSharedPanel(
               <Cloud size={24} />
             </div>
             <div className="mt-5 text-[20px] font-semibold tracking-[-0.3px] text-dls-text">
-              Sign in to OpenWork Cloud
+              Sign in to TeamWork Cloud
             </div>
             <div className="mt-2 text-[14px] leading-6 text-dls-secondary">
               Access remote workers shared with your organization.
@@ -219,7 +219,7 @@ export function CreateWorkspaceSharedPanel(
                         ? "This workspace is not ready to connect yet."
                         : undefined
                     }
-                    onClick={() => props.onOpenWorker(worker)}
+                    onClick={() => props.onTeamWorker(worker)}
                   >
                     {isConnecting ? (
                       <span className="inline-flex items-center gap-2">

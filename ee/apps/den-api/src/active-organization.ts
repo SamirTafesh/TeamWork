@@ -1,6 +1,6 @@
-import { asc, eq } from "@openwork-ee/den-db/drizzle"
-import { MemberTable } from "@openwork-ee/den-db/schema"
-import { normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+import { asc, eq } from "@teamwork-ee/den-db/drizzle"
+import { MemberTable } from "@teamwork-ee/den-db/schema"
+import { normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import { db } from "./db.js"
 
 export async function getInitialActiveOrganizationIdForUser(userId: string) {

@@ -27,12 +27,12 @@ function run(command, args, cwd, env) {
 
 run(nodeCmd, [resolve(__dirname, "prepare-sidecar.mjs"), "--force", "--outdir", electronSidecarDir], desktopRoot);
 // Build the server TS → JS so Electron can import it in-process
-run(pnpmCmd, ["--filter", "openwork-server", "build"], repoRoot);
-// OPENWORK_ELECTRON_BUILD tells Vite to emit relative asset paths so
+run(pnpmCmd, ["--filter", "teamwork-server", "build"], repoRoot);
+// TEAMWORK_ELECTRON_BUILD tells Vite to emit relative asset paths so
 // index.html resolves /assets/* correctly when loaded via file:// from
 // inside the packaged .app bundle.
-run(pnpmCmd, ["--filter", "@openwork/app", "build"], repoRoot, {
-  OPENWORK_ELECTRON_BUILD: "1",
+run(pnpmCmd, ["--filter", "@teamwork/app", "build"], repoRoot, {
+  TEAMWORK_ELECTRON_BUILD: "1",
 });
 // Copy constants.json next to server dist so the packaged asar can resolve it.
 // Also patch the compiled import path so it works from both dev and packaged layouts.

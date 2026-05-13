@@ -61,8 +61,8 @@ type CommandPaletteItem = {
 const localWorkspace = storyWorkspaces[0] ?? {
   id: "local-foundation",
   name: "Local Foundation",
-  displayName: "OpenWork App",
-  path: "~/OpenWork/app",
+  displayName: "TeamWork App",
+  path: "~/TeamWork/app",
   preset: "starter",
   workspaceType: "local" as const,
 };
@@ -74,12 +74,12 @@ const remoteWorkspace = storyWorkspaces[1] ?? {
   path: "remote://ops-worker",
   preset: "automation",
   workspaceType: "remote" as const,
-  remoteType: "openwork" as const,
-  baseUrl: "https://worker.openworklabs.com/opencode",
-  openworkHostUrl: "https://worker.openworklabs.com",
-  openworkWorkspaceName: "Ops Worker",
+  remoteType: "teamwork" as const,
+  baseUrl: "https://worker.teamworklabs.com/opencode",
+  teamworkHostUrl: "https://worker.teamworklabs.com",
+  teamworkWorkspaceName: "Ops Worker",
   sandboxBackend: "docker" as const,
-  sandboxContainerName: "openwork-ops-worker",
+  sandboxContainerName: "teamwork-ops-worker",
 };
 
 const now = Date.now();
@@ -220,7 +220,7 @@ const storyModels: Array<{
 const mockShareFields = [
   {
     label: "Worker URL",
-    value: "https://worker.openworklabs.com/opencode",
+    value: "https://worker.teamworklabs.com/opencode",
     hint: "Paste this into Add worker -> Connect remote.",
   },
   {
@@ -430,9 +430,9 @@ export default function StoryBookApp() {
 
   const pickMockWorkspaceFolder = async () => {
     const folders = [
-      "/Users/demo/OpenWork/client-foundation",
-      "/Users/demo/OpenWork/automation-lab",
-      "/Users/demo/OpenWork/starter-sandbox",
+      "/Users/demo/TeamWork/client-foundation",
+      "/Users/demo/TeamWork/automation-lab",
+      "/Users/demo/TeamWork/starter-sandbox",
     ];
     const next = folders[mockFolderPickCount() % folders.length] ?? folders[0];
     setMockFolderPickCount((count) => count + 1);
@@ -961,7 +961,7 @@ export default function StoryBookApp() {
                       isStreaming={false}
                       expandedStepIds={expandedStepIds()}
                       setExpandedStepIds={(updater) => setExpandedStepIds((current) => updater(current))}
-                      workspaceRoot="/Users/benjaminshafii/openwork-enterprise/_repos/openwork"
+                      workspaceRoot="/Users/benjaminshafii/teamwork-enterprise/_repos/teamwork"
                     />
                   }
                 >
@@ -1053,7 +1053,7 @@ export default function StoryBookApp() {
 
           <StatusBar
             clientConnected
-            openworkServerStatus="connected"
+            teamworkServerStatus="connected"
             developerMode
             settingsOpen={showingSettings()}
             showSettingsButton={false}

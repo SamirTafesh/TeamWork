@@ -7,7 +7,7 @@ import {
   DEFAULT_WORKER_NAME,
   LAST_WORKER_STORAGE_KEY,
   ONBOARDING_INTENT_STORAGE_KEY,
-  OPENWORK_APP_CONNECT_BASE_URL,
+  TEAMWORK_APP_CONNECT_BASE_URL,
   PENDING_SOCIAL_SIGNUP_STORAGE_KEY,
   WORKER_STATUS_POLL_MS,
   type AuthMethod,
@@ -24,8 +24,8 @@ import {
   type WorkerRuntimeSnapshot,
   type WorkerSummary,
   type WorkerStatusBucket,
-  buildOpenworkAppConnectUrl,
-  buildOpenworkDeepLink,
+  buildTeamworkAppConnectUrl,
+  buildTeamworkDeepLink,
   deriveOnboardingWorkerName,
   getAuthInfoForMode,
   getBillingSummary,
@@ -52,7 +52,7 @@ import {
   parseWorkspaceIdFromUrl,
   requestJson,
   resetPosthogUser,
-  resolveOpenworkWorkspaceUrl,
+  resolveTeamworkWorkspaceUrl,
   trackPosthogEvent
 } from "../_lib/den-flow";
 import {
@@ -132,8 +132,8 @@ type DenFlowContextValue = {
   runtimeUpgradeBusy: boolean;
   copiedField: string | null;
   events: LaunchEvent[];
-  openworkDeepLink: string | null;
-  openworkAppConnectUrl: string | null;
+  teamworkDeepLink: string | null;
+  teamworkAppConnectUrl: string | null;
   hasWorkspaceScopedUrl: boolean;
   additionalWorkerNeedsPlan: boolean;
   selectedStatusMeta: { label: string; bucket: WorkerStatusBucket };
@@ -187,7 +187,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
   });
   const [sessionHydrated, setSessionHydrated] = useState(false);
   const [desktopAuthRequested, setDesktopAuthRequested] = useState(false);
-  const [desktopAuthScheme, setDesktopAuthScheme] = useState("openwork");
+  const [desktopAuthScheme, setDesktopAuthScheme] = useState("teamwork");
   const [desktopRedirectBusy, setDesktopRedirectBusy] = useState(false);
   const [desktopRedirectUrl, setDesktopRedirectUrl] = useState<string | null>(null);
   const [desktopRedirectAttempted, setDesktopRedirectAttempted] = useState(false);
@@ -237,19 +237,19 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
       : selectedWorker
         ? listItemToWorker(selectedWorker, worker)
         : worker;
-  const openworkConnectUrl = activeWorker?.openworkUrl ?? activeWorker?.instanceUrl ?? null;
-  const preferredOpenworkToken = activeWorker?.clientToken ?? activeWorker?.ownerToken ?? null;
-  const hasWorkspaceScopedUrl = Boolean(openworkConnectUrl && /\/w\/[^/?#]+/.test(openworkConnectUrl));
-  const openworkDeepLink = buildOpenworkDeepLink(
-    openworkConnectUrl,
-    preferredOpenworkToken,
+  const teamworkConnectUrl = activeWorker?.teamworkUrl ?? activeWorker?.instanceUrl ?? null;
+  const preferredTeamworkToken = activeWorker?.clientToken ?? activeWorker?.ownerToken ?? null;
+  const hasWorkspaceScopedUrl = Boolean(teamworkConnectUrl && /\/w\/[^/?#]+/.test(teamworkConnectUrl));
+  const teamworkDeepLink = buildTeamworkDeepLink(
+    teamworkConnectUrl,
+    preferredTeamworkToken,
     activeWorker?.workerId ?? null,
     activeWorker?.workerName ?? null
   );
-  const openworkAppConnectUrl = buildOpenworkAppConnectUrl(
-    OPENWORK_APP_CONNECT_BASE_URL,
-    openworkConnectUrl,
-    preferredOpenworkToken,
+  const teamworkAppConnectUrl = buildTeamworkAppConnectUrl(
+    TEAMWORK_APP_CONNECT_BASE_URL,
+    teamworkConnectUrl,
+    preferredTeamworkToken,
     activeWorker?.workerId ?? null,
     activeWorker?.workerName ?? null,
     { autoConnect: true }
@@ -421,7 +421,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     }
 
     if (desktopAuthRequested) {
-      setAuthInfo("Signed in. Returning to OpenWork...");
+      setAuthInfo("Signed in. Returning to TeamWork...");
       return null;
     }
 
@@ -503,13 +503,13 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function withResolvedOpenworkCredentials(candidate: WorkerLaunch, options: { quiet?: boolean } = {}) {
-    const existingConnectUrl = candidate.openworkUrl?.trim() ?? "";
+  async function withResolvedTeamworkCredentials(candidate: WorkerLaunch, options: { quiet?: boolean } = {}) {
+    const existingConnectUrl = candidate.teamworkUrl?.trim() ?? "";
     const existingWorkspaceId = candidate.workspaceId?.trim() ?? "";
     if (existingConnectUrl && existingWorkspaceId) {
       return {
         ...candidate,
-        openworkUrl: existingConnectUrl,
+        teamworkUrl: existingConnectUrl,
         workspaceId: existingWorkspaceId
       };
     }
@@ -518,7 +518,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     if (!instanceUrl) {
       return {
         ...candidate,
-        openworkUrl: null,
+        teamworkUrl: null,
         workspaceId: null
       };
     }
@@ -528,17 +528,17 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
       const mountedWorkspaceId = parseWorkspaceIdFromUrl(instanceUrl);
       return {
         ...candidate,
-        openworkUrl: instanceUrl.trim().replace(/\/+$/, ""),
+        teamworkUrl: instanceUrl.trim().replace(/\/+$/, ""),
         workspaceId: mountedWorkspaceId
       };
     }
 
     try {
-      const resolved = await resolveOpenworkWorkspaceUrl(instanceUrl, accessToken);
+      const resolved = await resolveTeamworkWorkspaceUrl(instanceUrl, accessToken);
       if (resolved) {
         return {
           ...candidate,
-          openworkUrl: resolved.openworkUrl,
+          teamworkUrl: resolved.teamworkUrl,
           workspaceId: resolved.workspaceId
         };
       }
@@ -550,7 +550,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
 
     return {
       ...candidate,
-      openworkUrl: instanceUrl.trim().replace(/\/+$/, ""),
+      teamworkUrl: instanceUrl.trim().replace(/\/+$/, ""),
       workspaceId: parseWorkspaceIdFromUrl(instanceUrl)
     };
   }
@@ -721,7 +721,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
         {
           method: "POST",
           headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-          body: JSON.stringify({ services: ["openwork-server", "opencode"] })
+          body: JSON.stringify({ services: ["teamwork-server", "opencode"] })
         },
         12000
       );
@@ -993,17 +993,17 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const openworkPayload = payload as { openworkUrl?: unknown } | null;
-      const openworkUrl = typeof openworkPayload?.openworkUrl === "string" ? openworkPayload.openworkUrl.trim() : "";
-      if (!openworkUrl) {
-        setAuthError("Desktop handoff succeeded, but no OpenWork redirect URL was returned.");
+      const teamworkPayload = payload as { teamworkUrl?: unknown } | null;
+      const teamworkUrl = typeof teamworkPayload?.teamworkUrl === "string" ? teamworkPayload.teamworkUrl.trim() : "";
+      if (!teamworkUrl) {
+        setAuthError("Desktop handoff succeeded, but no TeamWork redirect URL was returned.");
         return;
       }
 
-      setDesktopRedirectUrl(openworkUrl);
-      window.location.assign(openworkUrl);
+      setDesktopRedirectUrl(teamworkUrl);
+      window.location.assign(teamworkUrl);
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : "Failed to open OpenWork.");
+      setAuthError(error instanceof Error ? error.message : "Failed to open TeamWork.");
     } finally {
       setDesktopRedirectBusy(false);
     }
@@ -1351,7 +1351,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
         return "error" as const;
       }
 
-      const resolvedWorker = await withResolvedOpenworkCredentials(parsedWorker);
+      const resolvedWorker = await withResolvedTeamworkCredentials(parsedWorker);
       setWorker(resolvedWorker);
       setWorkerLookupId(parsedWorker.workerId);
       setPendingRestoredWorkerId(null);
@@ -1458,7 +1458,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
               status: summary.status,
               provider: summary.provider,
               instanceUrl: summary.instanceUrl,
-              openworkUrl: summary.instanceUrl,
+              teamworkUrl: summary.instanceUrl,
               workspaceId: null,
               clientToken: null,
               ownerToken: null,
@@ -1467,7 +1467,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
 
       const shouldUpdateActiveWorker = worker?.workerId === summary.workerId || (!background && workerLookupId === summary.workerId);
       if (shouldUpdateActiveWorker) {
-        const resolvedWorker = await withResolvedOpenworkCredentials(nextWorker, { quiet: true });
+        const resolvedWorker = await withResolvedTeamworkCredentials(nextWorker, { quiet: true });
         setWorker(resolvedWorker);
         setPendingRestoredWorkerId(null);
         if (!background) {
@@ -1543,7 +1543,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
         worker && worker.workerId === id
           ? {
               ...worker,
-              openworkUrl: tokens.openworkUrl ?? worker.openworkUrl,
+              teamworkUrl: tokens.teamworkUrl ?? worker.teamworkUrl,
               workspaceId: tokens.workspaceId ?? worker.workspaceId,
               clientToken: tokens.clientToken,
               ownerToken: tokens.ownerToken,
@@ -1555,14 +1555,14 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
               status: "unknown",
               provider: null,
               instanceUrl: null,
-              openworkUrl: tokens.openworkUrl,
+              teamworkUrl: tokens.teamworkUrl,
               workspaceId: tokens.workspaceId,
               clientToken: tokens.clientToken,
               ownerToken: tokens.ownerToken,
               hostToken: tokens.hostToken
             };
 
-      const resolvedWorker = await withResolvedOpenworkCredentials(nextWorker, { quiet: true });
+      const resolvedWorker = await withResolvedTeamworkCredentials(nextWorker, { quiet: true });
       setWorker(resolvedWorker);
       setPendingRestoredWorkerId(null);
       setLaunchStatus("Worker is ready to connect.");
@@ -1878,7 +1878,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
 
       const restored: WorkerLaunch = {
         ...parsed,
-        openworkUrl: parsed.openworkUrl ?? parsed.instanceUrl,
+        teamworkUrl: parsed.teamworkUrl ?? parsed.instanceUrl,
         workspaceId: parsed.workspaceId ?? parseWorkspaceIdFromUrl(parsed.instanceUrl ?? ""),
         clientToken: null,
         ownerToken: null,
@@ -2107,8 +2107,8 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     runtimeUpgradeBusy,
     copiedField,
     events,
-    openworkDeepLink,
-    openworkAppConnectUrl,
+    teamworkDeepLink,
+    teamworkAppConnectUrl,
     hasWorkspaceScopedUrl,
     additionalWorkerNeedsPlan,
     selectedStatusMeta,

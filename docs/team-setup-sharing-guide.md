@@ -1,13 +1,13 @@
-# OpenWork Team Setup And Sharing Guide
+# TeamWork Team Setup And Sharing Guide
 
-This guide shows how to run this fork so one person can host a shared OpenWork workspace and teammates can connect remotely.
+This guide shows how to run this fork so one person can host a shared TeamWork workspace and teammates can connect remotely.
 
 ## 1. Decide Roles
 
 Use these roles for predictable operations:
 
-1. Host operator: runs the shared OpenWork runtime for a workspace.
-2. Collaborators: connect to the host runtime from OpenWork clients.
+1. Host operator: runs the shared TeamWork runtime for a workspace.
+2. Collaborators: connect to the host runtime from TeamWork clients.
 3. Admin approver: uses host token to approve/deny risky actions (can be same person as host operator).
 
 ## 2. Prepare The Host Machine
@@ -15,7 +15,7 @@ Use these roles for predictable operations:
 From this repository root:
 
 ```bash
-cd /home/samir/projects/AI-Brain/BrainWork/openwork
+cd /home/samir/projects/AI-Brain/BrainWork/teamwork
 pnpm install
 ```
 
@@ -28,14 +28,14 @@ Required tooling for source-based team setup:
 
 Optional but useful:
 
-1. OpenWork desktop app for local testing on host.
+1. TeamWork desktop app for local testing on host.
 
 ## 3. Start A Shared Host Runtime
 
 Recommended (one command):
 
 ```bash
-cd /home/samir/projects/AI-Brain/BrainWork/openwork
+cd /home/samir/projects/AI-Brain/BrainWork/teamwork
 scripts/start-team-host.sh
 ```
 
@@ -48,18 +48,18 @@ The helper script defaults to:
 Equivalent raw orchestrator command:
 
 ```bash
-cd /home/samir/projects/AI-Brain/BrainWork/openwork
-pnpm --filter openwork-orchestrator dev -- \
+cd /home/samir/projects/AI-Brain/BrainWork/teamwork
+pnpm --filter teamwork-orchestrator dev -- \
   start \
-  --workspace /home/samir/projects/AI-Brain/BrainWork/openwork \
+  --workspace /home/samir/projects/AI-Brain/BrainWork/teamwork \
   --remote-access \
   --approval manual
 ```
 
 What this does:
 
-1. Runs OpenCode + OpenWork server + OpenCode router for the workspace.
-2. Binds OpenWork for remote sharing (`--remote-access`).
+1. Runs OpenCode + TeamWork server + OpenCode router for the workspace.
+2. Binds TeamWork for remote sharing (`--remote-access`).
 3. Keeps writes gated by explicit approvals (`--approval manual`).
 
 Useful helper-script variants:
@@ -69,13 +69,13 @@ Useful helper-script variants:
 scripts/start-team-host.sh --workspace /path/to/project
 
 # Capture credentials JSON
-scripts/start-team-host.sh --json > /tmp/openwork-session.json
+scripts/start-team-host.sh --json > /tmp/teamwork-session.json
 
 # Start read-only host for demo/review
 scripts/start-team-host.sh --read-only
 
-# Pass extra openwork args
-scripts/start-team-host.sh -- --openwork-port 8787 --connect-host 10.0.0.2
+# Pass extra teamwork args
+scripts/start-team-host.sh -- --teamwork-port 8787 --connect-host 10.0.0.2
 ```
 
 ## 4. Collect Connect Credentials Securely
@@ -83,34 +83,34 @@ scripts/start-team-host.sh -- --openwork-port 8787 --connect-host 10.0.0.2
 For automation/onboarding scripts, start with JSON output and capture secrets to a protected file:
 
 ```bash
-cd /home/samir/projects/AI-Brain/BrainWork/openwork
-scripts/start-team-host.sh --json > /tmp/openwork-session.json
+cd /home/samir/projects/AI-Brain/BrainWork/teamwork
+scripts/start-team-host.sh --json > /tmp/teamwork-session.json
 ```
 
 Extract fields:
 
 ```bash
-jq -r '.openwork.connectUrl' /tmp/openwork-session.json
-jq -r '.openwork.collaboratorToken' /tmp/openwork-session.json
-jq -r '.openwork.ownerToken' /tmp/openwork-session.json
-jq -r '.openwork.hostToken' /tmp/openwork-session.json
+jq -r '.teamwork.connectUrl' /tmp/teamwork-session.json
+jq -r '.teamwork.collaboratorToken' /tmp/teamwork-session.json
+jq -r '.teamwork.ownerToken' /tmp/teamwork-session.json
+jq -r '.teamwork.hostToken' /tmp/teamwork-session.json
 ```
 
 Share only these with collaborators:
 
-1. `openwork.connectUrl`
-2. `openwork.collaboratorToken`
+1. `teamwork.connectUrl`
+2. `teamwork.collaboratorToken`
 
 Keep private to admins only:
 
-1. `openwork.ownerToken`
-2. `openwork.hostToken`
+1. `teamwork.ownerToken`
+2. `teamwork.hostToken`
 
 ## 5. Collaborator Connection Steps
 
 Each teammate does:
 
-1. Open OpenWork desktop app.
+1. Open TeamWork desktop app.
 2. Go to `Add worker` -> `Connect remote`.
 3. Paste host `connectUrl`.
 4. Paste `collaboratorToken`.
@@ -121,24 +121,24 @@ Each teammate does:
 When collaborators request write actions, approver can review and decide:
 
 ```bash
-openwork approvals list \
-  --openwork-url http://<host>:<openwork-port> \
+teamwork approvals list \
+  --teamwork-url http://<host>:<teamwork-port> \
   --host-token <host-token>
 
-openwork approvals reply <approval-id> --allow \
-  --openwork-url http://<host>:<openwork-port> \
+teamwork approvals reply <approval-id> --allow \
+  --teamwork-url http://<host>:<teamwork-port> \
   --host-token <host-token>
 
-openwork approvals reply <approval-id> --deny \
-  --openwork-url http://<host>:<openwork-port> \
+teamwork approvals reply <approval-id> --deny \
+  --teamwork-url http://<host>:<teamwork-port> \
   --host-token <host-token>
 ```
 
-If global `openwork` is not installed, run through the repo:
+If global `teamwork` is not installed, run through the repo:
 
 ```bash
-pnpm --filter openwork-orchestrator dev -- approvals list \
-  --openwork-url http://<host>:<openwork-port> \
+pnpm --filter teamwork-orchestrator dev -- approvals list \
+  --teamwork-url http://<host>:<teamwork-port> \
   --host-token <host-token>
 ```
 
@@ -147,16 +147,16 @@ pnpm --filter openwork-orchestrator dev -- approvals list \
 Quick service checks:
 
 ```bash
-openwork status \
-  --openwork-url http://<host>:<openwork-port> \
+teamwork status \
+  --teamwork-url http://<host>:<teamwork-port> \
   --opencode-url http://<host>:<opencode-port>
 ```
 
-If you are running from source without global `openwork` install, run via:
+If you are running from source without global `teamwork` install, run via:
 
 ```bash
-pnpm --filter openwork-orchestrator dev -- status \
-  --openwork-url http://<host>:<openwork-port> \
+pnpm --filter teamwork-orchestrator dev -- status \
+  --teamwork-url http://<host>:<teamwork-port> \
   --opencode-url http://<host>:<opencode-port>
 ```
 
@@ -173,9 +173,9 @@ Use these defaults unless you have a stronger platform policy:
 Read-only start example:
 
 ```bash
-pnpm --filter openwork-orchestrator dev -- \
+pnpm --filter teamwork-orchestrator dev -- \
   start \
-  --workspace /home/samir/projects/AI-Brain/BrainWork/openwork \
+  --workspace /home/samir/projects/AI-Brain/BrainWork/teamwork \
   --remote-access \
   --read-only
 ```
@@ -200,5 +200,5 @@ pnpm --filter openwork-orchestrator dev -- \
 
 1. Desktop dev crashes with `module.exports`/ESM errors: ensure Node is 24.x.
 2. Electron starts as plain Node: unset `ELECTRON_RUN_AS_NODE`.
-3. Teammates cannot connect: verify firewall/NAT allows host OpenWork port.
+3. Teammates cannot connect: verify firewall/NAT allows host TeamWork port.
 4. Approval actions fail: confirm you are using `hostToken` (not collaborator token).

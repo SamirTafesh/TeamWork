@@ -13,22 +13,22 @@
 
 @custom-variant dark (&:is(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 @custom-variant electron {
-  html.openwork-electron & {
+  html.teamwork-electron & {
     @slot;
   }
 }
 @custom-variant windows {
-  html.openwork-electron.openwork-platform-windows & {
+  html.teamwork-electron.teamwork-platform-windows & {
     @slot;
   }
 }
 @custom-variant mac {
-  html.openwork-electron.openwork-platform-mac & {
+  html.teamwork-electron.teamwork-platform-mac & {
     @slot;
   }
 }
 @custom-variant linux {
-  html.openwork-electron.openwork-platform-linux & {
+  html.teamwork-electron.teamwork-platform-linux & {
     @slot;
   }
 }
@@ -129,7 +129,7 @@ body {
 }
 
 html {
-  font-size: var(--openwork-font-size, 16px);
+  font-size: var(--teamwork-font-size, 16px);
 }
 
 body {

@@ -9,7 +9,7 @@ import { useDenFlow } from "../_providers/den-flow-provider";
 
 type SettingsTab = "profile" | "organizations";
 
-const PENDING_ORG_DRAFT_STORAGE_KEY = "openwork-den-pending-org-draft";
+const PENDING_ORG_DRAFT_STORAGE_KEY = "teamwork-den-pending-org-draft";
 
 function readPendingOrgDraft(userEmail: string | null | undefined) {
   if (typeof window === "undefined" || !userEmail) {
@@ -72,7 +72,7 @@ export function OrganizationScreen() {
     const trimmedName = user?.name?.trim();
     if (trimmedName) return trimmedName;
     const emailLocalPart = user?.email?.split("@")[0]?.trim() ?? "";
-    return emailLocalPart || "OpenWork User";
+    return emailLocalPart || "TeamWork User";
   }, [user?.email, user?.name]);
 
   const userInitials = useMemo(() => {
@@ -204,7 +204,7 @@ export function OrganizationScreen() {
     <div className="flex min-h-screen flex-col bg-[#fafafa]">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
         <div className="flex items-center gap-2">
-          <span className="text-[14px] font-medium text-gray-900">OpenWork Cloud</span>
+          <span className="text-[14px] font-medium text-gray-900">TeamWork Cloud</span>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">{user?.email}</span>
@@ -227,7 +227,7 @@ export function OrganizationScreen() {
                   {userInitials}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-gray-400">OpenWork Cloud</p>
+                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-gray-400">TeamWork Cloud</p>
                   <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-gray-950">
                     {returningToSavedDraft ? "Finish creating your organization." : "Create your first organization."}
                   </h1>

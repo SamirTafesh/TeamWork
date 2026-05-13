@@ -40,8 +40,8 @@ const check = (label, actual) => {
 
 check("app", appVersion);
 check("desktop", desktopVersion);
-check("openwork-orchestrator", orchestratorVersion);
-check("openwork-server", serverVersion);
+check("teamwork-orchestrator", orchestratorVersion);
+check("teamwork-server", serverVersion);
 check("opencode-router", opencodeRouterVersion);
 
 if (mismatches.length) {
@@ -52,4 +52,4 @@ if (mismatches.length) {
   process.exit(1);
 }
 
-console.log(`Release tag ${tag} matches app/desktop/openwork-orchestrator versions.`);
+console.log(`Release tag ${tag} matches app/desktop/teamwork-orchestrator versions.`);

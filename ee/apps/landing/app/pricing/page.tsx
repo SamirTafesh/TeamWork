@@ -9,17 +9,17 @@ import { baseOpenGraph } from "../../lib/seo";
 const pricingSchema = {
   "@context": "https://schema.org",
   "@type": "Product",
-  name: "OpenWork",
+  name: "TeamWork",
   description:
-    "OpenWork is an open source Claude Cowork alternative — a desktop app for teams to use 50+ LLMs, bring their own keys, and share reusable agent setups with guardrails.",
-  brand: { "@type": "Brand", name: "OpenWork" },
+    "TeamWork is an open source Claude Cowork alternative — a desktop app for teams to use 50+ LLMs, bring their own keys, and share reusable agent setups with guardrails.",
+  brand: { "@type": "Brand", name: "TeamWork" },
   offers: [
     {
       "@type": "Offer",
       name: "Solo",
       price: "0",
       priceCurrency: "USD",
-      url: "https://openworklabs.com/download",
+      url: "https://teamworklabs.com/download",
       availability: "https://schema.org/InStock",
       description: "Free forever. Open source desktop app with bring-your-own-keys."
     },
@@ -28,7 +28,7 @@ const pricingSchema = {
       name: "Team Starter",
       price: "50",
       priceCurrency: "USD",
-      url: "https://app.openworklabs.com/checkout",
+      url: "https://app.teamworklabs.com/checkout",
       availability: "https://schema.org/InStock",
       priceSpecification: {
         "@type": "UnitPriceSpecification",
@@ -41,7 +41,7 @@ const pricingSchema = {
     {
       "@type": "Offer",
       name: "Enterprise",
-      url: "https://openworklabs.com/enterprise",
+      url: "https://teamworklabs.com/enterprise",
       description:
         "Custom pricing. Enterprise rollout support, deployment guidance, and custom commercial terms."
     }
@@ -49,15 +49,15 @@ const pricingSchema = {
 };
 
 export const metadata = {
-  title: "OpenWork Pricing — Free desktop, $50/mo cloud, enterprise",
+  title: "TeamWork Pricing — Free desktop, $50/mo cloud, enterprise",
   description:
-    "OpenWork is free forever for solo use with bring-your-own-keys. Cloud workers from $50/month per seat, plus custom enterprise licensing with self-hosted deployment.",
+    "TeamWork is free forever for solo use with bring-your-own-keys. Cloud workers from $50/month per seat, plus custom enterprise licensing with self-hosted deployment.",
   alternates: {
     canonical: "/pricing"
   },
   openGraph: {
     ...baseOpenGraph,
-    url: "https://openworklabs.com/pricing"
+    url: "https://teamworklabs.com/pricing"
   }
 };
 
@@ -83,7 +83,7 @@ export default async function PricingPage() {
         <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 pb-24 md:gap-20 md:px-8 md:pb-28">
           <section className="max-w-4xl pt-6 md:pt-10">
             <h1 className="mb-6 text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
-              OpenWork pricing — free, team, and enterprise
+              TeamWork pricing — free, team, and enterprise
             </h1>
           </section>
 

@@ -17,7 +17,7 @@ const EMPTY_STATE: BrowserState = { url: "", title: "", canGoBack: false, canGoF
 
 function getElectronBrowser() {
   if (!isElectronRuntime()) return null;
-  return (window as Window).__OPENWORK_ELECTRON__?.browser ?? null;
+  return (window as Window).__TEAMWORK_ELECTRON__?.browser ?? null;
 }
 
 function computeBounds(el: HTMLElement, toolbar: HTMLElement) {

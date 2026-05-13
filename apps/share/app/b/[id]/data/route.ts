@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (wantsDownload(requestLike)) {
-      responseHeaders.set("Content-Disposition", `attachment; filename="openwork-bundle-${id}.json"`);
+      responseHeaders.set("Content-Disposition", `attachment; filename="teamwork-bundle-${id}.json"`);
     }
 
     return new Response(rawBuffer as unknown as BodyInit, {

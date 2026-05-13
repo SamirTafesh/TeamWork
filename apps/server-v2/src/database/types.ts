@@ -2,7 +2,7 @@ export type ServerKind = "local" | "remote";
 export type HostingKind = "desktop" | "self_hosted" | "cloud";
 export type WorkspaceKind = "local" | "remote" | "control" | "help";
 export type WorkspaceStatus = "ready" | "imported" | "attention";
-export type BackendKind = "local_opencode" | "remote_openwork";
+export type BackendKind = "local_opencode" | "remote_teamwork";
 export type ImportStatus = "error" | "imported" | "skipped" | "unavailable";
 
 export type JsonObject = Record<string, unknown>;
@@ -73,13 +73,13 @@ export type ServerConfigStateRecord = {
 };
 
 export type WorkspaceConfigStateRecord = {
-  openwork: JsonObject;
+  teamwork: JsonObject;
   opencode: JsonObject;
   updatedAt: string;
   workspaceId: string;
 };
 
-export type ManagedSource = "cloud_synced" | "discovered" | "imported" | "openwork_managed";
+export type ManagedSource = "cloud_synced" | "discovered" | "imported" | "teamwork_managed";
 
 export type ManagedConfigRecord = {
   auth: JsonObject | null;

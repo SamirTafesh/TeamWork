@@ -17,7 +17,7 @@ const SPECIAL_TOKENS: Record<string, string> = {
   md: "MD",
   mdx: "MDX",
   opencode: "OpenCode",
-  openwork: "OpenWork",
+  teamwork: "TeamWork",
   yaml: "YAML",
   yml: "YAML",
 };
@@ -30,7 +30,7 @@ function humanizeLabel(value: string | null | undefined): string {
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ");
 
-  if (!normalized) return "OpenWork Bundle";
+  if (!normalized) return "TeamWork Bundle";
 
   return normalized
     .split(" ")
@@ -63,7 +63,7 @@ function formatSurfaceEyebrow(selection: BundleSelection | undefined, parsedName
   }
 
   const filename = selection?.filename || selection?.name || fallbackTitle || "config";
-  if (/^openwork\.json$/i.test(filename)) return "OpenWork Config";
+  if (/^teamwork\.json$/i.test(filename)) return "TeamWork Config";
   if (/^opencode\.jsonc?$/i.test(filename)) return "OpenCode Config";
 
   const label = humanizeLabel(filename);
@@ -143,18 +143,18 @@ export default function ShareBundlePage(props: BundlePageProps & { stars?: strin
     return launchUrl;
   };
 
-  const openInOpenWork = (event: MouseEvent<HTMLAnchorElement>) => {
+  const openInTeamWork = (event: MouseEvent<HTMLAnchorElement>) => {
     if (!openInAppUrl || openInAppUrl === "#") return;
     event.preventDefault();
 
     window.location.assign(refreshOpenInAppHref(event.currentTarget));
   };
 
-  const prepareOpenInOpenWork = (event: PointerEvent<HTMLAnchorElement> | MouseEvent<HTMLAnchorElement>) => {
+  const prepareOpenInTeamWork = (event: PointerEvent<HTMLAnchorElement> | MouseEvent<HTMLAnchorElement>) => {
     refreshOpenInAppHref(event.currentTarget);
   };
 
-  const prepareOpenInOpenWorkFromKeyboard = (event: KeyboardEvent<HTMLAnchorElement>) => {
+  const prepareOpenInTeamWorkFromKeyboard = (event: KeyboardEvent<HTMLAnchorElement>) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     refreshOpenInAppHref(event.currentTarget);
   };
@@ -167,12 +167,12 @@ export default function ShareBundlePage(props: BundlePageProps & { stars?: strin
       <a
         className="button-secondary"
         href={openInAppUrl}
-        onPointerDown={prepareOpenInOpenWork}
-        onMouseDown={prepareOpenInOpenWork}
-        onKeyDown={prepareOpenInOpenWorkFromKeyboard}
-        onClick={openInOpenWork}
+        onPointerDown={prepareOpenInTeamWork}
+        onMouseDown={prepareOpenInTeamWork}
+        onKeyDown={prepareOpenInTeamWorkFromKeyboard}
+        onClick={openInTeamWork}
       >
-        Open in OpenWork
+        Open in TeamWork
       </a>
     </>
   );
@@ -183,7 +183,7 @@ export default function ShareBundlePage(props: BundlePageProps & { stars?: strin
 
       {props.missing ? (
         <section className="status-card">
-          <span className="eyebrow">OpenWork Share</span>
+          <span className="eyebrow">TeamWork Share</span>
           <h1>SKILL.md not found</h1>
           <p>
             This share link does not exist anymore, or the bundle id is invalid.

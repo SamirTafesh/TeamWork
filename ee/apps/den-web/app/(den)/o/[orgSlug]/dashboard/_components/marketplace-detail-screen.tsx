@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowLeft, Check, GitBranch, Github, Globe, Loader2, Plus, Puzzle, Store, Users, X } from "lucide-react";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import {
   getGithubIntegrationSetupRoute,
   getMarketplacesRoute,

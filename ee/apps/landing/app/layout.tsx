@@ -8,11 +8,11 @@ import { StructuredData } from "../components/structured-data";
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "OpenWork",
+  name: "TeamWork",
   legalName: "Different AI",
-  url: "https://openworklabs.com",
-  logo: "https://openworklabs.com/openwork-mark.svg",
-  sameAs: ["https://github.com/different-ai/openwork"]
+  url: "https://teamworklabs.com",
+  logo: "https://teamworklabs.com/teamwork-mark.svg",
+  sameAs: ["https://github.com/SamirTafesh/TeamWork"]
 };
 
 const inter = Inter({
@@ -28,8 +28,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://openworklabs.com"),
-  title: "OpenWork — Open source Claude Cowork alternative for teams",
+  metadataBase: new URL("https://teamworklabs.com"),
+  title: "TeamWork — Open source Claude Cowork alternative for teams",
   description:
     "Bring your own model and provider, wire in your tools and context, and ship reusable agent setups across your org — with guardrails built in.",
   alternates: {
@@ -41,7 +41,7 @@ export const metadata = {
   },
   openGraph: {
     type: "website",
-    siteName: "OpenWork",
+    siteName: "TeamWork",
     locale: "en_US",
     images: ["/og-image-clean.png"]
   },

@@ -1,5 +1,5 @@
 import { storeBundleJson } from "../../../../server/_lib/blob-store.ts";
-import { packageOpenworkFiles } from "../../../../server/_lib/package-openwork-files.ts";
+import { packageTeamworkFiles } from "../../../../server/_lib/package-teamwork-files.ts";
 import { buildCorsHeaders, rateLimitPublishRequest, validateTrustedOrigin, verifyShareBotProtection } from "../../../../server/_lib/publish-security.ts";
 import { buildBundleUrls, getEnv } from "../../../../server/_lib/share-utils.ts";
 import { buildRequestLike } from "../../../../server/_lib/request-like.ts";
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const packaged = packageOpenworkFiles(body);
+    const packaged = packageTeamworkFiles(body);
     if (body?.preview) {
       return jsonResponse(packaged, request);
     }

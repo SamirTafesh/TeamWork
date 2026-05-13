@@ -1,11 +1,11 @@
-import { and, eq } from "@openwork-ee/den-db/drizzle"
+import { and, eq } from "@teamwork-ee/den-db/drizzle"
 import {
   MemberTable,
   SkillHubMemberTable,
   TeamMemberTable,
   TeamTable,
-} from "@openwork-ee/den-db/schema"
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+} from "@teamwork-ee/den-db/schema"
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"

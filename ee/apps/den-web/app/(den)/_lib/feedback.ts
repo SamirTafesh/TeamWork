@@ -1,12 +1,12 @@
-export const OPENWORK_FEEDBACK_URL = "https://openworklabs.com/feedback";
+export const TEAMWORK_FEEDBACK_URL = "https://teamworklabs.com/feedback";
 
 export function buildDenFeedbackUrl(options?: {
   pathname?: string;
   orgSlug?: string | null;
   topic?: string;
 }) {
-  const url = new URL(OPENWORK_FEEDBACK_URL);
-  url.searchParams.set("source", "openwork-web-app");
+  const url = new URL(TEAMWORK_FEEDBACK_URL);
+  url.searchParams.set("source", "teamwork-web-app");
   url.searchParams.set("deployment", "web");
   url.searchParams.set("entrypoint", options?.pathname ?? "dashboard");
 

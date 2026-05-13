@@ -1,9 +1,9 @@
 import "./load-env.js"
 import { Daytona } from "@daytonaio/sdk"
 import { Hono } from "hono"
-import { and, eq, isNull } from "@openwork-ee/den-db/drizzle"
-import { createDenDb, DaytonaSandboxTable, RateLimitTable, WorkerTokenTable } from "@openwork-ee/den-db"
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+import { and, eq, isNull } from "@teamwork-ee/den-db/drizzle"
+import { createDenDb, DaytonaSandboxTable, RateLimitTable, WorkerTokenTable } from "@teamwork-ee/den-db"
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import { env } from "./env.js"
 
 const { db } = createDenDb({
@@ -21,8 +21,8 @@ const publicCorsAllowMethods = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE",
 const publicCorsAllowHeaders = [
   "Authorization",
   "Content-Type",
-  "X-OpenWork-Host-Token",
-  "X-OpenWork-Client-Id",
+  "X-TeamWork-Host-Token",
+  "X-TeamWork-Client-Id",
   "X-OpenCode-Directory",
   "X-Opencode-Directory",
   "x-opencode-directory",
@@ -148,7 +148,7 @@ async function consumeRateLimit(input: {
 }
 
 async function resolveWorkerTokenScope(workerId: WorkerId, request: Request): Promise<WorkerTokenScope | "invalid" | null> {
-  const hostToken = request.headers.get("x-openwork-host-token")?.trim() || null
+  const hostToken = request.headers.get("x-teamwork-host-token")?.trim() || null
   const bearerToken = readBearerToken(request)
   const candidateTokens: Array<{ token: string; requiredScope: WorkerTokenScope | null }> = []
   if (hostToken) {
@@ -240,7 +240,7 @@ async function getSignedPreviewUrl(workerId: WorkerId) {
     await sandbox.refreshData()
 
     const expiresInSeconds = normalizedSignedPreviewExpirySeconds()
-    const preview = await sandbox.getSignedPreviewUrl(env.daytona.openworkPort, expiresInSeconds)
+    const preview = await sandbox.getSignedPreviewUrl(env.daytona.teamworkPort, expiresInSeconds)
 
     await db
       .update(DaytonaSandboxTable)
@@ -327,7 +327,7 @@ async function proxyRequest(workerId: WorkerId, request: Request) {
 app.all("*", async (c) => {
   const requestUrl = new URL(c.req.url)
   if (requestUrl.pathname === "/") {
-    return Response.redirect("https://openworklabs.com", 302)
+    return Response.redirect("https://teamworklabs.com", 302)
   }
 
   if (c.req.method === "OPTIONS") {

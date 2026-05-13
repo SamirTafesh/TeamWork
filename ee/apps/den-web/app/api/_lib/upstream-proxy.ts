@@ -1,16 +1,16 @@
 import { NextRequest } from "next/server";
 
-const DEFAULT_API_BASE = "https://api.openworklabs.com";
-const DEFAULT_AUTH_ORIGIN = "https://app.openworklabs.com";
-const DEFAULT_AUTH_FALLBACK_BASE = "https://den-control-plane-openwork.onrender.com";
+const DEFAULT_API_BASE = "https://api.teamworklabs.com";
+const DEFAULT_AUTH_ORIGIN = "https://app.teamworklabs.com";
+const DEFAULT_AUTH_FALLBACK_BASE = "https://den-control-plane-teamwork.onrender.com";
 const NO_BODY_STATUS = new Set([204, 205, 304]);
 
 const apiBase = normalizeBaseUrl(process.env.DEN_API_BASE ?? DEFAULT_API_BASE);
 const authOrigin = normalizeBaseUrl(process.env.DEN_AUTH_ORIGIN ?? DEFAULT_AUTH_ORIGIN);
 const authFallbackBase = normalizeBaseUrl(process.env.DEN_AUTH_FALLBACK_BASE ?? DEFAULT_AUTH_FALLBACK_BASE);
-const appPort = process.env.OPENWORK_APP_PORT?.trim() || process.env.PORT?.trim() || "5173";
+const appPort = process.env.TEAMWORK_APP_PORT?.trim() || process.env.PORT?.trim() || "5173";
 const configuredCorsOrigins = splitCsv(process.env.DEN_CORS_ORIGINS ?? process.env.CORS_ORIGINS);
-const localDevCorsOrigins = process.env.OPENWORK_DEV_MODE === "1"
+const localDevCorsOrigins = process.env.TEAMWORK_DEV_MODE === "1"
   ? [`http://localhost:${appPort}`, `http://127.0.0.1:${appPort}`]
   : [];
 const corsOrigins = Array.from(new Set([...configuredCorsOrigins, ...localDevCorsOrigins]));

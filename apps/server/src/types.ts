@@ -1,6 +1,6 @@
 export type WorkspaceType = "local" | "remote";
 
-export type RemoteType = "opencode" | "openwork";
+export type RemoteType = "opencode" | "teamwork";
 
 export type ApprovalMode = "manual" | "auto";
 
@@ -22,10 +22,10 @@ export interface WorkspaceConfig {
   baseUrl?: string;
   directory?: string;
   displayName?: string;
-  openworkHostUrl?: string;
-  openworkToken?: string;
-  openworkWorkspaceId?: string;
-  openworkWorkspaceName?: string;
+  teamworkHostUrl?: string;
+  teamworkToken?: string;
+  teamworkWorkspaceId?: string;
+  teamworkWorkspaceName?: string;
   sandboxBackend?: string;
   sandboxRunId?: string;
   sandboxContainerName?: string;
@@ -43,10 +43,10 @@ export interface WorkspaceInfo {
   baseUrl?: string;
   directory?: string;
   displayName?: string;
-  openworkHostUrl?: string;
-  openworkToken?: string;
-  openworkWorkspaceId?: string;
-  openworkWorkspaceName?: string;
+  teamworkHostUrl?: string;
+  teamworkToken?: string;
+  teamworkWorkspaceId?: string;
+  teamworkWorkspaceName?: string;
   sandboxBackend?: string;
   sandboxRunId?: string;
   sandboxContainerName?: string;
@@ -97,7 +97,7 @@ export interface Capabilities {
   schemaVersion: number;
   serverVersion: string;
   opencodeVersion: string;
-  skills: { read: boolean; write: boolean; source: "openwork" | "opencode" };
+  skills: { read: boolean; write: boolean; source: "teamwork" | "opencode" };
   hub: {
     skills: {
       read: boolean;

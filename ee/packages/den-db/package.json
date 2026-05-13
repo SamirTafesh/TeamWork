@@ -1,5 +1,5 @@
 {
-  "name": "@openwork-ee/den-db",
+  "name": "@teamwork-ee/den-db",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -65,8 +65,8 @@
     "db:push": "pnpm run build && node --import tsx ./node_modules/drizzle-kit/bin.cjs push --config drizzle.config.ts"
   },
   "dependencies": {
-    "@openwork/types": "workspace:*",
-    "@openwork-ee/utils": "workspace:*",
+    "@teamwork/types": "workspace:*",
+    "@teamwork-ee/utils": "workspace:*",
     "@planetscale/database": "^1.19.0",
     "drizzle-orm": "^0.45.1",
     "mysql2": "^3.11.3"

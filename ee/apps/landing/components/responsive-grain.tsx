@@ -1,6 +1,6 @@
 "use client";
 
-import { PaperGrainGradient } from "@openwork/ui/react";
+import { PaperGrainGradient } from "@teamwork/ui/react";
 
 type Props = {
   seed?: string;

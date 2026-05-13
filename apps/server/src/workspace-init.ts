@@ -3,18 +3,18 @@ import { readFile, writeFile } from "node:fs/promises";
 
 import { ensureDir, exists } from "./utils.js";
 import { ApiError } from "./errors.js";
-import { openworkConfigPath, opencodeConfigPath } from "./workspace-files.js";
+import { teamworkConfigPath, opencodeConfigPath } from "./workspace-files.js";
 import { readJsoncFile, writeJsoncFile } from "./jsonc.js";
 
-const OPENWORK_AGENT = `---
-description: OpenWork default agent
+const TEAMWORK_AGENT = `---
+description: TeamWork default agent
 mode: primary
 temperature: 0.2
 ---
 
-You are OpenWork.
+You are TeamWork.
 
-When the user refers to "you", they mean the OpenWork app and the current workspace.
+When the user refers to "you", they mean the TeamWork app and the current workspace.
 
 Your job:
 - Help the user work on files safely.
@@ -23,14 +23,14 @@ Your job:
 
 ## Browser
 
-OpenWork has a built-in browser and can also control the user's external Chrome.
+TeamWork has a built-in browser and can also control the user's external Chrome.
 
 Two MCP tool sets are available:
 
-1. **openwork-browser** — Built-in browser panel inside the app.
-   - The panel opens automatically when you call any openwork-browser tool.
+1. **teamwork-browser** — Built-in browser panel inside the app.
+   - The panel opens automatically when you call any teamwork-browser tool.
    - Use this for general browsing tasks ("go to facebook.com", "search for X").
-   - Call \`openwork-browser_hide_browser\` when the browsing task is done.
+   - Call \`teamwork-browser_hide_browser\` when the browsing task is done.
    - The user can see what you're doing in real time.
 
 2. **chrome** — The user's real Chrome browser (external).
@@ -44,7 +44,7 @@ Two MCP tool sets are available:
    - Do NOT run bash commands to start Chrome with --remote-debugging-port.
    - If the user cannot enable debugging, offer the built-in browser as a fallback.
 
-Default to **openwork-browser** unless the user explicitly needs their real
+Default to **teamwork-browser** unless the user explicitly needs their real
 browser session (cookies, sign-ins, extensions). If the user says "go to X"
 without specifying, use the built-in browser.
 
@@ -64,7 +64,7 @@ Hard rule: never copy private memory into repo files. Store only redacted summar
 - Prefer clear, practical steps over abstract explanations.
 `;
 
-type WorkspaceOpenworkConfig = {
+type WorkspaceTeamworkConfig = {
   version: number;
   workspace?: {
     name?: string | null;
@@ -84,11 +84,11 @@ function normalizePreset(preset: string | null | undefined): string {
   return trimmed;
 }
 
-async function ensureWorkspaceOpenworkConfig(workspaceRoot: string, preset: string): Promise<void> {
-  const path = openworkConfigPath(workspaceRoot);
+async function ensureWorkspaceTeamworkConfig(workspaceRoot: string, preset: string): Promise<void> {
+  const path = teamworkConfigPath(workspaceRoot);
   if (await exists(path)) return;
   const now = Date.now();
-  const config: WorkspaceOpenworkConfig = {
+  const config: WorkspaceTeamworkConfig = {
     version: 1,
     workspace: {
       name: basename(workspaceRoot) || "Workspace",
@@ -112,18 +112,18 @@ async function ensureOpencodeConfig(workspaceRoot: string): Promise<void> {
     : { $schema: "https://opencode.ai/config.json" };
 
   if (typeof next.default_agent !== "string" || !next.default_agent.trim()) {
-    next.default_agent = "openwork";
+    next.default_agent = "teamwork";
   }
 
   await writeJsoncFile(path, next);
 }
 
-async function ensureOpenworkAgent(workspaceRoot: string): Promise<void> {
+async function ensureTeamworkAgent(workspaceRoot: string): Promise<void> {
   const agentsDir = join(workspaceRoot, ".opencode", "agents");
-  const agentPath = join(agentsDir, "openwork.md");
+  const agentPath = join(agentsDir, "teamwork.md");
   if (await exists(agentPath)) return;
   await ensureDir(agentsDir);
-  await writeFile(agentPath, OPENWORK_AGENT.endsWith("\n") ? OPENWORK_AGENT : `${OPENWORK_AGENT}\n`, "utf8");
+  await writeFile(agentPath, TEAMWORK_AGENT.endsWith("\n") ? TEAMWORK_AGENT : `${TEAMWORK_AGENT}\n`, "utf8");
 }
 
 export async function ensureWorkspaceFiles(workspaceRoot: string, presetInput: string): Promise<void> {
@@ -133,8 +133,8 @@ export async function ensureWorkspaceFiles(workspaceRoot: string, presetInput: s
   }
   await ensureDir(workspaceRoot);
   await ensureOpencodeConfig(workspaceRoot);
-  await ensureOpenworkAgent(workspaceRoot);
-  await ensureWorkspaceOpenworkConfig(workspaceRoot, preset);
+  await ensureTeamworkAgent(workspaceRoot);
+  await ensureWorkspaceTeamworkConfig(workspaceRoot, preset);
 }
 
 export async function readRawOpencodeConfig(path: string): Promise<{ exists: boolean; content: string | null }> {

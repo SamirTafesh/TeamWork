@@ -11,9 +11,9 @@ import { pathToFileURL } from "node:url";
 const __runtimeDir = path.dirname(fileURLToPath(import.meta.url));
 
 const DIRECT_RUNTIME = "direct";
-const ORCHESTRATOR_RUNTIME = "openwork-orchestrator";
-const OPENWORK_SERVER_PORT_RANGE_START = 48_000;
-const OPENWORK_SERVER_PORT_RANGE_END = 51_000;
+const ORCHESTRATOR_RUNTIME = "teamwork-orchestrator";
+const TEAMWORK_SERVER_PORT_RANGE_START = 48_000;
+const TEAMWORK_SERVER_PORT_RANGE_END = 51_000;
 
 function truncateOutput(value, limit = 8000) {
   const text = String(value ?? "");
@@ -72,7 +72,7 @@ function snapshotEngineState(state) {
   };
 }
 
-function createOpenworkServerState() {
+function createTeamworkServerState() {
   return {
     child: null,
     childExited: true,
@@ -94,7 +94,7 @@ function createOpenworkServerState() {
   };
 }
 
-function snapshotOpenworkServerState(state) {
+function snapshotTeamworkServerState(state) {
   const child = state.childExited ? null : state.child;
   const running = state.inProcess || Boolean(child && child.exitCode === null && !child.killed);
   return {
@@ -117,15 +117,15 @@ function snapshotOpenworkServerState(state) {
   };
 }
 
-function assertOpenworkServerReady(snapshot) {
+function assertTeamworkServerReady(snapshot) {
   if (!snapshot?.running) {
-    throw new Error("OpenWork server did not stay running after startup.");
+    throw new Error("TeamWork server did not stay running after startup.");
   }
   if (!snapshot.baseUrl) {
-    throw new Error("OpenWork server did not report a base URL after startup.");
+    throw new Error("TeamWork server did not report a base URL after startup.");
   }
   if (!snapshot.ownerToken && !snapshot.clientToken) {
-    throw new Error("OpenWork server did not report an access token after startup.");
+    throw new Error("TeamWork server did not report an access token after startup.");
   }
   return snapshot;
 }
@@ -371,25 +371,25 @@ async function fetchJson(url, options = {}, timeoutMs = 3000) {
   }
 }
 
-// Resolves ~/.config/openwork/env.json (or %APPDATA%\openwork\env.json on
+// Resolves ~/.config/teamwork/env.json (or %APPDATA%\teamwork\env.json on
 // Windows) — must agree byte-for-byte with apps/server/src/env-file.ts and
-// apps/desktop/src-tauri/src/env_file.rs. Honor OPENWORK_ENV_STORE override.
+// apps/desktop/src-tauri/src/env_file.rs. Honor TEAMWORK_ENV_STORE override.
 function resolveUserEnvFilePath() {
-  const override = String(process.env.OPENWORK_ENV_STORE ?? "").trim();
+  const override = String(process.env.TEAMWORK_ENV_STORE ?? "").trim();
   if (override) return path.resolve(override);
   if (process.platform === "win32") {
     const appData = String(process.env.APPDATA ?? "").trim();
     const root = appData || path.join(os.homedir(), "AppData", "Roaming");
-    return path.join(root, "openwork", "env.json");
+    return path.join(root, "teamwork", "env.json");
   }
-  return path.join(os.homedir(), ".config", "openwork", "env.json");
+  return path.join(os.homedir(), ".config", "teamwork", "env.json");
 }
 
 const USER_ENV_KEY_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const USER_ENV_RESERVED_PREFIXES = ["OPENWORK_", "OPENCODE_"];
+const USER_ENV_RESERVED_PREFIXES = ["TEAMWORK_", "OPENCODE_"];
 
 // Synchronous, best-effort; absent or malformed returns {}. Reserved prefixes
-// are stripped so a tampered file can never shadow OPENWORK_* / OPENCODE_*.
+// are stripped so a tampered file can never shadow TEAMWORK_* / OPENCODE_*.
 function loadUserEnvFile() {
   try {
     const raw = readFileSync(resolveUserEnvFilePath(), "utf8");
@@ -412,7 +412,7 @@ function loadUserEnvFile() {
 
 export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths }) {
   const engineState = createEngineState();
-  const openworkServerState = createOpenworkServerState();
+  const teamworkServerState = createTeamworkServerState();
   const orchestratorState = createOrchestratorState();
 
   // Serialize engine lifecycle operations. Without this, concurrent renderer
@@ -434,12 +434,12 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     path.join(path.dirname(app.getPath("exe")), "sidecars"),
   ].filter(Boolean);
 
-  function openworkServerTokenStorePath() {
-    return path.join(userDataDir, "openwork-server-tokens.json");
+  function teamworkServerTokenStorePath() {
+    return path.join(userDataDir, "teamwork-server-tokens.json");
   }
 
-  function openworkServerStatePath() {
-    return path.join(userDataDir, "openwork-server-state.json");
+  function teamworkServerStatePath() {
+    return path.join(userDataDir, "teamwork-server-state.json");
   }
 
   function managedOpencodeWorkdir() {
@@ -447,17 +447,17 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   function orchestratorDataDir() {
-    const envDir = process.env.OPENWORK_DATA_DIR?.trim();
+    const envDir = process.env.TEAMWORK_DATA_DIR?.trim();
     if (envDir) return envDir;
-    return path.join(app.getPath("home"), ".openwork", "openwork-orchestrator");
+    return path.join(app.getPath("home"), ".teamwork", "teamwork-orchestrator");
   }
 
   function orchestratorStatePath(dataDir) {
-    return path.join(dataDir, "openwork-orchestrator-state.json");
+    return path.join(dataDir, "teamwork-orchestrator-state.json");
   }
 
   function orchestratorAuthPath(dataDir) {
-    return path.join(dataDir, "openwork-orchestrator-auth.json");
+    return path.join(dataDir, "teamwork-orchestrator-auth.json");
   }
 
   async function readOrchestratorStateFile(dataDir) {
@@ -494,17 +494,17 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   async function loadTokenStore() {
-    return readJsonFile(openworkServerTokenStorePath(), { version: 1, workspaces: {} });
+    return readJsonFile(teamworkServerTokenStorePath(), { version: 1, workspaces: {} });
   }
 
   async function saveTokenStore(store) {
-    const filePath = openworkServerTokenStorePath();
+    const filePath = teamworkServerTokenStorePath();
     await mkdir(path.dirname(filePath), { recursive: true });
     await writeFile(filePath, `${JSON.stringify(store, null, 2)}\n`, "utf8");
   }
 
   async function loadPortState() {
-    return readJsonFile(openworkServerStatePath(), {
+    return readJsonFile(teamworkServerStatePath(), {
       version: 3,
       workspacePorts: {},
       preferredPort: null,
@@ -512,7 +512,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   async function savePortState(state) {
-    const filePath = openworkServerStatePath();
+    const filePath = teamworkServerStatePath();
     await mkdir(path.dirname(filePath), { recursive: true });
     await writeFile(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
   }
@@ -544,7 +544,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     await saveTokenStore(store);
   }
 
-  async function readPreferredOpenworkPort(workspaceKey) {
+  async function readPreferredTeamworkPort(workspaceKey) {
     const state = await loadPortState();
     const normalized = normalizeWorkspaceKey(workspaceKey);
     if (normalized && state.workspacePorts?.[normalized]) {
@@ -553,7 +553,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     return state.preferredPort ?? null;
   }
 
-  async function persistPreferredOpenworkPort(workspaceKey, port) {
+  async function persistPreferredTeamworkPort(workspaceKey, port) {
     const state = await loadPortState();
     const normalized = normalizeWorkspaceKey(workspaceKey);
     state.version = 3;
@@ -567,8 +567,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     await savePortState(state);
   }
 
-  async function resolveOpenworkPort(host, workspaceKey) {
-    const preferredPort = await readPreferredOpenworkPort(workspaceKey);
+  async function resolveTeamworkPort(host, workspaceKey) {
+    const preferredPort = await readPreferredTeamworkPort(workspaceKey);
     if (preferredPort && (await portAvailable(host, preferredPort))) {
       return preferredPort;
     }
@@ -576,7 +576,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   async function ensureDevModePaths() {
-    const root = path.join(userDataDir, "openwork-dev-data");
+    const root = path.join(userDataDir, "teamwork-dev-data");
     const paths = {
       homeDir: path.join(root, "home"),
       xdgConfigHome: path.join(root, "xdg", "config"),
@@ -613,9 +613,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     if (pathEnv) {
       env[pathKey] = pathEnv;
     }
-    if (process.env.OPENWORK_DEV_MODE === "1") {
+    if (process.env.TEAMWORK_DEV_MODE === "1") {
       const devPaths = await ensureDevModePaths();
-      env.OPENWORK_DEV_MODE = "1";
+      env.TEAMWORK_DEV_MODE = "1";
       env.HOME = devPaths.homeDir;
       env.USERPROFILE = devPaths.homeDir;
       env.XDG_CONFIG_HOME = devPaths.xdgConfigHome;
@@ -679,7 +679,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const candidates = [];
     const seen = new Set();
 
-    for (const key of ["OPENWORK_DOCKER_BIN", "OPENWRK_DOCKER_BIN", "DOCKER_BIN"]) {
+    for (const key of ["TEAMWORK_DOCKER_BIN", "OPENWRK_DOCKER_BIN", "DOCKER_BIN"]) {
       const value = process.env[key]?.trim();
       if (value && !seen.has(value)) {
         seen.add(value);
@@ -732,7 +732,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     }
 
     throw new Error(
-      `Failed to run docker: ${errors.join("; ")} (Set OPENWORK_DOCKER_BIN to your docker binary if needed)`,
+      `Failed to run docker: ${errors.join("; ")} (Set TEAMWORK_DOCKER_BIN to your docker binary if needed)`,
     );
   }
 
@@ -755,10 +755,10 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const sanitized = String(runId ?? "")
       .replace(/[^a-zA-Z0-9_.-]+/g, "-")
       .slice(0, 24);
-    return `openwork-orchestrator-${sanitized}`;
+    return `teamwork-orchestrator-${sanitized}`;
   }
 
-  async function listOpenworkManagedContainers() {
+  async function listTeamworkManagedContainers() {
     const result = runDockerCommandDetailed(["ps", "-a", "--format", "{{.Names}}"], 8000);
     if (result.status !== 0) {
       const combined = `${result.stdout.trim()}\n${result.stderr.trim()}`.trim();
@@ -767,7 +767,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     return result.stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter((name) => name && (name.startsWith("openwork-orchestrator-") || name.startsWith("openwork-dev-") || name.startsWith("openwrk-")))
+      .filter((name) => name && (name.startsWith("teamwork-orchestrator-") || name.startsWith("teamwork-dev-") || name.startsWith("openwrk-")))
       .sort();
   }
 
@@ -872,8 +872,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const value = String(command ?? "");
     return sidecarDirs.some((dir) => value.includes(dir)) &&
       (
-        value.includes("openwork-orchestrator") ||
-        value.includes("openwork-server") ||
+        value.includes("teamwork-orchestrator") ||
+        value.includes("teamwork-server") ||
         value.includes("opencode serve")
       );
   }
@@ -965,9 +965,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-OpenWork-Host-Token": hostToken,
+          "X-TeamWork-Host-Token": hostToken,
         },
-        body: JSON.stringify({ scope: "owner", label: "OpenWork desktop owner token" }),
+        body: JSON.stringify({ scope: "owner", label: "TeamWork desktop owner token" }),
       },
       5000,
     );
@@ -978,23 +978,23 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   // In-process server handle. Kept alive across restarts so we can stop it.
   let inProcessServer = null;
 
-  async function startOpenworkServer(options) {
+  async function startTeamworkServer(options) {
     // Stop any previously running in-process server
     if (inProcessServer) {
       try { inProcessServer.stop(); } catch { /* ignore */ }
       inProcessServer = null;
     }
-    await stopChild(openworkServerState);
+    await stopChild(teamworkServerState);
 
     const workspacePaths = options.workspacePaths.filter((value) => value.trim().length > 0);
     const activeWorkspace = workspacePaths[0] ?? "";
     const host = options.remoteAccessEnabled ? "0.0.0.0" : "127.0.0.1";
-    const port = await resolveOpenworkPort(host, activeWorkspace);
+    const port = await resolveTeamworkPort(host, activeWorkspace);
     const tokens = await loadOrCreateWorkspaceTokens(activeWorkspace);
 
     const managedOpencode = options.manageOpencode ? resolveOpencodeBinary(options.opencodeBinPath) : null;
-    openworkServerState.managedOpencodeBinPath = managedOpencode?.path ?? null;
-    openworkServerState.managedOpencodeBinSource = managedOpencode?.source ?? null;
+    teamworkServerState.managedOpencodeBinPath = managedOpencode?.path ?? null;
+    teamworkServerState.managedOpencodeBinSource = managedOpencode?.source ?? null;
     if (options.manageOpencode) {
       engineState.opencodeBinPath = managedOpencode?.path ?? null;
       engineState.opencodeBinSource = managedOpencode?.source ?? null;
@@ -1012,12 +1012,12 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       path.resolve(__runtimeDir, "..", "server", "dist", "embedded.js"),
       ...(process.resourcesPath ? [path.resolve(process.resourcesPath, "server", "dist", "embedded.js")] : []),
     ];
-    const candidates = process.env.OPENWORK_DEV_MODE === "1"
+    const candidates = process.env.TEAMWORK_DEV_MODE === "1"
       ? [devPath, ...packagedPaths]
       : [...packagedPaths, devPath];
     const embeddedPath = candidates.find((candidate) => existsSync(candidate));
     if (!embeddedPath) {
-      throw new Error(`Cannot find OpenWork embedded server bundle. Checked: ${candidates.join(", ")}`);
+      throw new Error(`Cannot find TeamWork embedded server bundle. Checked: ${candidates.join(", ")}`);
     }
     const { startEmbeddedServer } = await import(pathToFileURL(embeddedPath).href);
     const handle = await startEmbeddedServer({
@@ -1039,18 +1039,18 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const boundPort = handle.port;
     const baseUrl = handle.url;
 
-    openworkServerState.inProcess = true;
-    openworkServerState.remoteAccessEnabled = options.remoteAccessEnabled;
-    openworkServerState.host = host;
-    openworkServerState.port = boundPort;
-    openworkServerState.baseUrl = baseUrl;
-    openworkServerState.clientToken = tokens.clientToken;
-    openworkServerState.hostToken = tokens.hostToken;
+    teamworkServerState.inProcess = true;
+    teamworkServerState.remoteAccessEnabled = options.remoteAccessEnabled;
+    teamworkServerState.host = host;
+    teamworkServerState.port = boundPort;
+    teamworkServerState.baseUrl = baseUrl;
+    teamworkServerState.clientToken = tokens.clientToken;
+    teamworkServerState.hostToken = tokens.hostToken;
 
     const connectUrls = options.remoteAccessEnabled ? buildConnectUrls(boundPort) : { connectUrl: null, mdnsUrl: null, lanUrl: null };
-    openworkServerState.connectUrl = connectUrls.connectUrl;
-    openworkServerState.mdnsUrl = connectUrls.mdnsUrl;
-    openworkServerState.lanUrl = connectUrls.lanUrl;
+    teamworkServerState.connectUrl = connectUrls.connectUrl;
+    teamworkServerState.mdnsUrl = connectUrls.mdnsUrl;
+    teamworkServerState.lanUrl = connectUrls.lanUrl;
 
     // No health check needed -- startServer() resolves only after the listener is bound.
     let workspaceList = null;
@@ -1065,7 +1065,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       }
     }
     ownerToken ||= await issueOwnerToken(baseUrl, tokens.hostToken);
-    openworkServerState.ownerToken = ownerToken;
+    teamworkServerState.ownerToken = ownerToken;
     if (ownerToken) {
       await persistWorkspaceOwnerToken(activeWorkspace, ownerToken);
     }
@@ -1088,11 +1088,11 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
           engineState.childExited = false;
         }
       } catch (error) {
-        appendOutput(openworkServerState, "lastStderr", `OpenWork server workspace probe: ${error instanceof Error ? error.message : String(error)}\n`);
+        appendOutput(teamworkServerState, "lastStderr", `TeamWork server workspace probe: ${error instanceof Error ? error.message : String(error)}\n`);
       }
     }
-    await persistPreferredOpenworkPort(activeWorkspace, boundPort);
-    return snapshotOpenworkServerState(openworkServerState);
+    await persistPreferredTeamworkPort(activeWorkspace, boundPort);
+    return snapshotTeamworkServerState(teamworkServerState);
   }
 
   async function resolveOrchestratorBaseUrl() {
@@ -1114,9 +1114,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const opencodePort = await findFreePort("127.0.0.1");
     const [username, password] = generateManagedCredentials();
 
-    const orchestratorProgram = resolveBinary("openwork-orchestrator") ?? resolveBinary("openwork");
+    const orchestratorProgram = resolveBinary("teamwork-orchestrator") ?? resolveBinary("teamwork");
     if (!orchestratorProgram) {
-      throw new Error("Failed to locate openwork-orchestrator.");
+      throw new Error("Failed to locate teamwork-orchestrator.");
     }
 
     const opencodeBinary = resolveOpencodeBinary(options.opencodeBinPath);
@@ -1125,9 +1125,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     }
 
     const env = await buildChildEnv({
-      OPENWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS: "1",
-      OPENWORK_OPENCODE_USERNAME: username,
-      OPENWORK_OPENCODE_PASSWORD: password,
+      TEAMWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS: "1",
+      TEAMWORK_OPENCODE_USERNAME: username,
+      TEAMWORK_OPENCODE_PASSWORD: password,
       ...(options.opencodeEnableExa === true ? { OPENCODE_ENABLE_EXA: "1" } : {}),
     });
 
@@ -1226,7 +1226,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       try { inProcessServer.stop(); } catch { /* ignore */ }
       inProcessServer = null;
     }
-    await stopChild(openworkServerState);
+    await stopChild(teamworkServerState);
     await stopChild(orchestratorState, {
       requestShutdown: () => requestOrchestratorShutdown(orchestratorState.dataDir || orchestratorDataDir()),
     });
@@ -1234,7 +1234,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     await stopChild(engineState);
 
     Object.assign(engineState, createEngineState());
-    Object.assign(openworkServerState, createOpenworkServerState());
+    Object.assign(teamworkServerState, createTeamworkServerState());
     Object.assign(orchestratorState, createOrchestratorState());
   }
 
@@ -1245,10 +1245,10 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     lifecycleState = "idle";
   }
 
-  async function ensureOpenwork(options) {
-    let openworkServer;
+  async function ensureTeamwork(options) {
+    let teamworkServer;
     try {
-      openworkServer = await startOpenworkServer({
+      teamworkServer = await startTeamworkServer({
         workspacePaths: options.workspacePaths,
         opencodeBaseUrl: engineState.baseUrl,
         opencodeUsername: engineState.opencodeUsername,
@@ -1258,11 +1258,11 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
         opencodeBinPath: options.opencodeBinPath,
       });
     } catch (error) {
-      appendOutput(engineState, "lastStderr", `OpenWork server: ${error instanceof Error ? error.message : String(error)}\n`);
+      appendOutput(engineState, "lastStderr", `TeamWork server: ${error instanceof Error ? error.message : String(error)}\n`);
       throw error;
     }
 
-    assertOpenworkServerReady(openworkServer);
+    assertTeamworkServerReady(teamworkServer);
   }
 
   async function engineStart(projectDir, options = {}) {
@@ -1286,10 +1286,10 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       engineState.child = null;
       engineState.childExited = true;
 
-      await ensureOpenwork({
+      await ensureTeamwork({
         projectDir: safeProjectDir,
         workspacePaths,
-        remoteAccessEnabled: options.openworkRemoteAccess === true,
+        remoteAccessEnabled: options.teamworkRemoteAccess === true,
         manageOpencode: true,
         opencodeBinPath: options.opencodeBinPath,
       });
@@ -1318,7 +1318,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       runtime: engineState.runtime,
       workspacePaths: [projectDir],
       opencodeEnableExa: options.opencodeEnableExa,
-      openworkRemoteAccess: options.openworkRemoteAccess,
+      teamworkRemoteAccess: options.teamworkRemoteAccess,
     });
   }
 
@@ -1330,41 +1330,41 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     return {
       lifecycleState,
       engine: await engineInfo(),
-      openworkServer: snapshotOpenworkServerState(openworkServerState),
+      teamworkServer: snapshotTeamworkServerState(teamworkServerState),
     };
   }
 
-  async function openworkServerInfo() {
-    return snapshotOpenworkServerState(openworkServerState);
+  async function teamworkServerInfo() {
+    return snapshotTeamworkServerState(teamworkServerState);
   }
 
-  async function openworkServerRestart(options = {}) {
+  async function teamworkServerRestart(options = {}) {
     const workspacePaths = (await listLocalWorkspacePaths()).filter(Boolean);
     const shouldManageOpencode = Boolean(
-      openworkServerState.managedOpencodeBinPath || engineState.opencodeBinPath,
+      teamworkServerState.managedOpencodeBinPath || engineState.opencodeBinPath,
     );
-    return startOpenworkServer({
+    return startTeamworkServer({
       workspacePaths,
       opencodeBaseUrl: shouldManageOpencode ? null : engineState.baseUrl,
       opencodeUsername: shouldManageOpencode ? null : engineState.opencodeUsername,
       opencodePassword: shouldManageOpencode ? null : engineState.opencodePassword,
       remoteAccessEnabled: options.remoteAccessEnabled === true,
       manageOpencode: shouldManageOpencode,
-      opencodeBinPath: engineState.opencodeBinPath ?? openworkServerState.managedOpencodeBinPath,
+      opencodeBinPath: engineState.opencodeBinPath ?? teamworkServerState.managedOpencodeBinPath,
     });
   }
 
   async function orchestratorStatus() {
     const engine = snapshotEngineState(engineState);
-    const openworkServer = snapshotOpenworkServerState(openworkServerState);
+    const teamworkServer = snapshotTeamworkServerState(teamworkServerState);
     const workspaces = engine.projectDir
       ? [{ id: normalizeWorkspaceKey(engine.projectDir), path: engine.projectDir, name: path.basename(engine.projectDir) || "Workspace" }]
       : [];
     return {
       running: engine.running,
       dataDir: null,
-      daemon: openworkServer.running
-        ? { baseUrl: openworkServer.baseUrl, port: openworkServer.port, pid: openworkServer.pid, runtime: "direct" }
+      daemon: teamworkServer.running
+        ? { baseUrl: teamworkServer.baseUrl, port: teamworkServer.port, pid: teamworkServer.pid, runtime: "direct" }
         : null,
       opencode: engine.running
         ? { baseUrl: engine.baseUrl, port: engine.port, pid: engine.pid, projectDir: engine.projectDir, runtime: "direct" }
@@ -1412,7 +1412,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
         status: -1,
         stdout: "",
         stderr:
-          "Guided install is not supported on Windows yet. Install the OpenWork-pinned OpenCode version manually, then restart OpenWork.",
+          "Guided install is not supported on Windows yet. Install the TeamWork-pinned OpenCode version manually, then restart TeamWork.",
       };
     }
 
@@ -1560,8 +1560,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     if (!name) {
       throw new Error("containerName is required");
     }
-    if (!name.startsWith("openwork-orchestrator-")) {
-      throw new Error("Refusing to stop container: expected name starting with 'openwork-orchestrator-'");
+    if (!name.startsWith("teamwork-orchestrator-")) {
+      throw new Error("Refusing to stop container: expected name starting with 'teamwork-orchestrator-'");
     }
     if (!/^[A-Za-z0-9_.-]+$/.test(name)) {
       throw new Error("containerName contains invalid characters");
@@ -1575,8 +1575,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     };
   }
 
-  async function sandboxCleanupOpenworkContainers() {
-    const candidates = await listOpenworkManagedContainers().catch((error) => {
+  async function sandboxCleanupTeamworkContainers() {
+    const candidates = await listTeamworkManagedContainers().catch((error) => {
       throw error;
     });
     const removed = [];
@@ -1613,12 +1613,12 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const runId = String(options.runId ?? randomUUID()).trim();
     const containerName = wantsDockerSandbox ? deriveOrchestratorContainerName(runId) : null;
     const port = await findFreePort("127.0.0.1");
-    const token = String(options.openworkToken ?? randomUUID()).trim();
-    const hostToken = String(options.openworkHostToken ?? randomUUID()).trim();
-    const openworkUrl = `http://127.0.0.1:${port}`;
-    const program = resolveBinary("openwork-orchestrator") ?? resolveBinary("openwork");
+    const token = String(options.teamworkToken ?? randomUUID()).trim();
+    const hostToken = String(options.teamworkHostToken ?? randomUUID()).trim();
+    const teamworkUrl = `http://127.0.0.1:${port}`;
+    const program = resolveBinary("teamwork-orchestrator") ?? resolveBinary("teamwork");
     if (!program) {
-      throw new Error("Failed to locate openwork orchestrator.");
+      throw new Error("Failed to locate teamwork orchestrator.");
     }
 
     const args = [
@@ -1628,7 +1628,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       "--approval",
       "auto",
       "--detach",
-      "--openwork-port",
+      "--teamwork-port",
       String(port),
       "--run-id",
       runId,
@@ -1637,18 +1637,18 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     ];
 
     const child = spawn(program, args, {
-      env: { ...(await buildChildEnv()), OPENWORK_TOKEN: token, OPENWORK_HOST_TOKEN: hostToken },
+      env: { ...(await buildChildEnv()), TEAMWORK_TOKEN: token, TEAMWORK_HOST_TOKEN: hostToken },
       detached: true,
       stdio: "ignore",
       windowsHide: true,
     });
     child.unref();
 
-    await waitForHttpOk(`${openworkUrl}/health`, wantsDockerSandbox ? 90_000 : 12_000);
-    const ownerToken = await issueOwnerToken(openworkUrl, hostToken).catch(() => null);
+    await waitForHttpOk(`${teamworkUrl}/health`, wantsDockerSandbox ? 90_000 : 12_000);
+    const ownerToken = await issueOwnerToken(teamworkUrl, hostToken).catch(() => null);
 
     return {
-      openworkUrl,
+      teamworkUrl,
       token,
       ownerToken,
       hostToken,
@@ -1662,7 +1662,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   async function sandboxDebugProbe() {
     const startedAt = nowMs();
     const runId = `probe-${randomUUID()}`;
-    const workspacePath = path.join(os.tmpdir(), `openwork-sandbox-probe-${randomUUID()}`);
+    const workspacePath = path.join(os.tmpdir(), `teamwork-sandbox-probe-${randomUUID()}`);
     await mkdir(workspacePath, { recursive: true });
 
     const doctor = await sandboxDoctor();
@@ -1760,8 +1760,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     engineInfo,
     engineDoctor,
     engineInstall,
-    openworkServerInfo,
-    openworkServerRestart,
+    teamworkServerInfo,
+    teamworkServerRestart,
     orchestratorStatus,
     orchestratorWorkspaceActivate,
     orchestratorInstanceDispose,
@@ -1769,7 +1769,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     opencodeMcpAuth,
     sandboxDoctor,
     sandboxStop,
-    sandboxCleanupOpenworkContainers,
+    sandboxCleanupTeamworkContainers,
     sandboxDebugProbe,
   };
 }

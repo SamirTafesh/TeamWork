@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { AppFeedbackForm, type AppFeedbackPrefill } from "../../components/app-feedback-form";
-import { OpenWorkMark } from "../../components/openwork-mark";
+import { TeamWorkMark } from "../../components/teamwork-mark";
 import { SiteFooter } from "../../components/site-footer";
 import { baseOpenGraph } from "../../lib/seo";
 
 export const metadata = {
-  title: "OpenWork — Feedback",
-  description: "Send app feedback to the OpenWork team with prefilled runtime context.",
+  title: "TeamWork — Feedback",
+  description: "Send app feedback to the TeamWork team with prefilled runtime context.",
   alternates: {
     canonical: "/feedback"
   },
@@ -16,7 +16,7 @@ export const metadata = {
   },
   openGraph: {
     ...baseOpenGraph,
-    url: "https://openworklabs.com/feedback"
+    url: "https://teamworklabs.com/feedback"
   }
 };
 
@@ -35,11 +35,11 @@ function readSearchParam(
 
 export default function FeedbackPage({ searchParams }: PageProps) {
   const prefill: AppFeedbackPrefill = {
-    source: readSearchParam(searchParams, "source") || "openwork-app",
+    source: readSearchParam(searchParams, "source") || "teamwork-app",
     entrypoint: readSearchParam(searchParams, "entrypoint") || "unknown",
     deployment: readSearchParam(searchParams, "deployment") || "desktop",
     appVersion: readSearchParam(searchParams, "appVersion"),
-    openworkServerVersion: readSearchParam(searchParams, "openworkServerVersion"),
+    teamworkServerVersion: readSearchParam(searchParams, "teamworkServerVersion"),
     opencodeVersion: readSearchParam(searchParams, "opencodeVersion"),
     orchestratorVersion: readSearchParam(searchParams, "orchestratorVersion"),
     opencodeRouterVersion: readSearchParam(searchParams, "opencodeRouterVersion"),
@@ -53,9 +53,9 @@ export default function FeedbackPage({ searchParams }: PageProps) {
       <div className="mx-auto max-w-5xl px-6 pb-20 pt-6 md:px-8 md:pt-8">
         <header className="mb-10 flex items-center justify-between gap-4">
           <Link href="/" className="inline-flex items-center gap-3 text-[#011627]">
-            <OpenWorkMark className="h-[30px] w-[38px]" />
+            <TeamWorkMark className="h-[30px] w-[38px]" />
             <span className="text-[1.2rem] font-semibold tracking-tight lowercase">
-              OpenWork
+              TeamWork
             </span>
           </Link>
           <Link

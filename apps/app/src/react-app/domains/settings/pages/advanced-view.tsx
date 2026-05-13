@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { CircleAlert, Cpu, RefreshCcw, Server, Zap } from "lucide-react";
 
 import type { OpencodeConnectStatus } from "../../../../app/types";
-import type { OpenworkServerStatus } from "../../../../app/lib/openwork-server";
+import type { TeamworkServerStatus } from "../../../../app/lib/teamwork-server";
 import type { EngineInfo } from "../../../../app/lib/desktop";
 import { isDesktopRuntime } from "../../../../app/utils";
 import { t } from "../../../../i18n";
@@ -30,10 +30,10 @@ export type AdvancedViewProps = {
   headerStatus: string;
   clientConnected: boolean;
   opencodeConnectStatus: OpencodeConnectStatus | null;
-  openworkServerStatus: OpenworkServerStatus;
-  openworkServerUrl: string;
-  openworkReconnectBusy: boolean;
-  reconnectOpenworkServer: () => Promise<boolean>;
+  teamworkServerStatus: TeamworkServerStatus;
+  teamworkServerUrl: string;
+  teamworkReconnectBusy: boolean;
+  reconnectTeamworkServer: () => Promise<boolean>;
   engineInfo: EngineInfo | null;
   restartLocalServer: () => Promise<boolean>;
   stopHost: () => void;
@@ -87,11 +87,11 @@ function formatOpencodeBinary(info: EngineInfo | null) {
 }
 
 export function AdvancedView(props: AdvancedViewProps) {
-  const [openworkReconnectStatus, setOpenworkReconnectStatus] = useState<string | null>(null);
-  const [openworkReconnectError, setOpenworkReconnectError] = useState<string | null>(null);
-  const [openworkRestartBusy, setOpenworkRestartBusy] = useState(false);
-  const [openworkRestartStatus, setOpenworkRestartStatus] = useState<string | null>(null);
-  const [openworkRestartError, setOpenworkRestartError] = useState<string | null>(null);
+  const [teamworkReconnectStatus, setTeamworkReconnectStatus] = useState<string | null>(null);
+  const [teamworkReconnectError, setTeamworkReconnectError] = useState<string | null>(null);
+  const [teamworkRestartBusy, setTeamworkRestartBusy] = useState(false);
+  const [teamworkRestartStatus, setTeamworkRestartStatus] = useState<string | null>(null);
+  const [teamworkRestartError, setTeamworkRestartError] = useState<string | null>(null);
   const [debugDeepLinkOpen, setDebugDeepLinkOpen] = useState(false);
   const [debugDeepLinkInput, setDebugDeepLinkInput] = useState("");
   const [debugDeepLinkBusy, setDebugDeepLinkBusy] = useState(false);
@@ -120,8 +120,8 @@ export function AdvancedView(props: AdvancedViewProps) {
     return props.clientConnected ? "bg-green-9" : "bg-gray-6";
   })();
 
-  const openworkStatusLabel = (() => {
-    switch (props.openworkServerStatus) {
+  const teamworkStatusLabel = (() => {
+    switch (props.teamworkServerStatus) {
       case "connected":
         return t("config.status_connected");
       case "limited":
@@ -131,8 +131,8 @@ export function AdvancedView(props: AdvancedViewProps) {
     }
   })();
 
-  const openworkStatusStyle = (() => {
-    switch (props.openworkServerStatus) {
+  const teamworkStatusStyle = (() => {
+    switch (props.teamworkServerStatus) {
       case "connected":
         return "bg-green-7/10 text-green-11 border-green-7/20";
       case "limited":
@@ -142,8 +142,8 @@ export function AdvancedView(props: AdvancedViewProps) {
     }
   })();
 
-  const openworkStatusDot = (() => {
-    switch (props.openworkServerStatus) {
+  const teamworkStatusDot = (() => {
+    switch (props.teamworkServerStatus) {
       case "connected":
         return "bg-green-9";
       case "limited":
@@ -155,40 +155,40 @@ export function AdvancedView(props: AdvancedViewProps) {
 
   const isLocalEngineRunning = Boolean(props.engineInfo?.running);
 
-  const handleReconnectOpenworkServer = async () => {
-    if (props.busy || props.openworkReconnectBusy || !props.openworkServerUrl.trim()) return;
-    setOpenworkReconnectStatus(null);
-    setOpenworkReconnectError(null);
+  const handleReconnectTeamworkServer = async () => {
+    if (props.busy || props.teamworkReconnectBusy || !props.teamworkServerUrl.trim()) return;
+    setTeamworkReconnectStatus(null);
+    setTeamworkReconnectError(null);
     try {
-      const ok = await props.reconnectOpenworkServer();
+      const ok = await props.reconnectTeamworkServer();
       if (!ok) {
-        setOpenworkReconnectError(t("settings.reconnect_failed"));
+        setTeamworkReconnectError(t("settings.reconnect_failed"));
         return;
       }
-      setOpenworkReconnectStatus(t("settings.reconnected"));
+      setTeamworkReconnectStatus(t("settings.reconnected"));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      setOpenworkReconnectError(message || t("settings.reconnect_server_failed"));
+      setTeamworkReconnectError(message || t("settings.reconnect_server_failed"));
     }
   };
 
   const handleRestartLocalServer = async () => {
-    if (props.busy || openworkRestartBusy) return;
-    setOpenworkRestartStatus(null);
-    setOpenworkRestartError(null);
-    setOpenworkRestartBusy(true);
+    if (props.busy || teamworkRestartBusy) return;
+    setTeamworkRestartStatus(null);
+    setTeamworkRestartError(null);
+    setTeamworkRestartBusy(true);
     try {
       const ok = await props.restartLocalServer();
       if (!ok) {
-        setOpenworkRestartError(t("settings.restart_failed"));
+        setTeamworkRestartError(t("settings.restart_failed"));
         return;
       }
-      setOpenworkRestartStatus(t("settings.restarted"));
+      setTeamworkRestartStatus(t("settings.restarted"));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      setOpenworkRestartError(message || t("settings.restart_server_failed"));
+      setTeamworkRestartError(message || t("settings.restart_server_failed"));
     } finally {
-      setOpenworkRestartBusy(false);
+      setTeamworkRestartBusy(false);
     }
   };
 
@@ -236,11 +236,11 @@ export function AdvancedView(props: AdvancedViewProps) {
           />
           <RuntimeStatusCard
             icon={<Server size={18} />}
-            title={t("settings.openwork_server_label")}
-            description={t("settings.openwork_server_desc")}
-            statusLabel={openworkStatusLabel}
-            statusStyle={openworkStatusStyle}
-            statusDot={openworkStatusDot}
+            title={t("settings.teamwork_server_label")}
+            description={t("settings.teamwork_server_desc")}
+            statusLabel={teamworkStatusLabel}
+            statusStyle={teamworkStatusStyle}
+            statusDot={teamworkStatusDot}
           />
         </div>
       </div>
@@ -347,7 +347,7 @@ export function AdvancedView(props: AdvancedViewProps) {
                   value={debugDeepLinkInput}
                   onChange={(event) => setDebugDeepLinkInput(event.currentTarget.value)}
                   rows={3}
-                  placeholder="openwork://..."
+                  placeholder="teamwork://..."
                   className="w-full rounded-xl border border-gray-6 bg-gray-1 px-3 py-2 text-xs font-mono text-gray-12 outline-none transition focus:border-blue-8"
                 />
                 <div className="flex flex-wrap items-center gap-2">
@@ -377,11 +377,11 @@ export function AdvancedView(props: AdvancedViewProps) {
           <button
             type="button"
             className="inline-flex items-center gap-1.5 rounded-md border border-dls-border bg-dls-surface px-3 py-1.5 text-xs font-medium text-dls-secondary shadow-sm transition-colors duration-150 hover:bg-dls-hover hover:text-dls-text focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--dls-accent-rgb),0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={() => void handleReconnectOpenworkServer()}
-            disabled={props.busy || props.openworkReconnectBusy || !props.openworkServerUrl.trim()}
+            onClick={() => void handleReconnectTeamworkServer()}
+            disabled={props.busy || props.teamworkReconnectBusy || !props.teamworkServerUrl.trim()}
           >
-            <RefreshCcw size={14} className={`text-dls-secondary ${props.openworkReconnectBusy ? "animate-spin" : ""}`} />
-            {props.openworkReconnectBusy ? t("settings.reconnecting") : t("settings.reconnect_server")}
+            <RefreshCcw size={14} className={`text-dls-secondary ${props.teamworkReconnectBusy ? "animate-spin" : ""}`} />
+            {props.teamworkReconnectBusy ? t("settings.reconnecting") : t("settings.reconnect_server")}
           </button>
 
           {isLocalEngineRunning ? (
@@ -389,10 +389,10 @@ export function AdvancedView(props: AdvancedViewProps) {
               type="button"
               className="inline-flex items-center gap-1.5 rounded-md border border-dls-border bg-dls-surface px-3 py-1.5 text-xs font-medium text-dls-secondary shadow-sm transition-colors duration-150 hover:bg-dls-hover hover:text-dls-text focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--dls-accent-rgb),0.25)] disabled:cursor-not-allowed disabled:opacity-60"
               onClick={() => void handleRestartLocalServer()}
-              disabled={props.busy || openworkRestartBusy}
+              disabled={props.busy || teamworkRestartBusy}
             >
-              <RefreshCcw size={14} className={`text-dls-secondary ${openworkRestartBusy ? "animate-spin" : ""}`} />
-              {openworkRestartBusy ? t("settings.restarting") : t("settings.restart_openwork_server")}
+              <RefreshCcw size={14} className={`text-dls-secondary ${teamworkRestartBusy ? "animate-spin" : ""}`} />
+              {teamworkRestartBusy ? t("settings.restarting") : t("settings.restart_teamwork_server")}
             </button>
           ) : null}
 
@@ -408,7 +408,7 @@ export function AdvancedView(props: AdvancedViewProps) {
             </button>
           ) : null}
 
-          {!isLocalEngineRunning && props.openworkServerStatus === "connected" ? (
+          {!isLocalEngineRunning && props.teamworkServerStatus === "connected" ? (
             <button
               type="button"
               className="inline-flex items-center gap-1.5 rounded-md border border-dls-border bg-dls-surface px-3 py-1.5 text-xs font-medium text-dls-secondary shadow-sm transition-colors duration-150 hover:bg-dls-hover hover:text-dls-text focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(var(--dls-accent-rgb),0.25)] disabled:cursor-not-allowed disabled:opacity-60"
@@ -420,10 +420,10 @@ export function AdvancedView(props: AdvancedViewProps) {
           ) : null}
         </div>
 
-        {openworkReconnectStatus ? <div className="text-xs text-gray-10">{openworkReconnectStatus}</div> : null}
-        {openworkReconnectError ? <div className="text-xs text-red-11">{openworkReconnectError}</div> : null}
-        {openworkRestartStatus ? <div className="text-xs text-gray-10">{openworkRestartStatus}</div> : null}
-        {openworkRestartError ? <div className="text-xs text-red-11">{openworkRestartError}</div> : null}
+        {teamworkReconnectStatus ? <div className="text-xs text-gray-10">{teamworkReconnectStatus}</div> : null}
+        {teamworkReconnectError ? <div className="text-xs text-red-11">{teamworkReconnectError}</div> : null}
+        {teamworkRestartStatus ? <div className="text-xs text-gray-10">{teamworkRestartStatus}</div> : null}
+        {teamworkRestartError ? <div className="text-xs text-red-11">{teamworkRestartError}</div> : null}
       </div>
 
       {props.developerMode ? <ConfigView {...props.configView} /> : null}

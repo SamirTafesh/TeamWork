@@ -22,7 +22,7 @@ function createTempRoot(label: string) {
 }
 
 function createTestApp() {
-  const root = createTempRoot("openwork-server-v2-phase7");
+  const root = createTempRoot("teamwork-server-v2-phase7");
   const dependencies = createAppDependencies({
     environment: "test",
     inMemory: true,
@@ -45,7 +45,7 @@ test("local workspace creation and config routes use server-owned config directo
   const { app, dependencies, root } = createTestApp();
   const workspaceRoot = path.join(root, "workspace-alpha");
 
-  const createResponse = await app.request("http://openwork.local/workspaces/local", {
+  const createResponse = await app.request("http://teamwork.local/workspaces/local", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,30 +59,30 @@ test("local workspace creation and config routes use server-owned config directo
   expect(created.data.backend.local.dataDir).toBe(workspaceRoot);
   expect(created.data.backend.local.configDir).toContain(`/workspaces/${workspaceId}/config`);
 
-  const configResponse = await app.request(`http://openwork.local/workspaces/${workspaceId}/config`);
+  const configResponse = await app.request(`http://teamwork.local/workspaces/${workspaceId}/config`);
   const configBody = await configResponse.json();
   expect(configResponse.status).toBe(200);
-  expect(configBody.data.stored.openwork.authorizedRoots).toEqual([]);
-  expect(configBody.data.effective.openwork.authorizedRoots).toEqual([]);
+  expect(configBody.data.stored.teamwork.authorizedRoots).toEqual([]);
+  expect(configBody.data.effective.teamwork.authorizedRoots).toEqual([]);
   expect(configBody.data.effective.opencode.permission?.external_directory).toBeUndefined();
 
-  const patchResponse = await app.request(`http://openwork.local/workspaces/${workspaceId}/config`, {
+  const patchResponse = await app.request(`http://teamwork.local/workspaces/${workspaceId}/config`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      openwork: { reload: { auto: true } },
+      teamwork: { reload: { auto: true } },
       opencode: { permission: { external_directory: { [`${path.join(root, "shared-data")}/*`]: "allow" } } },
     }),
   });
   const patched = await patchResponse.json();
   expect(patchResponse.status).toBe(200);
-  expect(patched.data.stored.openwork.reload.auto).toBe(true);
-  expect(patched.data.stored.openwork.authorizedRoots).toEqual([]);
-  expect(patched.data.effective.openwork.authorizedRoots).toEqual([path.join(root, "shared-data")]);
+  expect(patched.data.stored.teamwork.reload.auto).toBe(true);
+  expect(patched.data.stored.teamwork.authorizedRoots).toEqual([]);
+  expect(patched.data.effective.teamwork.authorizedRoots).toEqual([path.join(root, "shared-data")]);
   expect(patched.data.effective.opencode.permission.external_directory[`${path.join(root, "shared-data")}/*`]).toBe("allow");
   expect(patched.data.effective.opencode.permission.external_directory[`${workspaceRoot}/*`]).toBeUndefined();
 
-  const rawResponse = await app.request(`http://openwork.local/workspaces/${workspaceId}/config/opencode-raw?scope=project`);
+  const rawResponse = await app.request(`http://teamwork.local/workspaces/${workspaceId}/config/opencode-raw?scope=project`);
   const rawBody = await rawResponse.json();
   expect(rawResponse.status).toBe(200);
   expect(rawBody.data.content).toContain("external_directory");
@@ -98,7 +98,7 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   const { app, root } = createTestApp();
   const workspaceRoot = path.join(root, "workspace-beta");
 
-  const createResponse = await app.request("http://openwork.local/workspaces/local", {
+  const createResponse = await app.request("http://teamwork.local/workspaces/local", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ folderPath: workspaceRoot, name: "Beta", preset: "starter" }),
@@ -106,7 +106,7 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   const created = await createResponse.json();
   const workspaceId = created.data.id as string;
 
-  const contentWrite = await app.request(`http://openwork.local/workspaces/${workspaceId}/files/content`, {
+  const contentWrite = await app.request(`http://teamwork.local/workspaces/${workspaceId}/files/content`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: "notes/today.md", content: "hello phase 7" }),
@@ -115,12 +115,12 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   expect(contentWrite.status).toBe(200);
   expect(contentWriteBody.data.path).toBe("notes/today.md");
 
-  const contentRead = await app.request(`http://openwork.local/workspaces/${workspaceId}/files/content?path=notes/today.md`);
+  const contentRead = await app.request(`http://teamwork.local/workspaces/${workspaceId}/files/content?path=notes/today.md`);
   const contentReadBody = await contentRead.json();
   expect(contentRead.status).toBe(200);
   expect(contentReadBody.data.content).toBe("hello phase 7");
 
-  const sessionCreate = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions`, {
+  const sessionCreate = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ write: true }),
@@ -129,7 +129,7 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   const fileSessionId = sessionBody.data.id as string;
   expect(sessionCreate.status).toBe(200);
 
-  const writeBatch = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/write-batch`, {
+  const writeBatch = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/write-batch`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ writes: [{ path: "docs/readme.txt", contentBase64: Buffer.from("file-session").toString("base64") }] }),
@@ -137,7 +137,7 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   const writeBatchBody = await writeBatch.json();
   expect(writeBatch.status).toBe(200);
 
-  const staleBatch = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/write-batch`, {
+  const staleBatch = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/write-batch`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -153,7 +153,7 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   expect(staleBatchBody.data.items[0].code).toBe("conflict");
   expect(staleBatchBody.data.items[0].currentRevision).toBe(writeBatchBody.data.items[0].revision);
 
-  const readBatch = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/read-batch`, {
+  const readBatch = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/read-batch`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paths: ["docs/readme.txt"] }),
@@ -162,19 +162,19 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   expect(readBatch.status).toBe(200);
   expect(Buffer.from(readBatchBody.data.items[0].contentBase64, "base64").toString("utf8")).toBe("file-session");
 
-  const ops = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/operations`, {
+  const ops = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/operations`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ operations: [{ type: "rename", from: "docs/readme.txt", to: "docs/renamed.txt" }] }),
   });
   expect(ops.status).toBe(200);
 
-  const catalog = await app.request(`http://openwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/catalog/snapshot?prefix=docs`);
+  const catalog = await app.request(`http://teamwork.local/workspaces/${workspaceId}/file-sessions/${fileSessionId}/catalog/snapshot?prefix=docs`);
   const catalogBody = await catalog.json();
   expect(catalog.status).toBe(200);
   expect(catalogBody.data.items.some((item: any) => item.path === "docs/renamed.txt")).toBe(true);
 
-  const upload = await app.request(`http://openwork.local/workspaces/${workspaceId}/inbox`, {
+  const upload = await app.request(`http://teamwork.local/workspaces/${workspaceId}/inbox`, {
     method: "POST",
     body: (() => {
       const form = new FormData();
@@ -186,27 +186,27 @@ test("file routes cover simple content, file sessions, inbox, artifacts, and rel
   expect(upload.status).toBe(200);
   expect(uploadBody.data.path).toBe("hello.txt");
 
-  const inboxList = await app.request(`http://openwork.local/workspaces/${workspaceId}/inbox`);
+  const inboxList = await app.request(`http://teamwork.local/workspaces/${workspaceId}/inbox`);
   const inboxListBody = await inboxList.json();
   expect(inboxList.status).toBe(200);
   expect(inboxListBody.data.items[0].name).toBe("hello.txt");
 
-  const outboxDir = path.join(workspaceRoot, ".opencode", "openwork", "outbox");
+  const outboxDir = path.join(workspaceRoot, ".opencode", "teamwork", "outbox");
   fs.mkdirSync(outboxDir, { recursive: true });
   fs.writeFileSync(path.join(outboxDir, "artifact.bin"), "artifact", "utf8");
 
-  const artifacts = await app.request(`http://openwork.local/workspaces/${workspaceId}/artifacts`);
+  const artifacts = await app.request(`http://teamwork.local/workspaces/${workspaceId}/artifacts`);
   const artifactsBody = await artifacts.json();
   expect(artifacts.status).toBe(200);
   expect(artifactsBody.data.items[0].path).toBe("artifact.bin");
 
-  const reloads = await app.request(`http://openwork.local/workspaces/${workspaceId}/reload-events`);
+  const reloads = await app.request(`http://teamwork.local/workspaces/${workspaceId}/reload-events`);
   const reloadBody = await reloads.json();
   expect(reloads.status).toBe(200);
   expect(reloadBody.data.items.length).toBeGreaterThan(0);
   expect(reloadBody.data.items.some((item: any) => item.reason === "config")).toBe(true);
 
-  const disposed = await app.request(`http://openwork.local/workspaces/${workspaceId}/dispose`, {
+  const disposed = await app.request(`http://teamwork.local/workspaces/${workspaceId}/dispose`, {
     method: "POST",
   });
   const disposedBody = await disposed.json();
@@ -222,9 +222,9 @@ test("remote workspace config and file routes proxy through the local server", a
         return Response.json({
           ok: true,
           data: {
-            effective: { opencode: { permission: { external_directory: { "/srv/alpha/*": "allow" } } }, openwork: {} },
-            materialized: { compatibilityOpencodePath: null, compatibilityOpenworkPath: null, configDir: "/srv/config", configOpenworkPath: "/srv/config/.opencode/openwork.json", configOpencodePath: "/srv/config/opencode.jsonc" },
-            stored: { openwork: { reload: { auto: true } }, opencode: {} },
+            effective: { opencode: { permission: { external_directory: { "/srv/alpha/*": "allow" } } }, teamwork: {} },
+            materialized: { compatibilityOpencodePath: null, compatibilityTeamworkPath: null, configDir: "/srv/config", configTeamworkPath: "/srv/config/.opencode/teamwork.json", configOpencodePath: "/srv/config/opencode.jsonc" },
+            stored: { teamwork: { reload: { auto: true } }, opencode: {} },
             updatedAt: new Date().toISOString(),
             workspaceId: "remote-alpha",
           },
@@ -235,9 +235,9 @@ test("remote workspace config and file routes proxy through the local server", a
         return Response.json({
           ok: true,
           data: {
-            effective: { opencode: { permission: { external_directory: { "/srv/alpha/*": "allow", "/srv/shared/*": "allow" } } }, openwork: {} },
-            materialized: { compatibilityOpencodePath: null, compatibilityOpenworkPath: null, configDir: "/srv/config", configOpenworkPath: "/srv/config/.opencode/openwork.json", configOpencodePath: "/srv/config/opencode.jsonc" },
-            stored: { openwork: { reload: { auto: true } }, opencode: {} },
+            effective: { opencode: { permission: { external_directory: { "/srv/alpha/*": "allow", "/srv/shared/*": "allow" } } }, teamwork: {} },
+            materialized: { compatibilityOpencodePath: null, compatibilityTeamworkPath: null, configDir: "/srv/config", configTeamworkPath: "/srv/config/.opencode/teamwork.json", configOpencodePath: "/srv/config/opencode.jsonc" },
+            stored: { teamwork: { reload: { auto: true } }, opencode: {} },
             updatedAt: new Date().toISOString(),
             workspaceId: "remote-alpha",
           },
@@ -265,33 +265,33 @@ test("remote workspace config and file routes proxy through the local server", a
       baseUrl: `http://127.0.0.1:${remote.port}`,
       displayName: "Remote Alpha",
       legacyNotes: {},
-      remoteType: "openwork",
+      remoteType: "teamwork",
       remoteWorkspaceId: "remote-alpha",
-      serverAuth: { openworkToken: "remote-token" },
+      serverAuth: { teamworkToken: "remote-token" },
       serverBaseUrl: `http://127.0.0.1:${remote.port}`,
       serverHostingKind: "self_hosted",
       serverLabel: `127.0.0.1:${remote.port}`,
       workspaceStatus: "ready",
     });
 
-    const config = await app.request(`http://openwork.local/workspaces/${workspace.id}/config`);
+    const config = await app.request(`http://teamwork.local/workspaces/${workspace.id}/config`);
     const configBody = await config.json();
     expect(config.status).toBe(200);
-    expect(configBody.data.stored.openwork.reload.auto).toBe(true);
+    expect(configBody.data.stored.teamwork.reload.auto).toBe(true);
 
-    const patched = await app.request(`http://openwork.local/workspaces/${workspace.id}/config`, {
+    const patched = await app.request(`http://teamwork.local/workspaces/${workspace.id}/config`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ opencode: { permission: { external_directory: { "/srv/shared/*": "allow" } } } }),
     });
     expect(patched.status).toBe(200);
 
-    const contentRead = await app.request(`http://openwork.local/workspaces/${workspace.id}/files/content?path=notes.md`);
+    const contentRead = await app.request(`http://teamwork.local/workspaces/${workspace.id}/files/content?path=notes.md`);
     const contentBody = await contentRead.json();
     expect(contentRead.status).toBe(200);
     expect(contentBody.data.content).toBe("remote hello");
 
-    const contentWrite = await app.request(`http://openwork.local/workspaces/${workspace.id}/files/content`, {
+    const contentWrite = await app.request(`http://teamwork.local/workspaces/${workspace.id}/files/content`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: "notes.md", content: "remote hello" }),
@@ -300,7 +300,7 @@ test("remote workspace config and file routes proxy through the local server", a
     expect(contentWrite.status).toBe(200);
     expect(contentWriteBody.data.revision).toBe("42:12");
 
-    const reloads = await app.request(`http://openwork.local/workspaces/${workspace.id}/reload-events`);
+    const reloads = await app.request(`http://teamwork.local/workspaces/${workspace.id}/reload-events`);
     const reloadBody = await reloads.json();
     expect(reloads.status).toBe(200);
     expect(reloadBody.data.items[0].workspaceId).toBe("remote-alpha");

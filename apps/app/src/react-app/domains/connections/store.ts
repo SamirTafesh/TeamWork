@@ -20,7 +20,7 @@ import {
   removeMcpFromConfig,
   validateMcpServerName,
 } from "../../../app/mcp";
-import { buildOpenworkWorkspaceBaseUrl } from "../../../app/lib/openwork-server";
+import { buildTeamworkWorkspaceBaseUrl } from "../../../app/lib/teamwork-server";
 import type {
   Client,
   McpServerEntry,
@@ -30,7 +30,7 @@ import type {
 } from "../../../app/types";
 import { isDesktopRuntime, normalizeDirectoryPath, safeStringify } from "../../../app/utils";
 
-import type { OpenworkServerStore } from "./openwork-server-store";
+import type { TeamworkServerStore } from "./teamwork-server-store";
 
 type SetStateAction<T> = T | ((current: T) => T);
 
@@ -57,7 +57,7 @@ export function createConnectionsStore(options: {
   selectedWorkspaceId: () => string;
   selectedWorkspaceRoot: () => string;
   workspaceType: () => "local" | "remote";
-  openworkServer: OpenworkServerStore;
+  teamworkServer: TeamworkServerStore;
   runtimeWorkspaceId: () => string | null;
   ensureRuntimeWorkspaceId?: () => Promise<string | null | undefined>;
   setProjectDir?: (value: string) => void;
@@ -124,7 +124,7 @@ export function createConnectionsStore(options: {
     return `${workspaceType}:${workspaceId}:${root}:${runtimeWorkspaceId}`;
   };
 
-  const getOpenworkSnapshot = () => options.openworkServer.getSnapshot();
+  const getTeamworkSnapshot = () => options.teamworkServer.getSnapshot();
 
   const filterConfiguredStatuses = (status: McpStatusMap, entries: McpServerEntry[]) => {
     const configured = new Set(entries.map((entry) => entry.name));
@@ -135,17 +135,17 @@ export function createConnectionsStore(options: {
 
   const readMcpConfigFile = async (scope: "project" | "global"): Promise<OpencodeConfigFile | null> => {
     const projectDir = options.projectDir().trim();
-    const openworkSnapshot = getOpenworkSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.config?.read;
+    const teamworkSnapshot = getTeamworkSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.config?.read;
 
-    if (canUseOpenworkServer && openworkClient && openworkWorkspaceId) {
-      return openworkClient.readOpencodeConfigFile(openworkWorkspaceId, scope);
+    if (canUseTeamworkServer && teamworkClient && teamworkWorkspaceId) {
+      return teamworkClient.readOpencodeConfigFile(teamworkWorkspaceId, scope);
     }
 
     if (!isDesktopRuntime()) {
@@ -161,42 +161,42 @@ export function createConnectionsStore(options: {
       return activeClient;
     }
 
-    const openworkSnapshot = getOpenworkSnapshot();
-    const openworkBaseUrl = openworkSnapshot.openworkServerBaseUrl.trim();
-    const token = openworkSnapshot.openworkServerAuth.token?.trim();
-    if (!openworkBaseUrl || !token) {
+    const teamworkSnapshot = getTeamworkSnapshot();
+    const teamworkBaseUrl = teamworkSnapshot.teamworkServerBaseUrl.trim();
+    const token = teamworkSnapshot.teamworkServerAuth.token?.trim();
+    if (!teamworkBaseUrl || !token) {
       return null;
     }
 
     const mountedBaseUrl =
-      buildOpenworkWorkspaceBaseUrl(openworkBaseUrl, options.runtimeWorkspaceId()) ?? openworkBaseUrl;
+      buildTeamworkWorkspaceBaseUrl(teamworkBaseUrl, options.runtimeWorkspaceId()) ?? teamworkBaseUrl;
     activeClient = createClient(`${mountedBaseUrl.replace(/\/+$/, "")}/opencode`, undefined, {
       token,
-      mode: "openwork",
+      mode: "teamwork",
     });
     options.setClient(activeClient);
     return activeClient;
   };
 
-  const resolveWritableOpenworkTarget = async () => {
-    const openworkSnapshot = getOpenworkSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    let openworkWorkspaceId = options.runtimeWorkspaceId();
-    const openworkCapabilities = openworkSnapshot.openworkServerCapabilities;
-    if (!openworkWorkspaceId && openworkClient && openworkSnapshot.openworkServerStatus === "connected") {
-      openworkWorkspaceId = (await options.ensureRuntimeWorkspaceId?.()) ?? null;
+  const resolveWritableTeamworkTarget = async () => {
+    const teamworkSnapshot = getTeamworkSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    let teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkCapabilities = teamworkSnapshot.teamworkServerCapabilities;
+    if (!teamworkWorkspaceId && teamworkClient && teamworkSnapshot.teamworkServerStatus === "connected") {
+      teamworkWorkspaceId = (await options.ensureRuntimeWorkspaceId?.()) ?? null;
     }
 
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkCapabilities?.mcp?.write;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkCapabilities?.mcp?.write;
 
     return {
-      openworkClient,
-      openworkWorkspaceId,
-      canUseOpenworkServer: Boolean(canUseOpenworkServer),
+      teamworkClient,
+      teamworkWorkspaceId,
+      canUseTeamworkServer: Boolean(canUseTeamworkServer),
     };
   };
 
@@ -219,32 +219,32 @@ export function createConnectionsStore(options: {
     return resolvedProjectDir;
   };
 
-  const listMcpFromOpenworkServer = async (projectDir: string) => {
-    const openworkSnapshot = getOpenworkSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId =
+  const listMcpFromTeamworkServer = async (projectDir: string) => {
+    const teamworkSnapshot = getTeamworkSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId =
       options.runtimeWorkspaceId()?.trim() ||
       options.selectedWorkspaceId().trim() ||
       ((await options.ensureRuntimeWorkspaceId?.()) ?? "")?.trim();
-    const canTryOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      Boolean(openworkClient) &&
-      Boolean(openworkWorkspaceId) &&
-      openworkSnapshot.openworkServerCapabilities?.mcp?.read !== false;
+    const canTryTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      Boolean(teamworkClient) &&
+      Boolean(teamworkWorkspaceId) &&
+      teamworkSnapshot.teamworkServerCapabilities?.mcp?.read !== false;
 
     recordPerfLog(options.developerMode(), "mcp.refresh", "server-path-check", {
       workspaceType: options.workspaceType(),
       projectDir: projectDir || null,
-      openworkStatus: openworkSnapshot.openworkServerStatus,
-      hasOpenworkClient: Boolean(openworkClient),
-      openworkWorkspaceId: openworkWorkspaceId || null,
-      canReadMcp: openworkSnapshot.openworkServerCapabilities?.mcp?.read ?? null,
-      canTryOpenworkServer,
+      teamworkStatus: teamworkSnapshot.teamworkServerStatus,
+      hasTeamworkClient: Boolean(teamworkClient),
+      teamworkWorkspaceId: teamworkWorkspaceId || null,
+      canReadMcp: teamworkSnapshot.teamworkServerCapabilities?.mcp?.read ?? null,
+      canTryTeamworkServer,
     });
 
-    if (!canTryOpenworkServer || !openworkClient || !openworkWorkspaceId) return null;
+    if (!canTryTeamworkServer || !teamworkClient || !teamworkWorkspaceId) return null;
 
-    const response = await openworkClient.listMcp(openworkWorkspaceId);
+    const response = await teamworkClient.listMcp(teamworkWorkspaceId);
     const next = response.items.map((entry) => ({
       name: entry.name,
       config: entry.config as McpServerEntry["config"],
@@ -279,7 +279,7 @@ export function createConnectionsStore(options: {
 
     try {
       setStateField("mcpStatus", null);
-      const serverResult = await listMcpFromOpenworkServer(projectDir);
+      const serverResult = await listMcpFromTeamworkServer(projectDir);
       if (serverResult) {
         mutateState((current) => ({
           ...current,
@@ -308,7 +308,7 @@ export function createConnectionsStore(options: {
     if (isRemoteWorkspace) {
       mutateState((current) => ({
         ...current,
-        mcpStatus: "OpenWork server unavailable. MCP config is read-only.",
+        mcpStatus: "TeamWork server unavailable. MCP config is read-only.",
         mcpServers: [],
         mcpStatuses: {},
       }));
@@ -407,10 +407,10 @@ export function createConnectionsStore(options: {
 
   async function connectMcp(entry: McpDirectoryInfo) {
     const startedAt = perfNow();
-    const openworkSnapshot = getOpenworkSnapshot();
+    const teamworkSnapshot = getTeamworkSnapshot();
     const isRemoteWorkspace =
       options.workspaceType() === "remote" ||
-      (!isDesktopRuntime() && openworkSnapshot.openworkServerStatus === "connected");
+      (!isDesktopRuntime() && teamworkSnapshot.teamworkServerStatus === "connected");
     const projectDir = options.projectDir().trim();
     const entryType = entry.type ?? "remote";
 
@@ -421,18 +421,18 @@ export function createConnectionsStore(options: {
       projectDir: projectDir || null,
     });
 
-    const { openworkClient, openworkWorkspaceId, canUseOpenworkServer } =
-      await resolveWritableOpenworkTarget();
+    const { teamworkClient, teamworkWorkspaceId, canUseTeamworkServer } =
+      await resolveWritableTeamworkTarget();
 
-    if (isRemoteWorkspace && !canUseOpenworkServer) {
-      setStateField("mcpStatus", "OpenWork server unavailable. MCP config is read-only.");
+    if (isRemoteWorkspace && !canUseTeamworkServer) {
+      setStateField("mcpStatus", "TeamWork server unavailable. MCP config is read-only.");
       finishPerf(options.developerMode(), "mcp.connect", "blocked", startedAt, {
-        reason: "openwork-server-unavailable",
+        reason: "teamwork-server-unavailable",
       });
       return;
     }
 
-    if (!canUseOpenworkServer && !isDesktopRuntime()) {
+    if (!canUseTeamworkServer && !isDesktopRuntime()) {
       setStateField("mcpStatus", t("mcp.desktop_required"));
       finishPerf(options.developerMode(), "mcp.connect", "blocked", startedAt, {
         reason: "desktop-required",
@@ -494,8 +494,8 @@ export function createConnectionsStore(options: {
         mcpEntryConfig["command"] = entry.command;
       }
 
-      if (canUseOpenworkServer && openworkClient && openworkWorkspaceId) {
-        await openworkClient.addMcp(openworkWorkspaceId, {
+      if (canUseTeamworkServer && teamworkClient && teamworkWorkspaceId) {
+        await teamworkClient.addMcp(teamworkWorkspaceId, {
           name: slug,
           config: mcpEntryConfig,
         });
@@ -536,12 +536,12 @@ export function createConnectionsStore(options: {
         }
       }
 
-      if (canUseOpenworkServer && openworkClient && openworkWorkspaceId) {
-        // The OpenWork server is the source of truth for workspace-scoped MCP
+      if (canUseTeamworkServer && teamworkClient && teamworkWorkspaceId) {
+        // The TeamWork server is the source of truth for workspace-scoped MCP
         // config in the React port. Avoid also calling the OpenCode SDK's MCP
         // hot-add endpoint here: when the SDK client is rooted at the aggregate
         // `/opencode` route it can resolve to an internal `local_*` workspace
-        // id that the OpenWork server does not expose, producing a confusing
+        // id that the TeamWork server does not expose, producing a confusing
         // `workspace_not_found` after the config write already succeeded.
         setStateField("mcpStatuses", filterConfiguredStatuses(snapshot.mcpStatuses, snapshot.mcpServers));
       } else {
@@ -631,21 +631,21 @@ export function createConnectionsStore(options: {
   }
 
   async function logoutMcpAuth(name: string) {
-    const openworkSnapshot = getOpenworkSnapshot();
+    const teamworkSnapshot = getTeamworkSnapshot();
     const isRemoteWorkspace =
       options.workspaceType() === "remote" ||
-      (!isDesktopRuntime() && openworkSnapshot.openworkServerStatus === "connected");
+      (!isDesktopRuntime() && teamworkSnapshot.teamworkServerStatus === "connected");
     const projectDir = options.projectDir().trim();
 
-    const { openworkClient, openworkWorkspaceId, canUseOpenworkServer } =
-      await resolveWritableOpenworkTarget();
+    const { teamworkClient, teamworkWorkspaceId, canUseTeamworkServer } =
+      await resolveWritableTeamworkTarget();
 
-    if (isRemoteWorkspace && !canUseOpenworkServer) {
-      setStateField("mcpStatus", "OpenWork server unavailable. MCP auth is read-only.");
+    if (isRemoteWorkspace && !canUseTeamworkServer) {
+      setStateField("mcpStatus", "TeamWork server unavailable. MCP auth is read-only.");
       return;
     }
 
-    if (!canUseOpenworkServer && !isDesktopRuntime()) {
+    if (!canUseTeamworkServer && !isDesktopRuntime()) {
       setStateField("mcpStatus", t("mcp.desktop_required"));
       return;
     }
@@ -666,8 +666,8 @@ export function createConnectionsStore(options: {
     setStateField("mcpStatus", null);
 
     try {
-      if (canUseOpenworkServer && openworkClient && openworkWorkspaceId) {
-        await openworkClient.logoutMcpAuth(openworkWorkspaceId, safeName);
+      if (canUseTeamworkServer && teamworkClient && teamworkWorkspaceId) {
+        await teamworkClient.logoutMcpAuth(teamworkWorkspaceId, safeName);
       } else {
         try {
           await activeClient.mcp.disconnect({ directory: resolvedProjectDir, name: safeName });
@@ -698,17 +698,17 @@ export function createConnectionsStore(options: {
     try {
       setStateField("mcpStatus", null);
 
-      const openworkSnapshot = getOpenworkSnapshot();
-      const openworkClient = openworkSnapshot.openworkServerClient;
-      const openworkWorkspaceId = options.runtimeWorkspaceId();
-      const canUseOpenworkServer =
-        openworkSnapshot.openworkServerStatus === "connected" &&
-        openworkClient &&
-        openworkWorkspaceId &&
-        openworkSnapshot.openworkServerCapabilities?.mcp?.write;
+      const teamworkSnapshot = getTeamworkSnapshot();
+      const teamworkClient = teamworkSnapshot.teamworkServerClient;
+      const teamworkWorkspaceId = options.runtimeWorkspaceId();
+      const canUseTeamworkServer =
+        teamworkSnapshot.teamworkServerStatus === "connected" &&
+        teamworkClient &&
+        teamworkWorkspaceId &&
+        teamworkSnapshot.teamworkServerCapabilities?.mcp?.write;
 
-      if (canUseOpenworkServer && openworkClient && openworkWorkspaceId) {
-        await openworkClient.removeMcp(openworkWorkspaceId, name);
+      if (canUseTeamworkServer && teamworkClient && teamworkWorkspaceId) {
+        await teamworkClient.removeMcp(teamworkWorkspaceId, name);
       } else {
         const projectDir = options.projectDir().trim();
         if (!projectDir) {
@@ -776,21 +776,21 @@ export function createConnectionsStore(options: {
   // from the existing reload-required popup; no extra banner here.
   async function setMcpEnabled(name: string, enabled: boolean) {
     try {
-      const openworkSnapshot = getOpenworkSnapshot();
-      const openworkClient = openworkSnapshot.openworkServerClient;
-      const openworkWorkspaceId = options.runtimeWorkspaceId();
-      const canUseOpenworkServer =
-        openworkSnapshot.openworkServerStatus === "connected" &&
-        openworkClient &&
-        openworkWorkspaceId &&
-        openworkSnapshot.openworkServerCapabilities?.mcp?.write;
+      const teamworkSnapshot = getTeamworkSnapshot();
+      const teamworkClient = teamworkSnapshot.teamworkServerClient;
+      const teamworkWorkspaceId = options.runtimeWorkspaceId();
+      const canUseTeamworkServer =
+        teamworkSnapshot.teamworkServerStatus === "connected" &&
+        teamworkClient &&
+        teamworkWorkspaceId &&
+        teamworkSnapshot.teamworkServerCapabilities?.mcp?.write;
 
-      if (!canUseOpenworkServer || !openworkClient || !openworkWorkspaceId) {
+      if (!canUseTeamworkServer || !teamworkClient || !teamworkWorkspaceId) {
         setStateField("mcpStatus", t("mcp.toggle_requires_server"));
         return;
       }
 
-      await openworkClient.setMcpEnabled(openworkWorkspaceId, name, enabled);
+      await teamworkClient.setMcpEnabled(teamworkWorkspaceId, name, enabled);
       options.markReloadRequired?.("mcp", { type: "mcp", name, action: "updated" });
       await refreshMcpServers();
     } catch (error) {

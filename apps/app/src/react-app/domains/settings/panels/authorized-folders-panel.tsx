@@ -5,10 +5,10 @@ import { Folder, FolderLock, FolderSearch, X } from "lucide-react";
 import { t } from "../../../../i18n";
 import { Button } from "../../../design-system/button";
 import type {
-  OpenworkServerCapabilities,
-  OpenworkServerClient,
-  OpenworkServerStatus,
-} from "../../../../app/lib/openwork-server";
+  TeamworkServerCapabilities,
+  TeamworkServerClient,
+  TeamworkServerStatus,
+} from "../../../../app/lib/teamwork-server";
 import { pickDirectory } from "../../../../app/lib/desktop";
 import {
   isDesktopRuntime,
@@ -17,9 +17,9 @@ import {
 } from "../../../../app/utils";
 
 export type AuthorizedFoldersPanelProps = {
-  openworkServerClient: OpenworkServerClient | null;
-  openworkServerStatus: OpenworkServerStatus;
-  openworkServerCapabilities: OpenworkServerCapabilities | null;
+  teamworkServerClient: TeamworkServerClient | null;
+  teamworkServerStatus: TeamworkServerStatus;
+  teamworkServerCapabilities: TeamworkServerCapabilities | null;
   runtimeWorkspaceId: string | null;
   selectedWorkspaceRoot: string;
   activeWorkspaceType: "local" | "remote";
@@ -109,24 +109,24 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
   const [authorizedFoldersStatus, setAuthorizedFoldersStatus] = useState<string | null>(null);
   const [authorizedFoldersError, setAuthorizedFoldersError] = useState<string | null>(null);
 
-  const openworkServerReady = props.openworkServerStatus === "connected";
-  const openworkServerWorkspaceReady = Boolean(props.runtimeWorkspaceId);
+  const teamworkServerReady = props.teamworkServerStatus === "connected";
+  const teamworkServerWorkspaceReady = Boolean(props.runtimeWorkspaceId);
   const canReadConfig =
-    openworkServerReady &&
-    openworkServerWorkspaceReady &&
-    (props.openworkServerCapabilities?.config?.read ?? false);
+    teamworkServerReady &&
+    teamworkServerWorkspaceReady &&
+    (props.teamworkServerCapabilities?.config?.read ?? false);
   const canWriteConfig =
-    openworkServerReady &&
-    openworkServerWorkspaceReady &&
-    (props.openworkServerCapabilities?.config?.write ?? false);
+    teamworkServerReady &&
+    teamworkServerWorkspaceReady &&
+    (props.teamworkServerCapabilities?.config?.write ?? false);
 
   const authorizedFoldersHint = useMemo(() => {
-    if (!openworkServerReady) return t("context_panel.server_disconnected");
-    if (!openworkServerWorkspaceReady) return t("context_panel.no_server_workspace");
+    if (!teamworkServerReady) return t("context_panel.server_disconnected");
+    if (!teamworkServerWorkspaceReady) return t("context_panel.no_server_workspace");
     if (!canReadConfig) return t("context_panel.config_access_unavailable");
     if (!canWriteConfig) return t("context_panel.config_read_only");
     return null;
-  }, [canReadConfig, canWriteConfig, openworkServerReady, openworkServerWorkspaceReady]);
+  }, [canReadConfig, canWriteConfig, teamworkServerReady, teamworkServerWorkspaceReady]);
 
   const canPickAuthorizedFolder =
     isDesktopRuntime() && canWriteConfig && props.activeWorkspaceType === "local";
@@ -137,10 +137,10 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
   }, [authorizedFolders, workspaceRootFolder]);
 
   useEffect(() => {
-    const openworkClient = props.openworkServerClient;
-    const openworkWorkspaceId = props.runtimeWorkspaceId;
+    const teamworkClient = props.teamworkServerClient;
+    const teamworkWorkspaceId = props.runtimeWorkspaceId;
 
-    if (!openworkClient || !openworkWorkspaceId || !canReadConfig) {
+    if (!teamworkClient || !teamworkWorkspaceId || !canReadConfig) {
       setAuthorizedFolders([]);
       setAuthorizedFolderDraft("");
       setAuthorizedFoldersLoading(false);
@@ -158,7 +158,7 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
 
     void (async () => {
       try {
-        const config = await openworkClient.getConfig(openworkWorkspaceId);
+        const config = await teamworkClient.getConfig(teamworkWorkspaceId);
         if (cancelled) return;
         const next = readAuthorizedFoldersFromConfig(ensureRecord(config.opencode));
         setAuthorizedFolders(next.folders);
@@ -178,12 +178,12 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [canReadConfig, props.openworkServerClient, props.runtimeWorkspaceId]);
+  }, [canReadConfig, props.teamworkServerClient, props.runtimeWorkspaceId]);
 
   const persistAuthorizedFolders = useCallback(async (nextFolders: string[]) => {
-    const openworkClient = props.openworkServerClient;
-    const openworkWorkspaceId = props.runtimeWorkspaceId;
-    if (!openworkClient || !openworkWorkspaceId || !canWriteConfig) {
+    const teamworkClient = props.teamworkServerClient;
+    const teamworkWorkspaceId = props.runtimeWorkspaceId;
+    if (!teamworkClient || !teamworkWorkspaceId || !canWriteConfig) {
       setAuthorizedFoldersError(t("context_panel.writable_workspace_required"));
       return false;
     }
@@ -193,7 +193,7 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
     setAuthorizedFoldersStatus(t("context_panel.saving_folders"));
 
     try {
-      const currentConfig = await openworkClient.getConfig(openworkWorkspaceId);
+      const currentConfig = await teamworkClient.getConfig(teamworkWorkspaceId);
       const currentAuthorizedFolders = readAuthorizedFoldersFromConfig(
         ensureRecord(currentConfig.opencode),
       );
@@ -202,7 +202,7 @@ export function AuthorizedFoldersPanel(props: AuthorizedFoldersPanelProps) {
         currentAuthorizedFolders.hiddenEntries,
       );
 
-      await openworkClient.patchConfig(openworkWorkspaceId, {
+      await teamworkClient.patchConfig(teamworkWorkspaceId, {
         opencode: {
           permission: {
             external_directory: nextExternalDirectory,

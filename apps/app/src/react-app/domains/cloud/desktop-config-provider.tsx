@@ -46,7 +46,7 @@ const DesktopConfigContext = createContext<DesktopConfigStore | undefined>(
 
 const DEFAULT_DESKTOP_CONFIG: DenDesktopConfig = {};
 const DESKTOP_CONFIG_REFRESH_MS = 60 * 60 * 1000;
-const DESKTOP_CONFIG_CACHE_PREFIX = "openwork.den.desktopConfig:";
+const DESKTOP_CONFIG_CACHE_PREFIX = "teamwork.den.desktopConfig:";
 
 function getDesktopConfigCacheKey(): string {
   const settings = readDenSettings();

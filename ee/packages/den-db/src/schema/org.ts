@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm"
 import { index, json, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core"
-import type { DesktopAppRestrictions } from "@openwork/types/den/desktop-app-restrictions"
+import type { DesktopAppRestrictions } from "@teamwork/types/den/desktop-app-restrictions"
 import { denTypeIdColumn } from "../columns"
 
 export const DesktopHandoffGrantTable = mysqlTable(

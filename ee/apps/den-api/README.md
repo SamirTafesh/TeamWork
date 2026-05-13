@@ -9,7 +9,7 @@ It carries the full migrated Den API route surface in a foldered Hono structure 
 ## Quick start
 
 ```bash
-pnpm --filter @openwork-ee/den-api dev:local
+pnpm --filter @teamwork-ee/den-api dev:local
 ```
 
 ## Local demo org seed
@@ -17,16 +17,16 @@ pnpm --filter @openwork-ee/den-api dev:local
 With a local Den MySQL database running, seed a demo organization:
 
 ```bash
-pnpm --filter @openwork-ee/den-api seed:demo-org
+pnpm --filter @teamwork-ee/den-api seed:demo-org
 ```
 
-This creates `Acme Robotics` with demo users, teams, pending invites, and an imported Anthropic Knowledge Work Plugins marketplace. It is guarded by `OPENWORK_DEV_MODE=1`, defaults to the local Den DB URL, and does not create workers or active external integrations.
+This creates `Acme Robotics` with demo users, teams, pending invites, and an imported Anthropic Knowledge Work Plugins marketplace. It is guarded by `TEAMWORK_DEV_MODE=1`, defaults to the local Den DB URL, and does not create workers or active external integrations.
 
-Default owner login: `alex@acme.test` / `OpenWorkDemo123!`.
+Default owner login: `alex@acme.test` / `TeamWorkDemo123!`.
 
 ## Current routes
 
-- `GET /` -> `302 https://openworklabs.com`
+- `GET /` -> `302 https://teamworklabs.com`
 - `GET /health`
 - Better Auth mount at `/api/auth/*`
 - desktop handoff routes under `/v1/auth/*`

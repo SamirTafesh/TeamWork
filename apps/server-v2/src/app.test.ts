@@ -3,22 +3,22 @@ import { createApp } from "./app.js";
 import { createAppDependencies } from "./context/app-dependencies.js";
 
 afterEach(() => {
-  delete process.env.OPENWORK_TOKEN;
-  delete process.env.OPENWORK_HOST_TOKEN;
+  delete process.env.TEAMWORK_TOKEN;
+  delete process.env.TEAMWORK_HOST_TOKEN;
 });
 
 function createTestApp(options?: { requireAuth?: boolean; seedRegistry?: boolean }) {
   if (options?.requireAuth) {
-    process.env.OPENWORK_TOKEN = "client-token";
-    process.env.OPENWORK_HOST_TOKEN = "host-token";
+    process.env.TEAMWORK_TOKEN = "client-token";
+    process.env.TEAMWORK_HOST_TOKEN = "host-token";
   }
 
   const dependencies = createAppDependencies({
     environment: "test",
     inMemory: true,
     legacy: {
-      desktopDataDir: `/tmp/openwork-server-v2-test-desktop-${Math.random().toString(16).slice(2)}`,
-      orchestratorDataDir: `/tmp/openwork-server-v2-test-orchestrator-${Math.random().toString(16).slice(2)}`,
+      desktopDataDir: `/tmp/teamwork-server-v2-test-desktop-${Math.random().toString(16).slice(2)}`,
+      orchestratorDataDir: `/tmp/teamwork-server-v2-test-orchestrator-${Math.random().toString(16).slice(2)}`,
     },
     runtime: {
       bootstrapPolicy: "disabled",
@@ -29,7 +29,7 @@ function createTestApp(options?: { requireAuth?: boolean; seedRegistry?: boolean
 
   if (options?.seedRegistry) {
     dependencies.persistence.registry.importLocalWorkspace({
-      dataDir: "/tmp/openwork-phase5-local",
+      dataDir: "/tmp/teamwork-phase5-local",
       displayName: "Alpha Local",
       status: "ready",
     });
@@ -40,9 +40,9 @@ function createTestApp(options?: { requireAuth?: boolean; seedRegistry?: boolean
       legacyNotes: {
         source: "test",
       },
-      remoteType: "openwork",
+      remoteType: "teamwork",
       remoteWorkspaceId: "alpha",
-      serverAuth: { openworkToken: "secret" },
+      serverAuth: { teamworkToken: "secret" },
       serverBaseUrl: "https://remote.example.com",
       serverHostingKind: "self_hosted",
       serverLabel: "remote.example.com",
@@ -58,7 +58,7 @@ function createTestApp(options?: { requireAuth?: boolean; seedRegistry?: boolean
 
 test("root info uses the shared success envelope and route conventions", async () => {
   const { app } = createTestApp();
-  const response = await app.request("http://openwork.local/");
+  const response = await app.request("http://teamwork.local/");
   const body = await response.json();
 
   expect(response.status).toBe(200);
@@ -66,7 +66,7 @@ test("root info uses the shared success envelope and route conventions", async (
   expect(body).toMatchObject({
     ok: true,
     data: {
-      service: "openwork-server-v2",
+      service: "teamwork-server-v2",
       routes: {
         system: "/system",
         workspaces: "/workspaces",
@@ -74,7 +74,7 @@ test("root info uses the shared success envelope and route conventions", async (
       },
       contract: {
         source: "hono-openapi",
-        sdkPackage: "@openwork/server-sdk",
+        sdkPackage: "@teamwork/server-sdk",
       },
     },
   });
@@ -82,7 +82,7 @@ test("root info uses the shared success envelope and route conventions", async (
 
 test("system health returns a consistent envelope", async () => {
   const { app } = createTestApp();
-  const response = await app.request("http://openwork.local/system/health");
+  const response = await app.request("http://teamwork.local/system/health");
   const body = await response.json();
 
   expect(response.status).toBe(200);
@@ -94,7 +94,7 @@ test("system health returns a consistent envelope", async () => {
 
 test("system metadata includes phase 10 registry, runtime, and cutover state", async () => {
   const { app } = createTestApp();
-  const response = await app.request("http://openwork.local/system/meta");
+  const response = await app.request("http://teamwork.local/system/meta");
   const body = await response.json();
 
   expect(response.status).toBe(200);
@@ -106,12 +106,12 @@ test("system metadata includes phase 10 registry, runtime, and cutover state", a
 
 test("openapi route is generated from the live Hono app", async () => {
   const { app } = createTestApp();
-  const response = await app.request("http://openwork.local/openapi.json");
+  const response = await app.request("http://teamwork.local/openapi.json");
   const document = await response.json();
 
   expect(response.status).toBe(200);
   expect(document.openapi).toBe("3.1.0");
-  expect(document.info.title).toBe("OpenWork Server V2");
+  expect(document.info.title).toBe("TeamWork Server V2");
   expect(document.paths["/system/health"].get.operationId).toBe("getSystemHealth");
   expect(document.paths["/system/meta"].get.operationId).toBe("getSystemMeta");
   expect(document.paths["/system/capabilities"].get.operationId).toBe("getSystemCapabilities");
@@ -136,9 +136,9 @@ test("runtime routes expose the initial server-owned status surfaces", async () 
   const { app } = createTestApp();
 
   const [opencodeResponse, routerResponse, runtimeResponse] = await Promise.all([
-    app.request("http://openwork.local/system/opencode/health"),
-    app.request("http://openwork.local/system/router/health"),
-    app.request("http://openwork.local/system/runtime/summary"),
+    app.request("http://teamwork.local/system/opencode/health"),
+    app.request("http://teamwork.local/system/router/health"),
+    app.request("http://teamwork.local/system/runtime/summary"),
   ]);
 
   const opencodeBody = await opencodeResponse.json();
@@ -153,7 +153,7 @@ test("runtime routes expose the initial server-owned status surfaces", async () 
 
 test("not found routes use the shared error envelope", async () => {
   const { app } = createTestApp();
-  const response = await app.request("http://openwork.local/nope");
+  const response = await app.request("http://teamwork.local/nope");
   const body = await response.json();
 
   expect(response.status).toBe(404);
@@ -168,7 +168,7 @@ test("not found routes use the shared error envelope", async () => {
 
 test("system status reports registry summary and capabilities", async () => {
   const { app } = createTestApp({ seedRegistry: true });
-  const response = await app.request("http://openwork.local/system/status");
+  const response = await app.request("http://teamwork.local/system/status");
   const body = await response.json();
 
   expect(response.status).toBe(200);
@@ -185,27 +185,27 @@ test("system status reports registry summary and capabilities", async () => {
 
 test("workspace list excludes hidden workspaces by default", async () => {
   const { app } = createTestApp({ seedRegistry: true });
-  const response = await app.request("http://openwork.local/workspaces");
+  const response = await app.request("http://teamwork.local/workspaces");
   const body = await response.json();
 
   expect(response.status).toBe(200);
   expect(body.data.items).toHaveLength(2);
   expect(body.data.items.map((item: any) => item.displayName).sort()).toEqual(["Alpha Local", "Remote Alpha"]);
-  expect(body.data.items.find((item: any) => item.displayName === "Remote Alpha")?.backend.kind).toBe("remote_openwork");
+  expect(body.data.items.find((item: any) => item.displayName === "Remote Alpha")?.backend.kind).toBe("remote_teamwork");
 });
 
 test("workspace detail hides internal workspaces from non-host readers", async () => {
   const { app, dependencies } = createTestApp({ requireAuth: true, seedRegistry: true });
   const hiddenWorkspaceId = dependencies.persistence.registry.ensureHiddenWorkspace("control").id;
 
-  const clientResponse = await app.request(`http://openwork.local/workspaces/${hiddenWorkspaceId}`, {
+  const clientResponse = await app.request(`http://teamwork.local/workspaces/${hiddenWorkspaceId}`, {
     headers: {
       Authorization: "Bearer client-token",
     },
   });
-  const hostResponse = await app.request(`http://openwork.local/workspaces/${hiddenWorkspaceId}`, {
+  const hostResponse = await app.request(`http://teamwork.local/workspaces/${hiddenWorkspaceId}`, {
     headers: {
-      "X-OpenWork-Host-Token": "host-token",
+      "X-TeamWork-Host-Token": "host-token",
     },
   });
 
@@ -216,20 +216,20 @@ test("workspace detail hides internal workspaces from non-host readers", async (
 test("auth-protected registry reads require client or host scope", async () => {
   const { app } = createTestApp({ requireAuth: true, seedRegistry: true });
 
-  const anonymous = await app.request("http://openwork.local/workspaces");
-  const client = await app.request("http://openwork.local/workspaces", {
+  const anonymous = await app.request("http://teamwork.local/workspaces");
+  const client = await app.request("http://teamwork.local/workspaces", {
     headers: {
       Authorization: "Bearer client-token",
     },
   });
-  const clientHidden = await app.request("http://openwork.local/workspaces?includeHidden=true", {
+  const clientHidden = await app.request("http://teamwork.local/workspaces?includeHidden=true", {
     headers: {
       Authorization: "Bearer client-token",
     },
   });
-  const hostInventory = await app.request("http://openwork.local/system/servers", {
+  const hostInventory = await app.request("http://teamwork.local/system/servers", {
     headers: {
-      "X-OpenWork-Host-Token": "host-token",
+      "X-TeamWork-Host-Token": "host-token",
     },
   });
 
@@ -281,11 +281,11 @@ test("host-scoped remote server connect syncs remote workspaces into the local r
 
   try {
     const { app } = createTestApp({ requireAuth: true });
-    const response = await app.request("http://openwork.local/system/servers/connect", {
+    const response = await app.request("http://teamwork.local/system/servers/connect", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-OpenWork-Host-Token": "host-token",
+        "X-TeamWork-Host-Token": "host-token",
       },
       body: JSON.stringify({
         baseUrl: `http://127.0.0.1:${remote.port}`,
@@ -298,7 +298,7 @@ test("host-scoped remote server connect syncs remote workspaces into the local r
     expect(response.status).toBe(200);
     expect(body.data.server.kind).toBe("remote");
     expect(body.data.selectedWorkspaceId).toMatch(/^ws_/);
-    expect(body.data.workspaces[0].backend.kind).toBe("remote_openwork");
+    expect(body.data.workspaces[0].backend.kind).toBe("remote_teamwork");
     expect(body.data.workspaces[0].backend.remote.remoteWorkspaceId).toBe("remote-alpha");
   } finally {
     remote.stop(true);
@@ -316,11 +316,11 @@ test("remote server connect returns a gateway error when the remote server rejec
 
   try {
     const { app } = createTestApp({ requireAuth: true });
-    const response = await app.request("http://openwork.local/system/servers/connect", {
+    const response = await app.request("http://teamwork.local/system/servers/connect", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-OpenWork-Host-Token": "host-token",
+        "X-TeamWork-Host-Token": "host-token",
       },
       body: JSON.stringify({
         baseUrl: `http://127.0.0.1:${remote.port}`,

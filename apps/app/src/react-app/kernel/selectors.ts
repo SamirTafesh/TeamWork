@@ -1,12 +1,12 @@
-import type { OpenworkStore } from "./store";
+import type { TeamworkStore } from "./store";
 
-export const selectActiveWorkspace = (state: OpenworkStore) =>
+export const selectActiveWorkspace = (state: TeamworkStore) =>
   state.workspaces.find(
     (workspace) => workspace.id === state.activeWorkspaceId,
   ) ?? null;
 
-export const selectServerStatus = (state: OpenworkStore) => state.server.status;
+export const selectServerStatus = (state: TeamworkStore) => state.server.status;
 
-export const selectServerUrl = (state: OpenworkStore) => state.server.url;
+export const selectServerUrl = (state: TeamworkStore) => state.server.url;
 
-export const selectErrorBanner = (state: OpenworkStore) => state.errorBanner;
+export const selectErrorBanner = (state: TeamworkStore) => state.errorBanner;

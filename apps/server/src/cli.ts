@@ -23,16 +23,16 @@ const config = await resolveServerConfig(args);
 const logger = createServerLogger(config);
 let managedOpencode: ManagedOpencodeServer | null = null;
 
-if (!config.opencodeBaseUrl && process.env.OPENWORK_MANAGE_OPENCODE === "1") {
+if (!config.opencodeBaseUrl && process.env.TEAMWORK_MANAGE_OPENCODE === "1") {
   const workspace = config.workspaces[0];
   if (workspace?.path) {
-    const managedOpencodeCwd = process.env.OPENWORK_MANAGED_OPENCODE_CWD?.trim() || workspace.path;
+    const managedOpencodeCwd = process.env.TEAMWORK_MANAGED_OPENCODE_CWD?.trim() || workspace.path;
     await mkdir(managedOpencodeCwd, { recursive: true });
     managedOpencode = await createManagedOpencodeServer({
-      bin: process.env.OPENWORK_OPENCODE_BIN,
+      bin: process.env.TEAMWORK_OPENCODE_BIN,
       cwd: managedOpencodeCwd,
       env: {
-        ...(process.env.OPENWORK_DEV_MODE ? { OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE } : {}),
+        ...(process.env.TEAMWORK_DEV_MODE ? { TEAMWORK_DEV_MODE: process.env.TEAMWORK_DEV_MODE } : {}),
       },
     });
     config.opencodeBaseUrl = managedOpencode.url;
@@ -51,7 +51,7 @@ if (!config.opencodeBaseUrl && process.env.OPENWORK_MANAGE_OPENCODE === "1") {
 const server = await startServer(config);
 
 const url = `http://${config.host}:${server.port}`;
-logger.log("info", `OpenWork server listening on ${url}`);
+logger.log("info", `TeamWork server listening on ${url}`);
 
 if (config.tokenSource === "generated") {
   logger.log("info", `Client token: ${config.token}`);

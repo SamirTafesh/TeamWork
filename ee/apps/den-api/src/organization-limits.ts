@@ -1,5 +1,5 @@
-import { and, eq, gt, sql } from "@openwork-ee/den-db/drizzle"
-import { InvitationTable, MemberTable, OrganizationTable, WorkerTable } from "@openwork-ee/den-db/schema"
+import { and, eq, gt, sql } from "@teamwork-ee/den-db/drizzle"
+import { InvitationTable, MemberTable, OrganizationTable, WorkerTable } from "@teamwork-ee/den-db/schema"
 import { db } from "./db.js"
 
 export const DEFAULT_ORGANIZATION_LIMITS = {

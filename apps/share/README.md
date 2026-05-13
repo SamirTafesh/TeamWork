@@ -1,32 +1,32 @@
-# OpenWork Share Service (Publisher)
+# TeamWork Share Service (Publisher)
 
-This is a Next.js publisher app for OpenWork "share link" bundles.
+This is a Next.js publisher app for TeamWork "share link" bundles.
 
 It keeps the existing bundle APIs, but the public share surface now runs as a simple Next.js site backed by Vercel Blob.
 
 ## Endpoints
 
 - `GET /`
-  - Human-friendly packaging page for OpenWork worker files.
-  - Supports drag/drop of skills, agents, commands, `opencode.json[c]`, and `openwork.json`.
+  - Human-friendly packaging page for TeamWork worker files.
+  - Supports drag/drop of skills, agents, commands, `opencode.json[c]`, and `teamwork.json`.
   - Previews the inferred bundle and publishes a share link.
 
 - `POST /v1/bundles`
   - Accepts JSON bundle payloads.
   - Stores bytes in Vercel Blob.
-  - Returns `{ "url": "https://share.openworklabs.com/b/<id>" }`.
+  - Returns `{ "url": "https://share.teamworklabs.com/b/<id>" }`.
 
 - `POST /v1/package`
   - Accepts `{ files: [{ path, name?, content }], preview?: boolean }`.
-  - Parses supported OpenWork files into the smallest useful bundle shape.
+  - Parses supported TeamWork files into the smallest useful bundle shape.
   - Returns preview metadata when `preview` is `true`.
   - Publishes the generated bundle and returns the share URL otherwise.
 
 - `GET /b/:id`
   - Returns an HTML share page by default for browser requests.
-  - Includes an **Open in app** action that opens `openwork://import-bundle` with:
+  - Includes an **Open in app** action that opens `teamwork://import-bundle` with:
     - `ow_bundle=<share-url>`
-    - `ow_intent=new_worker` (desktop OpenWork converts single-skill bundles into a destination picker before import)
+    - `ow_intent=new_worker` (desktop TeamWork converts single-skill bundles into a destination picker before import)
     - `ow_source=share_service`
   - Returns raw JSON for API/programmatic requests:
     - send `Accept: application/json`, or
@@ -48,7 +48,7 @@ It keeps the existing bundle APIs, but the public share surface now runs as a si
 - Tool definitions from `.opencode/tools/*`
 - Command markdown from `.opencode/commands/*.md`
 - `opencode.json` / `opencode.jsonc` (portable project keys only: `agent`, `command`, `instructions`, `mcp`, `permission`, `plugin`, `share`, `tools`, `watcher`)
-- `openwork.json`
+- `teamwork.json`
 
 The packager rejects files that appear to contain secrets in shareable config.
 
@@ -60,16 +60,16 @@ The packager rejects files that appear to contain secrets in shareable config.
 ## Optional Environment Variables
 
 - `PUBLIC_BASE_URL`
-  - Default: `https://share.openworklabs.com`
+  - Default: `https://share.teamworklabs.com`
   - Used to construct the returned share URL.
 
 - `MAX_BYTES`
   - Default: `262144` (256KB)
   - Hard upload limit.
 
-- `OPENWORK_PUBLISHER_ALLOWED_ORIGINS`
+- `TEAMWORK_PUBLISHER_ALLOWED_ORIGINS`
   - Optional comma-separated browser origins allowed to publish bundles.
-  - Defaults include the share origin, the hosted OpenWork app origin, and common local dev origins.
+  - Defaults include the share origin, the hosted TeamWork app origin, and common local dev origins.
 
 - `LOCAL_BLOB_DIR`
   - Optional local filesystem storage root for bundle JSON.
@@ -111,7 +111,7 @@ pnpm --dir apps/share test
 # Human-friendly page
 curl -i "http://localhost:3000/b/<id>" -H "Accept: text/html"
 
-# Machine-readable payload (OpenWork parser path)
+# Machine-readable payload (TeamWork parser path)
 curl -i "http://localhost:3000/b/<id>/data"
 
 # Legacy compatibility path

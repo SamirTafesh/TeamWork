@@ -17,25 +17,25 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://app.openworklabs.com"),
-  title: "OpenWork Cloud",
+  metadataBase: new URL("https://app.teamworklabs.com"),
+  title: "TeamWork Cloud",
   description:
-    "Share your OpenWork setup with your team, manage billing, and use OpenWork Cloud from app.openworklabs.com.",
+    "Share your TeamWork setup with your team, manage billing, and use TeamWork Cloud from app.teamworklabs.com.",
   openGraph: {
-    title: "OpenWork Cloud",
+    title: "TeamWork Cloud",
     description:
-      "Share your OpenWork setup with your team and keep selected workflows available in OpenWork Cloud.",
+      "Share your TeamWork setup with your team and keep selected workflows available in TeamWork Cloud.",
     images: ["/opengraph-image"]
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpenWork Cloud",
+    title: "TeamWork Cloud",
     description:
-      "Share your OpenWork setup with your team and manage OpenWork Cloud from app.openworklabs.com.",
+      "Share your TeamWork setup with your team and manage TeamWork Cloud from app.teamworklabs.com.",
     images: ["/opengraph-image"]
   },
   icons: {
-    icon: "/openwork-mark.svg"
+    icon: "/teamwork-mark.svg"
   }
 };
 

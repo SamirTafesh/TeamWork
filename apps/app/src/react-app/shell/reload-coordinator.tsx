@@ -79,8 +79,8 @@ export function ReloadCoordinatorProvider({ children }: { children: ReactNode })
       const detail = (event as CustomEvent<{ reason?: ReloadReason; trigger?: ReloadTrigger }>).detail;
       systemState.markReloadRequired(detail?.reason ?? "config", detail?.trigger);
     };
-    window.addEventListener("openwork-reload-required", handler);
-    return () => window.removeEventListener("openwork-reload-required", handler);
+    window.addEventListener("teamwork-reload-required", handler);
+    return () => window.removeEventListener("teamwork-reload-required", handler);
   }, [systemState.markReloadRequired]);
 
   const forceStopActiveSessionsAndReload = useCallback(async () => {

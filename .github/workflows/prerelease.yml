@@ -32,23 +32,23 @@ jobs:
 
           short_sha=$(echo "$GITHUB_SHA" | cut -c1-7)
           tag="v${short_sha}-dev"
-          name="OpenWork ${tag}"
+          name="TeamWork ${tag}"
           body="Automated prerelease from ${GITHUB_REF_NAME} (${GITHUB_SHA})."
 
           echo "RELEASE_TAG=$tag" >> "$GITHUB_ENV"
           echo "RELEASE_NAME=$name" >> "$GITHUB_ENV"
           {
-            echo "RELEASE_BODY<<__OPENWORK_RELEASE_BODY_EOF__"
+            echo "RELEASE_BODY<<__TEAMWORK_RELEASE_BODY_EOF__"
             echo "$body"
-            echo "__OPENWORK_RELEASE_BODY_EOF__"
+            echo "__TEAMWORK_RELEASE_BODY_EOF__"
           } >> "$GITHUB_ENV"
 
           echo "release_tag=$tag" >> "$GITHUB_OUTPUT"
           echo "release_name=$name" >> "$GITHUB_OUTPUT"
           {
-            echo "release_body<<__OPENWORK_RELEASE_BODY_EOF__"
+            echo "release_body<<__TEAMWORK_RELEASE_BODY_EOF__"
             echo "$body"
-            echo "__OPENWORK_RELEASE_BODY_EOF__"
+            echo "__TEAMWORK_RELEASE_BODY_EOF__"
           } >> "$GITHUB_OUTPUT"
 
       - name: Create prerelease

@@ -11,22 +11,22 @@ test("buildCanonicalRequest pins legacy publish routes to the fixed share origin
     headers: {
       host: "evil.example",
       "x-forwarded-host": "evil.example",
-      origin: "https://openworklabs.com",
+      origin: "https://teamworklabs.com",
     },
   });
 
-  assert.equal(new URL(request.url).origin, "https://share.openworklabs.com");
+  assert.equal(new URL(request.url).origin, "https://share.teamworklabs.com");
 });
 
 test("buildCorsHeaders reflects only trusted publisher origins", () => {
   const trustedRequest = buildCanonicalRequest({
     pathname: "/v1/bundles",
     method: "POST",
-    headers: { origin: "https://openworklabs.com" },
+    headers: { origin: "https://teamworklabs.com" },
   });
   const trustedHeaders = buildCorsHeaders(trustedRequest);
 
-  assert.equal(trustedHeaders["Access-Control-Allow-Origin"], "https://openworklabs.com");
+  assert.equal(trustedHeaders["Access-Control-Allow-Origin"], "https://teamworklabs.com");
   assert.equal(trustedHeaders.Vary, "Origin");
 
   const untrustedRequest = buildCanonicalRequest({

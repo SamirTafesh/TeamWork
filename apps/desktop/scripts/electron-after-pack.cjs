@@ -3,8 +3,8 @@ const path = require("node:path");
 
 const sidecarBases = [
   "opencode",
-  "openwork-server",
-  "openwork-orchestrator",
+  "teamwork-server",
+  "teamwork-orchestrator",
   "chrome-devtools-mcp",
 ];
 

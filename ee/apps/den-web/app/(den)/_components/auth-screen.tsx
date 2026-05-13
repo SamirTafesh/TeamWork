@@ -1,6 +1,6 @@
 "use client";
 
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { Dithering } from "@paper-design/shaders-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -22,7 +22,7 @@ function LoadingPanel({ title, body }: { title: string; body: string }) {
   return (
     <div className="den-frame grid gap-3 p-6 md:p-7">
       <div className="grid gap-3">
-        <p className="den-eyebrow">OpenWork Cloud</p>
+        <p className="den-eyebrow">TeamWork Cloud</p>
         <h2 className="den-title-lg">{title}</h2>
         <p className="den-copy">{body}</p>
       </div>
@@ -103,13 +103,13 @@ export function AuthScreen() {
 
             <div className="relative z-10 flex h-full flex-col justify-between gap-10">
               <div className="flex items-center gap-3">
-                <img src="/openwork-logo-transparent.svg" alt="OpenWork" className="h-9 w-auto" />
-                <span className="text-[13px] font-medium text-white/80">OpenWork Cloud</span>
+                <img src="/teamwork-logo-transparent.svg" alt="TeamWork" className="h-9 w-auto" />
+                <span className="text-[13px] font-medium text-white/80">TeamWork Cloud</span>
               </div>
 
               <div className="grid gap-4">
                 <span className="inline-flex w-fit rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-white backdrop-blur-md">
-                  OpenWork Cloud
+                  TeamWork Cloud
                 </span>
                 <h1 className="max-w-[12ch] text-[2.25rem] font-semibold leading-[0.95] tracking-[-0.06em] text-white md:text-[3rem]">
                   One setup, every seat.

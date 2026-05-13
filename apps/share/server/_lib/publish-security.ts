@@ -6,10 +6,10 @@ type FixedWindowEntry = {
 };
 
 const defaultAllowedOrigins = [
-  "https://app.openworklabs.com",
-  "https://openworklabs.com",
-  "https://app.openwork.software",
-  "https://openwork.software",
+  "https://app.teamworklabs.com",
+  "https://teamworklabs.com",
+  "https://app.teamwork.software",
+  "https://teamwork.software",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "tauri://localhost",
@@ -21,11 +21,11 @@ const defaultAllowedOrigins = [
 ];
 
 const store = globalThis as typeof globalThis & {
-  __openworkShareRateLimitStore?: Map<string, FixedWindowEntry>;
+  __teamworkShareRateLimitStore?: Map<string, FixedWindowEntry>;
 };
 
-const rateLimitStore = store.__openworkShareRateLimitStore ?? new Map<string, FixedWindowEntry>();
-store.__openworkShareRateLimitStore = rateLimitStore;
+const rateLimitStore = store.__teamworkShareRateLimitStore ?? new Map<string, FixedWindowEntry>();
+store.__teamworkShareRateLimitStore = rateLimitStore;
 
 function now() {
   return Date.now();
@@ -46,7 +46,7 @@ function getRequestOrigin(request: Request) {
 }
 
 export function getAllowedOrigins(request: Request) {
-  const configured = String(process.env.OPENWORK_PUBLISHER_ALLOWED_ORIGINS ?? "")
+  const configured = String(process.env.TEAMWORK_PUBLISHER_ALLOWED_ORIGINS ?? "")
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
@@ -57,7 +57,7 @@ export function buildCorsHeaders(request: Request) {
   const origin = request.headers.get("origin")?.trim() ?? "";
   const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,Accept,X-OpenWork-Bundle-Type,X-OpenWork-Schema-Version,X-OpenWork-Name",
+    "Access-Control-Allow-Headers": "Content-Type,Accept,X-TeamWork-Bundle-Type,X-TeamWork-Schema-Version,X-TeamWork-Name",
   };
   if (origin && getAllowedOrigins(request).has(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;

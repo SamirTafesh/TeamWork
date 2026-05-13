@@ -3,7 +3,7 @@ import { DEN_WORKER_POLL_INTERVAL_MS } from "./CONSTS";
 export type AuthMode = "sign-in" | "sign-up";
 export type SocialAuthProvider = "github" | "google";
 export type WorkerStatusBucket = "ready" | "starting" | "attention" | "other";
-export type RuntimeServiceName = "openwork-server" | "opencode" | "opencode-router";
+export type RuntimeServiceName = "teamwork-server" | "opencode" | "opencode-router";
 export type EventLevel = "info" | "success" | "warning" | "error";
 export type AuthMethod = "email" | SocialAuthProvider;
 
@@ -71,7 +71,7 @@ export type WorkerLaunch = {
   status: string;
   provider: string | null;
   instanceUrl: string | null;
-  openworkUrl: string | null;
+  teamworkUrl: string | null;
   workspaceId: string | null;
   clientToken: string | null;
   ownerToken: string | null;
@@ -91,7 +91,7 @@ export type WorkerTokens = {
   clientToken: string | null;
   ownerToken: string | null;
   hostToken: string | null;
-  openworkUrl: string | null;
+  teamworkUrl: string | null;
   workspaceId: string | null;
 };
 
@@ -152,15 +152,15 @@ declare global {
   }
 }
 
-export const LAST_WORKER_STORAGE_KEY = "openwork:web:last-worker";
-export const PENDING_SOCIAL_SIGNUP_STORAGE_KEY = "openwork:web:pending-social-signup";
-export const AUTH_TOKEN_STORAGE_KEY = "openwork:web:auth-token";
-export const ONBOARDING_INTENT_STORAGE_KEY = "openwork:web:onboarding-intent";
+export const LAST_WORKER_STORAGE_KEY = "teamwork:web:last-worker";
+export const PENDING_SOCIAL_SIGNUP_STORAGE_KEY = "teamwork:web:pending-social-signup";
+export const AUTH_TOKEN_STORAGE_KEY = "teamwork:web:auth-token";
+export const ONBOARDING_INTENT_STORAGE_KEY = "teamwork:web:onboarding-intent";
 export const WORKER_STATUS_POLL_MS = DEN_WORKER_POLL_INTERVAL_MS;
-export const DEFAULT_AUTH_NAME = "OpenWork User";
+export const DEFAULT_AUTH_NAME = "TeamWork User";
 export const DEFAULT_WORKER_NAME = "My Worker";
-export const OPENWORK_APP_CONNECT_BASE_URL = (process.env.NEXT_PUBLIC_OPENWORK_APP_CONNECT_URL ?? "").trim();
-export const OPENWORK_AUTH_CALLBACK_BASE_URL = (process.env.NEXT_PUBLIC_OPENWORK_AUTH_CALLBACK_URL ?? "").trim();
+export const TEAMWORK_APP_CONNECT_BASE_URL = (process.env.NEXT_PUBLIC_TEAMWORK_APP_CONNECT_URL ?? "").trim();
+export const TEAMWORK_AUTH_CALLBACK_BASE_URL = (process.env.NEXT_PUBLIC_TEAMWORK_AUTH_CALLBACK_URL ?? "").trim();
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -247,7 +247,7 @@ export function deriveOnboardingWorkerName(user: AuthUser): string {
 
 export function getSocialCallbackUrl(): string {
   try {
-    const origin = typeof window !== "undefined" ? window.location.origin : OPENWORK_AUTH_CALLBACK_BASE_URL || "https://app.openworklabs.com";
+    const origin = typeof window !== "undefined" ? window.location.origin : TEAMWORK_AUTH_CALLBACK_BASE_URL || "https://app.teamworklabs.com";
     const callbackUrl = new URL("/", origin);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -260,7 +260,7 @@ export function getSocialCallbackUrl(): string {
     }
     return callbackUrl.toString();
   } catch {
-    return "https://app.openworklabs.com/";
+    return "https://app.teamworklabs.com/";
   }
 }
 
@@ -445,7 +445,7 @@ export function getWorker(payload: unknown): WorkerLaunch | null {
     status: getEffectiveWorkerStatus(worker.status, instance),
     provider: instance && typeof instance.provider === "string" ? instance.provider : null,
     instanceUrl: instance && typeof instance.url === "string" ? instance.url : null,
-    openworkUrl: instance && typeof instance.url === "string" ? instance.url : null,
+    teamworkUrl: instance && typeof instance.url === "string" ? instance.url : null,
     workspaceId: null,
     clientToken: tokens && typeof tokens.client === "string" ? tokens.client : null,
     ownerToken: tokens && typeof tokens.owner === "string"
@@ -493,14 +493,14 @@ export function getWorkerTokens(payload: unknown): WorkerTokens | null {
       ? tokens.host
       : null;
   const hostToken = typeof tokens.host === "string" ? tokens.host : null;
-  const openworkUrl = connect && typeof connect.openworkUrl === "string" ? connect.openworkUrl : null;
+  const teamworkUrl = connect && typeof connect.teamworkUrl === "string" ? connect.teamworkUrl : null;
   const workspaceId = connect && typeof connect.workspaceId === "string" ? connect.workspaceId : null;
 
   if (!clientToken && !ownerToken && !hostToken) {
     return null;
   }
 
-  return { clientToken, ownerToken, hostToken, openworkUrl, workspaceId };
+  return { clientToken, ownerToken, hostToken, teamworkUrl, workspaceId };
 }
 
 export function getWorkerRuntimeSnapshot(payload: unknown): WorkerRuntimeSnapshot | null {
@@ -543,8 +543,8 @@ export function getWorkerRuntimeSnapshot(payload: unknown): WorkerRuntimeSnapsho
 
 export function getRuntimeServiceLabel(name: RuntimeServiceName): string {
   switch (name) {
-    case "openwork-server":
-      return "OpenWork server";
+    case "teamwork-server":
+      return "TeamWork server";
     case "opencode":
       return "OpenCode";
     case "opencode-router":
@@ -742,7 +742,7 @@ export function isWorkerLaunch(value: unknown): value is WorkerLaunch {
     typeof value.status === "string" &&
     (typeof value.provider === "string" || value.provider === null) &&
     (typeof value.instanceUrl === "string" || value.instanceUrl === null) &&
-    (typeof value.openworkUrl === "string" || value.openworkUrl === null || typeof value.openworkUrl === "undefined") &&
+    (typeof value.teamworkUrl === "string" || value.teamworkUrl === null || typeof value.teamworkUrl === "undefined") &&
     (typeof value.workspaceId === "string" || value.workspaceId === null || typeof value.workspaceId === "undefined") &&
     (typeof value.clientToken === "string" || value.clientToken === null) &&
     (typeof value.ownerToken === "string" || value.ownerToken === null || typeof value.ownerToken === "undefined") &&
@@ -757,7 +757,7 @@ export function listItemToWorker(item: WorkerListItem, current: WorkerLaunch | n
     status: item.status,
     provider: item.provider,
     instanceUrl: item.instanceUrl,
-    openworkUrl: current?.workerId === item.workerId ? current.openworkUrl ?? item.instanceUrl : item.instanceUrl,
+    teamworkUrl: current?.workerId === item.workerId ? current.teamworkUrl ?? item.instanceUrl : item.instanceUrl,
     workspaceId: current?.workerId === item.workerId ? current.workspaceId : null,
     clientToken: current?.workerId === item.workerId ? current.clientToken : null,
     ownerToken: current?.workerId === item.workerId ? current.ownerToken : null,
@@ -801,20 +801,20 @@ function buildWorkspaceUrl(instanceUrl: string, workspaceId: string): string {
   return `${normalizeUrl(instanceUrl)}/w/${encodeURIComponent(workspaceId)}`;
 }
 
-export function buildOpenworkDeepLink(
-  openworkUrl: string | null,
+export function buildTeamworkDeepLink(
+  teamworkUrl: string | null,
   accessToken: string | null,
   workerId: string | null,
   workerName: string | null
 ): string | null {
-  if (!openworkUrl || !accessToken) {
+  if (!teamworkUrl || !accessToken) {
     return null;
   }
 
   const params = new URLSearchParams({
-    openworkHostUrl: openworkUrl,
-    openworkToken: accessToken,
-    source: "openwork-web"
+    teamworkHostUrl: teamworkUrl,
+    teamworkToken: accessToken,
+    source: "teamwork-web"
   });
 
   if (workerId) {
@@ -825,18 +825,18 @@ export function buildOpenworkDeepLink(
     params.set("workerName", workerName);
   }
 
-  return `openwork://connect-remote?${params.toString()}`;
+  return `teamwork://connect-remote?${params.toString()}`;
 }
 
-export function buildOpenworkAppConnectUrl(
+export function buildTeamworkAppConnectUrl(
   appConnectBaseUrl: string,
-  openworkUrl: string | null,
+  teamworkUrl: string | null,
   accessToken: string | null,
   workerId: string | null,
   workerName: string | null,
   options?: { autoConnect?: boolean }
 ): string | null {
-  if (!appConnectBaseUrl || !openworkUrl || !accessToken) {
+  if (!appConnectBaseUrl || !teamworkUrl || !accessToken) {
     return null;
   }
 
@@ -856,12 +856,12 @@ export function buildOpenworkAppConnectUrl(
     connectUrl.pathname = lastSegment === "connect-remote" ? normalizedPath : `${normalizedPath}/connect-remote`;
   }
 
-  connectUrl.searchParams.set("openworkHostUrl", openworkUrl);
-  connectUrl.searchParams.set("openworkToken", accessToken);
+  connectUrl.searchParams.set("teamworkHostUrl", teamworkUrl);
+  connectUrl.searchParams.set("teamworkToken", accessToken);
   if (options?.autoConnect) {
     connectUrl.searchParams.set("autoConnect", "1");
   }
-  connectUrl.searchParams.set("source", "openwork-web");
+  connectUrl.searchParams.set("source", "teamwork-web");
 
   if (workerId) {
     connectUrl.searchParams.set("workerId", workerId);
@@ -932,7 +932,7 @@ async function requestAbsoluteJson(url: string, init: RequestInit = {}, timeoutM
   return { response, payload };
 }
 
-export async function resolveOpenworkWorkspaceUrl(instanceUrl: string, accessToken: string): Promise<{ workspaceId: string; openworkUrl: string } | null> {
+export async function resolveTeamworkWorkspaceUrl(instanceUrl: string, accessToken: string): Promise<{ workspaceId: string; teamworkUrl: string } | null> {
   const baseUrl = normalizeUrl(instanceUrl);
   const token = accessToken.trim();
   if (!baseUrl || !token) {
@@ -943,7 +943,7 @@ export async function resolveOpenworkWorkspaceUrl(instanceUrl: string, accessTok
   if (mountedWorkspaceId) {
     return {
       workspaceId: mountedWorkspaceId,
-      openworkUrl: baseUrl
+      teamworkUrl: baseUrl
     };
   }
 
@@ -965,7 +965,7 @@ export async function resolveOpenworkWorkspaceUrl(instanceUrl: string, accessTok
 
   return {
     workspaceId,
-    openworkUrl: buildWorkspaceUrl(baseUrl, workspaceId)
+    teamworkUrl: buildWorkspaceUrl(baseUrl, workspaceId)
   };
 }
 

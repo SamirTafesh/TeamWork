@@ -1,6 +1,6 @@
-# OpenWork Cloud App (`ee/apps/den-web`)
+# TeamWork Cloud App (`ee/apps/den-web`)
 
-Frontend for `app.openworklabs.com`.
+Frontend for `app.teamworklabs.com`.
 
 ## What it does
 
@@ -8,9 +8,9 @@ Frontend for `app.openworklabs.com`.
 - Handles invited-org signup flows where the invited email stays locked and the user verifies access before joining.
 - Launches cloud workers via `POST /v1/workers`.
 - Handles paywall responses (`402 payment_required`), routes users through Polar checkout, and only enables worker launch after purchase.
-- Offers desktop handoff actions so users can open the generated worker directly in OpenWork or copy the connect credentials manually.
-- Uses a Next.js proxy route (`/api/den/*`) to reach `api.openworklabs.com` without browser CORS issues.
-- Uses a same-origin auth proxy (`/api/auth/*`) so GitHub OAuth callbacks can land on `app.openworklabs.com`.
+- Offers desktop handoff actions so users can open the generated worker directly in TeamWork or copy the connect credentials manually.
+- Uses a Next.js proxy route (`/api/den/*`) to reach `api.teamworklabs.com` without browser CORS issues.
+- Uses a same-origin auth proxy (`/api/auth/*`) so GitHub OAuth callbacks can land on `app.teamworklabs.com`.
 
 ## Current hosted user flow
 
@@ -24,23 +24,23 @@ Frontend for `app.openworklabs.com`.
 1. Install workspace deps from repo root:
    `pnpm install`
 2. Run the app:
-   `pnpm --filter @openwork-ee/den-web dev`
+   `pnpm --filter @teamwork-ee/den-web dev`
 3. Open:
    `http://localhost:3005`
 
 ### Optional env vars
 
 - `DEN_API_BASE` (server-only): upstream API base used by proxy route.
-  - default: `https://api.openworklabs.com`
+  - default: `https://api.teamworklabs.com`
 - `DEN_AUTH_ORIGIN` (server-only): Origin header sent to Better Auth endpoints when the browser request does not include one.
-  - default: `https://app.openworklabs.com`
+  - default: `https://app.teamworklabs.com`
 - `DEN_AUTH_FALLBACK_BASE` (server-only): fallback Den origin used if `DEN_API_BASE` serves an HTML/5xx error.
-  - default: `https://den-control-plane-openwork.onrender.com`
-- `NEXT_PUBLIC_OPENWORK_APP_CONNECT_URL` (client): Base URL for "Open in App" links.
-  - Example: `https://openworklabs.com/app`
+  - default: `https://den-control-plane-teamwork.onrender.com`
+- `NEXT_PUBLIC_TEAMWORK_APP_CONNECT_URL` (client): Base URL for "Open in App" links.
+  - Example: `https://teamworklabs.com/app`
   - The web panel appends `/connect-remote` and injects worker URL/token params automatically.
-- `NEXT_PUBLIC_OPENWORK_AUTH_CALLBACK_URL` (client): Canonical URL used for GitHub auth callback redirects.
-  - default: `https://app.openworklabs.com`
+- `NEXT_PUBLIC_TEAMWORK_AUTH_CALLBACK_URL` (client): Canonical URL used for GitHub auth callback redirects.
+  - default: `https://app.teamworklabs.com`
   - this host must serve `/api/auth/*`; the included proxy route does that
 - `NEXT_PUBLIC_POSTHOG_KEY` (client): PostHog project key used for Den analytics.
   - optional override; defaults to the same project key used by `ee/apps/landing`
@@ -54,12 +54,12 @@ Recommended project settings:
 
 - Root directory: `ee/apps/den-web`
 - Framework preset: Next.js
-- Build command: `cd ../../.. && pnpm --filter @openwork-ee/den-web build`
+- Build command: `cd ../../.. && pnpm --filter @teamwork-ee/den-web build`
 - Output directory: `.next`
 - Install command: `cd ../../.. && pnpm install --frozen-lockfile`
 
-These commands should be configured in the Vercel dashboard rather than committed in `vercel.json`, so the app still builds from the monorepo root and can resolve shared workspace packages like `@openwork-ee/utils`.
+These commands should be configured in the Vercel dashboard rather than committed in `vercel.json`, so the app still builds from the monorepo root and can resolve shared workspace packages like `@teamwork-ee/utils`.
 
 Then assign custom domain:
 
-- `app.openworklabs.com`
+- `app.teamworklabs.com`

@@ -1,7 +1,7 @@
-import { eq } from "@openwork-ee/den-db/drizzle"
-import { OrganizationTable } from "@openwork-ee/den-db/schema"
-import { desktopAppRestrictionsSchema } from "@openwork/types/den/desktop-app-restrictions"
-import { normalizeDenTypeId, type DenTypeId } from "@openwork-ee/utils/typeid"
+import { eq } from "@teamwork-ee/den-db/drizzle"
+import { OrganizationTable } from "@teamwork-ee/den-db/schema"
+import { desktopAppRestrictionsSchema } from "@teamwork/types/den/desktop-app-restrictions"
+import { normalizeDenTypeId, type DenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"
@@ -141,7 +141,7 @@ export function registerOrgCoreRoutes<T extends { Variables: OrgRouteVariables }
       tags: ["Organizations"],
       hide: true,
       summary: "Create organization",
-      description: "Creates a new organization for the signed-in user after verifying that their account can provision OpenWork Cloud workspaces.",
+      description: "Creates a new organization for the signed-in user after verifying that their account can provision TeamWork Cloud workspaces.",
       responses: {
         201: jsonResponse("Organization created successfully.", organizationResponseSchema),
         400: jsonResponse("The organization creation request body was invalid.", invalidRequestSchema),
@@ -171,13 +171,13 @@ export function registerOrgCoreRoutes<T extends { Variables: OrgRouteVariables }
     const access = await requireCloudWorkerAccess({
       userId: normalizeDenTypeId("user", user.id),
       email,
-      name: user.name ?? user.email ?? "OpenWork User",
+      name: user.name ?? user.email ?? "TeamWork User",
     })
 
     if (!access.allowed) {
       return c.json({
         error: "payment_required",
-        message: "Creating a workspace requires an active OpenWork Cloud plan.",
+        message: "Creating a workspace requires an active TeamWork Cloud plan.",
         polar: {
           checkoutUrl: access.checkoutUrl,
           productId: env.polar.productId,

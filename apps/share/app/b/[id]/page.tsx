@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       : undefined,
     openGraph: {
       type: "website",
-      siteName: "OpenWork Share",
+      siteName: "TeamWork Share",
       title: pageTitle,
       description: pageDescription,
       url: props.canonicalUrl,
@@ -93,10 +93,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     other: props.missing
       ? undefined
       : {
-          "openwork:bundle-id": props.id!,
-          "openwork:bundle-type": props.bundleType!,
-          "openwork:schema-version": props.schemaVersion!,
-          "openwork:open-in-app-url": props.openInAppDeepLink!
+          "teamwork:bundle-id": props.id!,
+          "teamwork:bundle-type": props.bundleType!,
+          "teamwork:schema-version": props.schemaVersion!,
+          "teamwork:open-in-app-url": props.openInAppDeepLink!
         }
   };
 }

@@ -52,10 +52,10 @@ importers:
       '@opencode-ai/sdk':
         specifier: ^1.14.38
         version: 1.14.38
-      '@openwork/types':
+      '@teamwork/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@openwork/ui':
+      '@teamwork/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@radix-ui/colors':
@@ -232,7 +232,7 @@ importers:
       opencode-router:
         specifier: 0.13.3
         version: link:../opencode-router
-      openwork-server:
+      teamwork-server:
         specifier: 0.13.3
         version: link:../server
       solid-js:
@@ -444,7 +444,7 @@ importers:
 
   apps/ui-demo:
     dependencies:
-      '@openwork/ui':
+      '@teamwork/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -496,13 +496,13 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@4.3.6)
-      '@openwork-ee/den-db':
+      '@teamwork-ee/den-db':
         specifier: workspace:*
         version: link:../../packages/den-db
-      '@openwork-ee/utils':
+      '@teamwork-ee/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@openwork/types':
+      '@teamwork/types':
         specifier: workspace:*
         version: link:../../../packages/types
       '@standard-community/standard-json':
@@ -557,13 +557,13 @@ importers:
 
   ee/apps/den-web:
     dependencies:
-      '@openwork-ee/utils':
+      '@teamwork-ee/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@openwork/types':
+      '@teamwork/types':
         specifier: workspace:*
         version: link:../../../packages/types
-      '@openwork/ui':
+      '@teamwork/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
       '@paper-design/shaders-react':
@@ -615,10 +615,10 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.8
         version: 1.19.11(hono@4.12.8)
-      '@openwork-ee/den-db':
+      '@teamwork-ee/den-db':
         specifier: workspace:*
         version: link:../../packages/den-db
-      '@openwork-ee/utils':
+      '@teamwork-ee/utils':
         specifier: workspace:*
         version: link:../../packages/utils
       dotenv:
@@ -643,7 +643,7 @@ importers:
 
   ee/apps/landing:
     dependencies:
-      '@openwork/ui':
+      '@teamwork/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
       botid:
@@ -689,10 +689,10 @@ importers:
 
   ee/packages/den-db:
     dependencies:
-      '@openwork-ee/utils':
+      '@teamwork-ee/utils':
         specifier: workspace:*
         version: link:../utils
-      '@openwork/types':
+      '@teamwork/types':
         specifier: workspace:*
         version: link:../../../packages/types
       '@planetscale/database':
@@ -749,7 +749,7 @@ importers:
         specifier: ^5.5.4
         version: 5.9.3
 
-  packages/openwork-server-sdk:
+  packages/teamwork-server-sdk:
     dependencies:
       '@hey-api/client-fetch':
         specifier: 0.13.1
@@ -762,7 +762,7 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
-  packages/openwork-ui-mcp:
+  packages/teamwork-ui-mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0

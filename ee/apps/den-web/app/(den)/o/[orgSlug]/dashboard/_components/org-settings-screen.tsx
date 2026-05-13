@@ -597,7 +597,7 @@ export function OrgSettingsScreen() {
                 </p>
                 <p className="text-[13px] text-gray-500">
                   Let signed-in desktop users access models that are not
-                  deployed through OpenWork Cloud.
+                  deployed through TeamWork Cloud.
                 </p>
               </div>
               <SettingsToggle

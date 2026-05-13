@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS openwork-builder
+FROM node:22-bookworm-slim AS teamwork-builder
 
 WORKDIR /src
 
@@ -10,12 +10,12 @@ RUN apt-get update \
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile --filter openwork-orchestrator... \
-  && pnpm --filter openwork-orchestrator build:bin
+RUN pnpm install --frozen-lockfile --filter teamwork-orchestrator... \
+  && pnpm --filter teamwork-orchestrator build:bin
 
 FROM node:22-bookworm-slim
 
-ARG OPENWORK_ORCHESTRATOR_VERSION=0.11.151
+ARG TEAMWORK_ORCHESTRATOR_VERSION=0.11.151
 ARG OPENCODE_VERSION
 ARG OPENCODE_DOWNLOAD_URL=
 
@@ -23,8 +23,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl tar unzip \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=openwork-builder /src/apps/orchestrator/dist/bin/openwork /usr/local/bin/openwork
-COPY --from=openwork-builder /src/constants.json /usr/local/constants.json
+COPY --from=teamwork-builder /src/apps/orchestrator/dist/bin/teamwork /usr/local/bin/teamwork
+COPY --from=teamwork-builder /src/constants.json /usr/local/constants.json
 
 RUN set -eux; \
   test -n "$OPENCODE_VERSION"; \
@@ -46,7 +46,7 @@ RUN set -eux; \
   install -m 0755 "$binary" /usr/local/bin/opencode; \
   rm -rf "$tmpdir"
 
-RUN test "$(openwork --version)" = "$OPENWORK_ORCHESTRATOR_VERSION" \
+RUN test "$(teamwork --version)" = "$TEAMWORK_ORCHESTRATOR_VERSION" \
   && opencode --version
 
 CMD ["sleep", "infinity"]

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull } from "@openwork-ee/den-db/drizzle"
+import { and, asc, desc, eq, inArray, isNull } from "@teamwork-ee/den-db/drizzle"
 import {
   ConfigObjectAccessGrantTable,
   ConfigObjectTable,
@@ -19,8 +19,8 @@ import {
   PluginAccessGrantTable,
   PluginConfigObjectTable,
   PluginTable,
-} from "@openwork-ee/den-db/schema"
-import { createDenTypeId } from "@openwork-ee/utils/typeid"
+} from "@teamwork-ee/den-db/schema"
+import { createDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { PluginArchActorContext, PluginArchResourceKind, PluginArchRole } from "./access.js"
 import { requirePluginArchResourceRole, resolvePluginArchResourceRole } from "./access.js"
 import {

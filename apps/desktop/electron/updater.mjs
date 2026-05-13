@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const ELECTRON_UPDATER_CHANNEL_FILENAME = "electron-updater-channel.v1.json";
 
 // In dev mode, app.getVersion() returns the Electron framework version
-// (e.g. "35.7.5") instead of the OpenWork app version. Read from
+// (e.g. "35.7.5") instead of the TeamWork app version. Read from
 // package.json so the UI always shows the correct version.
 const __updater_dirname = path.dirname(fileURLToPath(import.meta.url));
 let _cachedAppVersion = null;
@@ -29,8 +29,8 @@ function resolveAppVersion(app) {
   return _cachedAppVersion;
 }
 const ELECTRON_UPDATER_FEEDS = Object.freeze({
-  stable: "https://github.com/different-ai/openwork/releases/latest/download",
-  alpha: "https://github.com/different-ai/openwork/releases/download/alpha-macos-latest",
+  stable: "https://github.com/SamirTafesh/TeamWork/releases/latest/download",
+  alpha: "https://github.com/SamirTafesh/TeamWork/releases/download/alpha-macos-latest",
 });
 
 function normalizeElectronUpdaterChannel(value) {
@@ -196,7 +196,7 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
         // Forward download progress to the renderer so the UI can show
         // incremental bytes instead of staying stuck at 0.
         autoUpdaterInstance.on("download-progress", (info) => {
-          sendToRenderer("openwork:updater:download-progress", {
+          sendToRenderer("teamwork:updater:download-progress", {
             bytesPerSecond: info.bytesPerSecond ?? 0,
             percent: info.percent ?? 0,
             transferred: info.transferred ?? 0,
@@ -213,12 +213,12 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     return autoUpdaterInstance;
   }
 
-  ipcMain.handle("openwork:updater:getChannel", async () => {
+  ipcMain.handle("teamwork:updater:getChannel", async () => {
     const channel = await readElectronUpdaterChannel(app);
     return updaterChannelState(app, channel);
   });
 
-  ipcMain.handle("openwork:updater:setChannel", async (_event, rawChannel) => {
+  ipcMain.handle("teamwork:updater:setChannel", async (_event, rawChannel) => {
     const channel = await writeElectronUpdaterChannel(app, rawChannel);
     checkedUpdateVersion = null;
     const updater = await ensureAutoUpdater();
@@ -228,7 +228,7 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     return updaterChannelState(app, channel);
   });
 
-  ipcMain.handle("openwork:updater:check", async () => {
+  ipcMain.handle("teamwork:updater:check", async () => {
     const updater = await ensureAutoUpdater();
     const channelState = updater
       ? await applyElectronUpdaterFeed(app, updater)
@@ -254,7 +254,7 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     }
   });
 
-  ipcMain.handle("openwork:updater:download", async () => {
+  ipcMain.handle("teamwork:updater:download", async () => {
     const updater = await ensureAutoUpdater();
     if (!updater) return { ok: false, reason: "unavailable" };
     try {
@@ -277,7 +277,7 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     }
   });
 
-  ipcMain.handle("openwork:updater:installAndRestart", async () => {
+  ipcMain.handle("teamwork:updater:installAndRestart", async () => {
     const updater = await ensureAutoUpdater();
     if (!updater) return { ok: false, reason: "unavailable" };
     try {

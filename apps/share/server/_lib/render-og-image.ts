@@ -187,12 +187,12 @@ function buildDescription(options: {
 
 function buildRootOgInput(): OgImageModel {
   return {
-    title: "Share OpenWork skills beautifully",
+    title: "Share TeamWork skills beautifully",
     fileName: "agent-creator.md",
     fileType: "SKILL.md",
-    description: "Clean metadata-first social cards for shared OpenWork skills and bundles.",
+    description: "Clean metadata-first social cards for shared TeamWork skills and bundles.",
     category: "share",
-    tag: "openwork preview",
+    tag: "teamwork preview",
     domain: DEFAULT_DOMAIN,
   };
 }
@@ -201,7 +201,7 @@ function buildBundleOgInput({ rawJson }: { id: string; rawJson: string }): OgIma
   const bundle = parseBundle(rawJson);
   const preview = buildBundlePreview(bundle);
   const { data } = parseFrontmatter(bundle.content);
-  const bundleName = maybeString(data.name).trim() || bundle.name || titleFromFileName(preview.filename) || "OpenWork bundle";
+  const bundleName = maybeString(data.name).trim() || bundle.name || titleFromFileName(preview.filename) || "TeamWork bundle";
   const bundleDescription = maybeString(bundle.description).trim();
   const frontmatterDescription = maybeString(data.description).trim();
   const triggerTag = buildTagFromTrigger(
@@ -210,7 +210,7 @@ function buildBundleOgInput({ rawJson }: { id: string; rawJson: string }): OgIma
   const title =
     bundle.type === "skills-set" && bundle.skills.length > 1
       ? `${bundle.skills.length} Shared Skills`
-      : humanizeTitle(bundleName) || "OpenWork bundle";
+      : humanizeTitle(bundleName) || "TeamWork bundle";
   const category = buildCategory(bundle.type, preview.tone);
   const tag =
     triggerTag ||
@@ -233,7 +233,7 @@ function buildBundleOgInput({ rawJson }: { id: string; rawJson: string }): OgIma
 }
 
 export function computeOgImageLayout(model: OgImageModel): OgImageLayout {
-  const displayTitle = truncateAtWordBoundary(humanizeTitle(model.title) || "OpenWork bundle", MAX_DISPLAY_CHARS);
+  const displayTitle = truncateAtWordBoundary(humanizeTitle(model.title) || "TeamWork bundle", MAX_DISPLAY_CHARS);
   const titleTier = getTitleTier(displayTitle.length);
   const config = TITLE_TIER_CONFIG[titleTier];
   const titleLines = splitTextIntoLines(displayTitle, config.charsPerLine, config.maxLines);
@@ -253,7 +253,7 @@ export function computeOgImageLayout(model: OgImageModel): OgImageLayout {
   };
 }
 
-function renderOpenWorkLogo({ x, y, width, height }: { x: number; y: number; width: number; height: number }): string {
+function renderTeamWorkLogo({ x, y, width, height }: { x: number; y: number; width: number; height: number }): string {
   return `
     <svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 1024 866" fill="none">
       <path fill="#257CE9" transform="scale(1.22782 1.22782)" d="M490.962 13.2109C516.808 12.568 530.193 21.0761 551.688 33.1032L589.195 54.1798L626.787 75.2506C636.066 80.4389 649.292 87.5857 657.478 94.0584C671.769 105.914 683.112 124.362 684.683 143.175C685.907 157.831 685.389 173.375 685.377 188.173L685.339 263.964L685.37 354.897C685.391 380.32 686.655 411.29 681.484 435.723C675.249 464.929 662.265 492.269 643.573 515.558C632.659 528.974 618.797 542.079 604.617 552.026C599.568 555.568 592.431 559.221 586.895 562.254L566.235 573.714L489.048 616.153L413.234 657.883C399.18 665.674 384.868 674.248 370.402 681.208C362.127 685.189 352.078 686.881 342.951 687.813C318.706 688.516 306.452 681.909 286.169 670.383L257.958 654.418C241.853 645.558 225.804 636.597 209.812 627.535C198.9 621.412 183.811 613.689 174.536 605.554C158.954 591.701 149.499 572.233 148.244 551.42C147.215 534.843 147.823 512.715 147.821 495.659L147.81 397.552L147.812 317.362C147.82 296.243 146.723 270.836 151.06 250.573C156.911 223.486 169.602 198.349 187.923 177.56C197.018 167.22 207.51 158.199 219.097 150.756C233.391 141.426 253.227 131.448 268.617 123.103L348.755 79.3365L419.409 40.3549C445.897 25.8026 460.025 15.0173 490.962 13.2109ZM350.689 661.215C366.184 656.024 377.335 648.632 391.543 640.597C405.935 632.447 420.396 624.418 434.923 616.51L532.617 563.032C583.215 535.392 616.074 521.904 643.094 467.522C651 451.528 656.046 434.273 658.004 416.539C659.64 401.456 659.102 383.999 659.058 368.652L658.984 301.55L659.114 202.097C659.123 186.04 660.925 148.727 656.309 135.299C653.001 125.621 645.936 117.683 636.707 113.278C630.245 110.188 620.134 107.745 613.008 108.899C604.318 109.655 596.399 112.041 588.722 116.165C577.357 122.269 566.083 128.625 554.759 134.809L476.344 177.842L408.03 215.338C394.874 222.493 377.925 230.923 365.739 238.915C354.985 245.946 345.302 254.493 336.99 264.291C322.261 281.681 312.136 302.494 307.544 324.817C303.925 343.149 305.08 374.437 305.113 394.107L305.183 493.471L305.2 580.911C305.2 596.329 304.599 612.603 305.674 627.933C307.254 650.453 322.586 664.188 344.986 661.954C346.892 661.748 348.793 661.502 350.689 661.215ZM275.046 634.925C276.703 635.884 278.443 636.934 280.128 637.819C278.716 626.741 279.321 604.711 279.333 592.851L279.349 514.659L279.319 397.689L279.307 363.99C279.296 348.799 279.081 336.276 281.868 321.173C286.627 296.026 297.312 272.376 313.038 252.185C322.448 240.062 333.642 229.435 346.238 220.668C358.126 212.437 374.555 203.96 387.566 196.921C405.827 187.071 424.038 177.128 442.198 167.095L540.847 112.798C556.874 103.996 575.722 93.0395 591.788 84.9667L544.597 58.1945C529.914 49.8677 510.295 37.0292 492.825 38.8716C483.01 39.5777 473.292 41.0835 464.415 45.4977C453.156 51.0956 442.077 57.5037 431.036 63.5307L359.332 102.878L282.282 145.173C266.343 153.844 246.398 163.945 231.532 173.678C222.383 179.646 214.109 186.86 206.949 195.111C188.139 216.808 175.15 246.46 173.93 275.291C173.304 290.098 173.676 305.111 173.702 319.948L173.733 400.555L173.754 498.411C173.757 515.471 173.162 532.646 174.011 549.669C174.707 563.612 181.36 577.006 191.74 586.251C200.634 593.773 215.172 601.204 225.649 607.054C242.161 616.261 258.627 625.552 275.046 634.925Z"/>
@@ -345,7 +345,7 @@ function renderSkillCard(model: OgImageModel, variant: OgImageVariant): string {
 
   <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="28" fill="rgba(255,255,255,0.76)" stroke="rgba(226,232,240,0.85)" filter="url(#cardShadow)" />
   <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="28" fill="rgba(255,255,255,0.56)" />
-  ${renderOpenWorkLogo({ x: cardX + 66, y: cardY + 34, width: 40, height: 34 })}
+  ${renderTeamWorkLogo({ x: cardX + 66, y: cardY + 34, width: 40, height: 34 })}
 
   <g transform="translate(${badgeX} ${badgeY})">
     <rect width="${badgeWidth}" height="34" rx="17" fill="rgba(255,255,255,0.82)" stroke="rgba(226,232,240,0.72)" />

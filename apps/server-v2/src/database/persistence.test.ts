@@ -32,7 +32,7 @@ function createPersistence(overrides: Partial<Parameters<typeof createServerPers
     localServer: {
       baseUrl: null,
       hostingKind: "self_hosted",
-      label: "Local OpenWork Server",
+      label: "Local TeamWork Server",
     },
     version: "0.0.0-test",
     ...overrides,
@@ -40,7 +40,7 @@ function createPersistence(overrides: Partial<Parameters<typeof createServerPers
 }
 
 test("fresh bootstrap seeds the local server and hidden workspaces", () => {
-  const workingDirectory = makeTempDir("openwork-server-v2-phase2-fresh");
+  const workingDirectory = makeTempDir("teamwork-server-v2-phase2-fresh");
   const persistence = createPersistence({ workingDirectory });
 
   expect(persistence.diagnostics.mode).toBe("fresh");
@@ -57,7 +57,7 @@ test("fresh bootstrap seeds the local server and hidden workspaces", () => {
 });
 
 test("migration runner upgrades an existing database from the first migration", () => {
-  const rootDir = makeTempDir("openwork-server-v2-phase2-upgrade");
+  const rootDir = makeTempDir("teamwork-server-v2-phase2-upgrade");
   const workingDirectory = resolveServerWorkingDirectory({ environment: "development", explicitRootDir: rootDir });
   ensureServerWorkingDirectoryLayout(workingDirectory);
   const database = new Database(workingDirectory.databasePath, { create: true });
@@ -74,14 +74,14 @@ test("migration runner upgrades an existing database from the first migration", 
 });
 
 test("legacy workspace import only runs once across repeated boots", () => {
-  const rootDir = makeTempDir("openwork-server-v2-phase2-idempotent");
-  const desktopDataDir = makeTempDir("openwork-server-v2-phase2-desktop");
-  const orchestratorDataDir = makeTempDir("openwork-server-v2-phase2-orchestrator");
-  const localWorkspaceDir = makeTempDir("openwork-server-v2-phase2-local-workspace");
-  const orchestratorOnlyWorkspaceDir = makeTempDir("openwork-server-v2-phase2-orch-only-workspace");
+  const rootDir = makeTempDir("teamwork-server-v2-phase2-idempotent");
+  const desktopDataDir = makeTempDir("teamwork-server-v2-phase2-desktop");
+  const orchestratorDataDir = makeTempDir("teamwork-server-v2-phase2-orchestrator");
+  const localWorkspaceDir = makeTempDir("teamwork-server-v2-phase2-local-workspace");
+  const orchestratorOnlyWorkspaceDir = makeTempDir("teamwork-server-v2-phase2-orch-only-workspace");
 
   fs.writeFileSync(
-    path.join(desktopDataDir, "openwork-workspaces.json"),
+    path.join(desktopDataDir, "teamwork-workspaces.json"),
     JSON.stringify(
       {
         selectedWorkspaceId: "ws_legacy_selected",
@@ -98,11 +98,11 @@ test("legacy workspace import only runs once across repeated boots", () => {
             id: "ws_remote_legacy",
             name: "Remote Test",
             workspaceType: "remote",
-            remoteType: "openwork",
+            remoteType: "teamwork",
             baseUrl: "https://remote.example.com/w/remote-one",
-            openworkHostUrl: "https://remote.example.com",
-            openworkWorkspaceId: "remote-one",
-            openworkToken: "client-token",
+            teamworkHostUrl: "https://remote.example.com",
+            teamworkWorkspaceId: "remote-one",
+            teamworkToken: "client-token",
           },
         ],
       },
@@ -112,7 +112,7 @@ test("legacy workspace import only runs once across repeated boots", () => {
   );
 
   fs.writeFileSync(
-    path.join(orchestratorDataDir, "openwork-orchestrator-state.json"),
+    path.join(orchestratorDataDir, "teamwork-orchestrator-state.json"),
     JSON.stringify(
       {
         activeId: "orch-1",
@@ -153,7 +153,7 @@ test("legacy workspace import only runs once across repeated boots", () => {
     legacy: {
       cloudSigninJson: JSON.stringify({
         authToken: "den-token",
-        baseUrl: "https://app.openworklabs.com",
+        baseUrl: "https://app.teamworklabs.com",
         userId: "user-1",
       }),
       desktopDataDir,
@@ -166,7 +166,7 @@ test("legacy workspace import only runs once across repeated boots", () => {
   const firstVisibleWorkspaces = first.repositories.workspaces.list();
   expect(firstServers).toHaveLength(2);
   expect(firstVisibleWorkspaces).toHaveLength(3);
-  expect(first.repositories.cloudSignin.getPrimary()?.cloudBaseUrl).toBe("https://app.openworklabs.com");
+  expect(first.repositories.cloudSignin.getPrimary()?.cloudBaseUrl).toBe("https://app.teamworklabs.com");
   first.close();
 
   const second = createPersistence({
@@ -189,12 +189,12 @@ test("legacy workspace import only runs once across repeated boots", () => {
 });
 
 test("deleted legacy-imported workspace stays deleted after restart", () => {
-  const rootDir = makeTempDir("openwork-server-v2-phase2-delete-persist");
-  const desktopDataDir = makeTempDir("openwork-server-v2-phase2-delete-desktop");
-  const localWorkspaceDir = makeTempDir("openwork-server-v2-phase2-delete-workspace");
+  const rootDir = makeTempDir("teamwork-server-v2-phase2-delete-persist");
+  const desktopDataDir = makeTempDir("teamwork-server-v2-phase2-delete-desktop");
+  const localWorkspaceDir = makeTempDir("teamwork-server-v2-phase2-delete-workspace");
 
   fs.writeFileSync(
-    path.join(desktopDataDir, "openwork-workspaces.json"),
+    path.join(desktopDataDir, "teamwork-workspaces.json"),
     JSON.stringify(
       {
         selectedWorkspaceId: "ws_legacy_selected",
@@ -250,10 +250,10 @@ test("deleted legacy-imported workspace stays deleted after restart", () => {
 });
 
 test("corrupt legacy workspace state is surfaced without blocking bootstrap", () => {
-  const rootDir = makeTempDir("openwork-server-v2-phase2-corrupt");
-  const desktopDataDir = makeTempDir("openwork-server-v2-phase2-corrupt-desktop");
-  const orchestratorDataDir = makeTempDir("openwork-server-v2-phase2-corrupt-orchestrator");
-  fs.writeFileSync(path.join(desktopDataDir, "openwork-workspaces.json"), "{not-json");
+  const rootDir = makeTempDir("teamwork-server-v2-phase2-corrupt");
+  const desktopDataDir = makeTempDir("teamwork-server-v2-phase2-corrupt-desktop");
+  const orchestratorDataDir = makeTempDir("teamwork-server-v2-phase2-corrupt-orchestrator");
+  fs.writeFileSync(path.join(desktopDataDir, "teamwork-workspaces.json"), "{not-json");
 
   const persistence = createPersistence({
     legacy: {

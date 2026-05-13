@@ -145,7 +145,7 @@ type SessionTranscriptProps = {
   variant?: "default" | "nested";
 };
 
-// 500 was too high for real-world OpenWork sessions: a handful of giant
+// 500 was too high for real-world TeamWork sessions: a handful of giant
 // messages (emails, legal docs, pasted transcripts) can still produce a
 // massive DOM even when the block count is low. Lowering the threshold means
 // we switch to react-virtual much earlier and keep the main thread lighter

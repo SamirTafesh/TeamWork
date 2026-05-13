@@ -3,15 +3,15 @@ import { getGithubData } from "../../lib/github";
 import { baseOpenGraph } from "../../lib/seo";
 
 export const metadata = {
-  title: "OpenWork — Security & Data Privacy",
+  title: "TeamWork — Security & Data Privacy",
   description:
-    "How OpenWork handles data, subprocessors, incident response, and compliance for self-hosted enterprise deployments.",
+    "How TeamWork handles data, subprocessors, incident response, and compliance for self-hosted enterprise deployments.",
   alternates: {
     canonical: "/trust"
   },
   openGraph: {
     ...baseOpenGraph,
-    url: "https://openworklabs.com/trust"
+    url: "https://teamworklabs.com/trust"
   }
 };
 

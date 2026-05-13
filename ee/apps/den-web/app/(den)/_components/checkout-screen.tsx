@@ -196,7 +196,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
       <div className="den-frame grid gap-6 p-6 md:p-8 lg:p-10">
         <div className="flex flex-col gap-4 lg:max-w-3xl">
           <div className="grid gap-3">
-            <p className="den-eyebrow">OpenWork Cloud</p>
+            <p className="den-eyebrow">TeamWork Cloud</p>
             <h1 className="den-title-xl max-w-[14ch]">Purchase a plan before creating your workspace.</h1>
             <p className="den-copy max-w-2xl">
               Start with one workspace plan for $50/month. Each plan includes up to 5 members and 1 hosted worker.
@@ -218,7 +218,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
                 Refresh purchase link
               </button>
             )}
-            <a href="https://openworklabs.com/download" className="den-button-secondary w-full sm:w-auto">
+            <a href="https://teamworklabs.com/download" className="den-button-secondary w-full sm:w-auto">
               Use desktop only
             </a>
           </div>
@@ -245,7 +245,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
           <div className="grid gap-6">
             <article className="den-frame grid gap-6 p-6 md:p-7">
               <div className="grid gap-3">
-                <span className="den-kicker w-fit">OpenWork Cloud</span>
+                <span className="den-kicker w-fit">TeamWork Cloud</span>
                 <h2 className="den-title-lg">Share your setup across your team.</h2>
                 <p className="den-copy">
                   Manage your team&apos;s setup, invite teammates, and keep everything in sync.
@@ -279,18 +279,18 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
                 <span className="den-kicker w-fit">Desktop app</span>
                 <h2 className="den-title-lg">Stay local when you need to.</h2>
                 <p className="den-copy">
-                  Run locally for free, keep your data on your machine, and add OpenWork Cloud when your team is ready.
+                  Run locally for free, keep your data on your machine, and add TeamWork Cloud when your team is ready.
                 </p>
               </div>
 
               <div className="grid gap-3 text-sm text-[var(--dls-text-secondary)]">
                 <div className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-300" />Run locally for free</div>
                 <div className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-300" />Keep data on your machine</div>
-                <div className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-300" />Move into OpenWork Cloud later</div>
+                <div className="flex gap-3"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-300" />Move into TeamWork Cloud later</div>
               </div>
 
               <div className="mt-auto pt-2">
-                <a href="https://openworklabs.com/download" className="den-button-secondary w-full sm:w-auto">
+                <a href="https://teamworklabs.com/download" className="den-button-secondary w-full sm:w-auto">
                   Use desktop only
                 </a>
               </div>

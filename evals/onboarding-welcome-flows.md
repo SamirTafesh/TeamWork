@@ -18,10 +18,10 @@ Before running any eval:
 1. Reset onboarding state so the welcome screen appears:
    - Open DevTools console and run:
      ```js
-     const raw = localStorage.getItem("openwork.preferences");
+     const raw = localStorage.getItem("teamwork.preferences");
      const prefs = raw ? JSON.parse(raw) : {};
      prefs.hasCompletedOnboarding = false;
-     localStorage.setItem("openwork.preferences", JSON.stringify(prefs));
+     localStorage.setItem("teamwork.preferences", JSON.stringify(prefs));
      location.reload();
      ```
    - Alternatively: use the "Reset onboarding" button in Settings > Recovery
@@ -37,7 +37,7 @@ Before running any eval:
 
 ## Flow 20 — Welcome screen renders on first launch
 
-**Why**: When a user opens OpenWork for the first time with zero
+**Why**: When a user opens TeamWork for the first time with zero
 workspaces and `hasCompletedOnboarding === false`, they must see the
 full-screen welcome page — not the session empty state.
 
@@ -47,7 +47,7 @@ Steps:
 2. Navigate to `/` or `/session`.
 3. Expect: URL redirects to `/welcome`.
 4. Expect: full-screen page renders with:
-   - "Welcome to OpenWork" heading.
+   - "Welcome to TeamWork" heading.
    - "Your computer, but it works for you." subtitle.
    - Six capability cards: spreadsheets, browser, files, automate,
      content, APIs.
@@ -61,7 +61,7 @@ chrome-devtools_take_snapshot
 
 Pass criteria:
 - URL is `/welcome`.
-- Heading "Welcome to OpenWork" is visible.
+- Heading "Welcome to TeamWork" is visible.
 - All six capability cards are present.
 - "Get started" button is visible and clickable.
 - No sidebar or session layout is rendered.
@@ -121,7 +121,7 @@ Steps:
 2. Click "Local workspace".
 3. Expect: the local panel shows:
    - "Pick a folder" heading.
-   - Explanation text: "This folder becomes your workspace. OpenWork
+   - Explanation text: "This folder becomes your workspace. TeamWork
      will be able to:"
    - Three bullet points with check icons (read, write, anything).
    - "Drop files in anytime..." hint.
@@ -159,7 +159,7 @@ Pass criteria:
 - "Select or create a session to get started." is not visible.
 - Navigating to `/welcome` redirects away (onboarding flagged done).
 - `localStorage` contains `hasCompletedOnboarding: true` in
-  `openwork.preferences`.
+  `teamwork.preferences`.
 
 Known regressions this catches:
 - `hasCompletedOnboarding` not persisted after local workspace creation.
@@ -197,13 +197,13 @@ Known regressions this catches:
 
 ## Flow 24 — Remote workspace creation from welcome flow
 
-**Why**: Users connecting to a remote OpenWork server from the welcome
+**Why**: Users connecting to a remote TeamWork server from the welcome
 flow should also have onboarding marked complete.
 
 Steps:
 1. From `/welcome`, click "Get started".
 2. Click "Connect custom remote".
-3. Enter a valid OpenWork server URL.
+3. Enter a valid TeamWork server URL.
 4. Click "Connect remote".
 5. Expect: workspace connects; URL changes away from `/welcome`.
 6. Navigate to `/welcome`.
@@ -233,10 +233,10 @@ Tool recipe:
 ```
 chrome-devtools_evaluate_script {
   function: "() => {
-    const raw = localStorage.getItem('openwork.preferences');
+    const raw = localStorage.getItem('teamwork.preferences');
     const prefs = raw ? JSON.parse(raw) : {};
     prefs.hasCompletedOnboarding = false;
-    localStorage.setItem('openwork.preferences', JSON.stringify(prefs));
+    localStorage.setItem('teamwork.preferences', JSON.stringify(prefs));
     return 'done';
   }"
 }

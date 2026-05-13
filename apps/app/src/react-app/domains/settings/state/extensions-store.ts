@@ -32,18 +32,18 @@ import {
   readOpencodeConfig,
   revealDesktopItemInDir,
   uninstallSkill as uninstallSkillCommand,
-  workspaceOpenworkRead,
-  workspaceOpenworkWrite,
+  workspaceTeamworkRead,
+  workspaceTeamworkWrite,
   writeLocalSkill,
   writeOpencodeConfig,
   type OpencodeConfigFile,
 } from "../../../../app/lib/desktop";
 import type {
-  OpenworkHubRepo,
-  OpenworkServerCapabilities,
-  OpenworkServerClient,
-  OpenworkServerStatus,
-} from "../../../../app/lib/openwork-server";
+  TeamworkHubRepo,
+  TeamworkServerCapabilities,
+  TeamworkServerClient,
+  TeamworkServerStatus,
+} from "../../../../app/lib/teamwork-server";
 import {
   createDenClient,
   fetchDenOrgSkillsCatalog,
@@ -61,15 +61,15 @@ import {
   type CloudImportedSkill,
   type CloudImportedSkillHub,
 } from "../../../../app/cloud/import-state";
-import type { OpenworkServerStore } from "../../connections/openwork-server-store";
+import type { TeamworkServerStore } from "../../connections/teamwork-server-store";
 
 const OPENCODE_SKILL_NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const DEFAULT_HUB_REPO: HubSkillRepo = {
   owner: "different-ai",
-  repo: "openwork-hub",
+  repo: "teamwork-hub",
   ref: "main",
 };
-const HUB_REPOS_STORAGE_KEY = "openwork.skills.hubRepos.v1";
+const HUB_REPOS_STORAGE_KEY = "teamwork.skills.hubRepos.v1";
 
 type SetStateAction<T> = T | ((current: T) => T);
 
@@ -220,11 +220,11 @@ export function createExtensionsStore(options: {
   selectedWorkspaceId: () => string;
   selectedWorkspaceRoot: () => string;
   workspaceType: () => "local" | "remote";
-  openworkServer: OpenworkServerStore;
-  openworkServerConnection?: () => {
-    openworkServerClient: OpenworkServerClient | null;
-    openworkServerStatus: OpenworkServerStatus;
-    openworkServerCapabilities: OpenworkServerCapabilities | null;
+  teamworkServer: TeamworkServerStore;
+  teamworkServerConnection?: () => {
+    teamworkServerClient: TeamworkServerClient | null;
+    teamworkServerStatus: TeamworkServerStatus;
+    teamworkServerCapabilities: TeamworkServerCapabilities | null;
   };
   runtimeWorkspaceId: () => string | null;
   setBusy: (value: boolean) => void;
@@ -237,7 +237,7 @@ export function createExtensionsStore(options: {
 
   let disposed = false;
   let started = false;
-  let stopOpenworkSubscription: (() => void) | null = null;
+  let stopTeamworkSubscription: (() => void) | null = null;
   let stopDenSessionListener: (() => void) | null = null;
   let lastWorkspaceContextKey = "";
   let snapshot: ExtensionsStoreSnapshot;
@@ -308,15 +308,15 @@ export function createExtensionsStore(options: {
     return `${workspaceType}:${workspaceId}:${root}:${runtimeWorkspaceId}`;
   };
 
-  const getOpenworkServerSnapshot = () => {
-    const snapshot = options.openworkServer.getSnapshot();
-    const connection = options.openworkServerConnection?.();
-    if (!connection?.openworkServerClient) return snapshot;
+  const getTeamworkServerSnapshot = () => {
+    const snapshot = options.teamworkServer.getSnapshot();
+    const connection = options.teamworkServerConnection?.();
+    if (!connection?.teamworkServerClient) return snapshot;
     return {
       ...snapshot,
-      openworkServerClient: connection.openworkServerClient,
-      openworkServerStatus: connection.openworkServerStatus,
-      openworkServerCapabilities: connection.openworkServerCapabilities,
+      teamworkServerClient: connection.teamworkServerClient,
+      teamworkServerStatus: connection.teamworkServerStatus,
+      teamworkServerCapabilities: connection.teamworkServerCapabilities,
     };
   };
 
@@ -402,54 +402,54 @@ export function createExtensionsStore(options: {
     return next;
   };
 
-  const readWorkspaceOpenworkConfigRecord = async (): Promise<Record<string, unknown>> => {
+  const readWorkspaceTeamworkConfigRecord = async (): Promise<Record<string, unknown>> => {
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.config?.read;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.config?.read;
 
-    if (canUseOpenworkServer) {
-      const config = await openworkClient.getConfig(openworkWorkspaceId);
-      return config.openwork ?? {};
+    if (canUseTeamworkServer) {
+      const config = await teamworkClient.getConfig(teamworkWorkspaceId);
+      return config.teamwork ?? {};
     }
 
     if (isLocalWorkspace && isDesktopRuntime() && root) {
-      return await workspaceOpenworkRead({ workspacePath: root }) as unknown as Record<string, unknown>;
+      return await workspaceTeamworkRead({ workspacePath: root }) as unknown as Record<string, unknown>;
     }
 
     return {};
   };
 
-  const writeWorkspaceOpenworkConfigRecord = async (config: Record<string, unknown>) => {
+  const writeWorkspaceTeamworkConfigRecord = async (config: Record<string, unknown>) => {
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.config?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.config?.write;
 
-    if (canUseOpenworkServer) {
-      await openworkClient.patchConfig(openworkWorkspaceId, { openwork: config });
+    if (canUseTeamworkServer) {
+      await teamworkClient.patchConfig(teamworkWorkspaceId, { teamwork: config });
       return true;
     }
 
     if (isLocalWorkspace && isDesktopRuntime() && root) {
-      const result = await workspaceOpenworkWrite({
+      const result = await workspaceTeamworkWrite({
         workspacePath: root,
         config: config as never,
       });
       if (!result.ok) {
-        throw new Error(result.stderr || result.stdout || "Failed to write .opencode/openwork.json");
+        throw new Error(result.stderr || result.stdout || "Failed to write .opencode/teamwork.json");
       }
       return true;
     }
@@ -459,7 +459,7 @@ export function createExtensionsStore(options: {
 
   const refreshImportedCloudSkillHubs = async () => {
     try {
-      const config = await readWorkspaceOpenworkConfigRecord();
+      const config = await readWorkspaceTeamworkConfigRecord();
       const cloudImports = readWorkspaceCloudImports(config);
       setStateField("importedCloudSkillHubs", cloudImports.skillHubs);
       return cloudImports.skillHubs;
@@ -471,7 +471,7 @@ export function createExtensionsStore(options: {
 
   const refreshImportedCloudSkills = async () => {
     try {
-      const config = await readWorkspaceOpenworkConfigRecord();
+      const config = await readWorkspaceTeamworkConfigRecord();
       const cloudImports = readWorkspaceCloudImports(config);
       setStateField("importedCloudSkills", cloudImports.skills);
       return cloudImports.skills;
@@ -483,7 +483,7 @@ export function createExtensionsStore(options: {
 
   const refreshImportedCloudPlugins = async () => {
     try {
-      const config = await readWorkspaceOpenworkConfigRecord();
+      const config = await readWorkspaceTeamworkConfigRecord();
       const cloudImports = readWorkspaceCloudImports(config);
       setStateField("importedCloudPlugins", cloudImports.plugins);
       return cloudImports.plugins;
@@ -494,43 +494,43 @@ export function createExtensionsStore(options: {
   };
 
   const persistImportedCloudSkillHubs = async (nextSkillHubs: Record<string, CloudImportedSkillHub>) => {
-    const config = await readWorkspaceOpenworkConfigRecord();
+    const config = await readWorkspaceTeamworkConfigRecord();
     const cloudImports = readWorkspaceCloudImports(config);
     const nextConfig = withWorkspaceCloudImports(config, {
       ...cloudImports,
       skillHubs: nextSkillHubs,
     });
-    const persisted = await writeWorkspaceOpenworkConfigRecord(nextConfig);
+    const persisted = await writeWorkspaceTeamworkConfigRecord(nextConfig);
     if (!persisted) {
-      throw new Error("OpenWork server unavailable. Connect to manage imported cloud skill hubs.");
+      throw new Error("TeamWork server unavailable. Connect to manage imported cloud skill hubs.");
     }
     setStateField("importedCloudSkillHubs", nextSkillHubs);
   };
 
   const persistImportedCloudSkills = async (nextSkills: Record<string, CloudImportedSkill>) => {
-    const config = await readWorkspaceOpenworkConfigRecord();
+    const config = await readWorkspaceTeamworkConfigRecord();
     const cloudImports = readWorkspaceCloudImports(config);
     const nextConfig = withWorkspaceCloudImports(config, {
       ...cloudImports,
       skills: nextSkills,
     });
-    const persisted = await writeWorkspaceOpenworkConfigRecord(nextConfig);
+    const persisted = await writeWorkspaceTeamworkConfigRecord(nextConfig);
     if (!persisted) {
-      throw new Error("OpenWork server unavailable. Connect to manage imported cloud skills.");
+      throw new Error("TeamWork server unavailable. Connect to manage imported cloud skills.");
     }
     setStateField("importedCloudSkills", nextSkills);
   };
 
   const persistImportedCloudPlugins = async (nextPlugins: Record<string, CloudImportedPlugin>) => {
-    const config = await readWorkspaceOpenworkConfigRecord();
+    const config = await readWorkspaceTeamworkConfigRecord();
     const cloudImports = readWorkspaceCloudImports(config);
     const nextConfig = withWorkspaceCloudImports(config, {
       ...cloudImports,
       plugins: nextPlugins,
     });
-    const persisted = await writeWorkspaceOpenworkConfigRecord(nextConfig);
+    const persisted = await writeWorkspaceTeamworkConfigRecord(nextConfig);
     if (!persisted) {
-      throw new Error("OpenWork server unavailable. Connect to manage imported cloud plugins.");
+      throw new Error("TeamWork server unavailable. Connect to manage imported cloud plugins.");
     }
     setStateField("importedCloudPlugins", nextPlugins);
   };
@@ -557,17 +557,17 @@ export function createExtensionsStore(options: {
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
     const root = options.selectedWorkspaceRoot().trim();
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.write;
 
-    if (canUseOpenworkServer) {
-      await openworkClient.upsertSkill(openworkWorkspaceId, {
+    if (canUseTeamworkServer) {
+      await teamworkClient.upsertSkill(teamworkWorkspaceId, {
         name,
         content,
         description,
@@ -576,7 +576,7 @@ export function createExtensionsStore(options: {
     }
 
     if (isRemoteWorkspace) {
-      throw new Error("OpenWork server unavailable. Connect to import skills.");
+      throw new Error("TeamWork server unavailable. Connect to import skills.");
     }
 
     if (!isDesktopRuntime()) {
@@ -631,22 +631,22 @@ export function createExtensionsStore(options: {
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
     const root = options.selectedWorkspaceRoot().trim();
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.write;
 
-    if (canUseOpenworkServer) {
-      await openworkClient.deleteSkill(openworkWorkspaceId, name);
+    if (canUseTeamworkServer) {
+      await teamworkClient.deleteSkill(teamworkWorkspaceId, name);
       return;
     }
 
     if (isRemoteWorkspace) {
-      throw new Error("OpenWork server unavailable. Connect to remove skills.");
+      throw new Error("TeamWork server unavailable. Connect to remove skills.");
     }
 
     if (!isDesktopRuntime()) {
@@ -783,19 +783,19 @@ export function createExtensionsStore(options: {
   };
 
   const writePluginWorkspaceFile = async (path: string, content: string) => {
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
     if (
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      typeof openworkClient.writeWorkspaceFile === "function"
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      typeof teamworkClient.writeWorkspaceFile === "function"
     ) {
-      await openworkClient.writeWorkspaceFile(openworkWorkspaceId, { path, content, force: true });
+      await teamworkClient.writeWorkspaceFile(teamworkWorkspaceId, { path, content, force: true });
       return;
     }
-    throw new Error("OpenWork server unavailable. Connect to import plugin files into this workspace.");
+    throw new Error("TeamWork server unavailable. Connect to import plugin files into this workspace.");
   };
 
   const applyCloudOrgPluginImport = async (
@@ -889,12 +889,12 @@ export function createExtensionsStore(options: {
     const root = options.selectedWorkspaceRoot().trim();
     const repo = snapshot.hubRepo;
     const loadKey = `${root}::${repo ? hubRepoKey(repo) : "none"}`;
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkSnapshot.openworkServerCapabilities?.hub?.skills?.read;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkSnapshot.teamworkServerCapabilities?.hub?.skills?.read;
 
     if (loadKey !== hubSkillsLoadKey) {
       hubSkillsLoaded = false;
@@ -920,8 +920,8 @@ export function createExtensionsStore(options: {
         return;
       }
 
-      if (canUseOpenworkServer) {
-        const response = await openworkClient.listHubSkills({
+      if (canUseTeamworkServer) {
+        const response = await teamworkClient.listHubSkills({
           repo: {
             owner: repo.owner,
             repo: repo.repo,
@@ -1197,7 +1197,7 @@ export function createExtensionsStore(options: {
       const settings = readDenSettings();
       const token = settings.authToken?.trim() ?? "";
       const orgId = settings.activeOrgId?.trim() ?? "";
-      if (!token || !orgId) throw new Error("Sign in to OpenWork Cloud and choose an organization first.");
+      if (!token || !orgId) throw new Error("Sign in to TeamWork Cloud and choose an organization first.");
       const client = createDenClient({ baseUrl: settings.baseUrl, apiBaseUrl: settings.apiBaseUrl, token });
       const resolved = await client.getOrgPluginResolved(orgId, plugin);
       const files = await applyCloudOrgPluginImport(marketplaceId, resolved);
@@ -1333,18 +1333,18 @@ export function createExtensionsStore(options: {
     if (!repo) return { ok: false, message: "Select a hub repo before installing skills." };
 
     const isRemoteWorkspace = options.workspaceType() === "remote";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.hub?.skills?.install;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.hub?.skills?.install;
 
-    if (!canUseOpenworkServer) {
-      if (isRemoteWorkspace) return { ok: false, message: "OpenWork server unavailable. Connect to install skills." };
-      return { ok: false, message: "Hub install requires OpenWork server." };
+    if (!canUseTeamworkServer) {
+      if (isRemoteWorkspace) return { ok: false, message: "TeamWork server unavailable. Connect to install skills." };
+      return { ok: false, message: "Hub install requires TeamWork server." };
     }
 
     options.setBusy(true);
@@ -1352,8 +1352,8 @@ export function createExtensionsStore(options: {
     setStateField("skillsStatus", null);
 
     try {
-      const repoOverride: OpenworkHubRepo = { owner: repo.owner, repo: repo.repo, ref: repo.ref };
-      const result = await openworkClient.installHubSkill(openworkWorkspaceId, trimmed, { repo: repoOverride });
+      const repoOverride: TeamworkHubRepo = { owner: repo.owner, repo: repo.repo, ref: repo.ref };
+      const result = await teamworkClient.installHubSkill(teamworkWorkspaceId, trimmed, { repo: repoOverride });
       await refreshSkills({ force: true });
       await refreshHubSkills({ force: true });
       if (!result?.ok) return { ok: false, message: "Install failed." };
@@ -1466,14 +1466,14 @@ export function createExtensionsStore(options: {
     const root = options.selectedWorkspaceRoot().trim();
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.read;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.read;
 
     if (!root) {
       mutateState((current) => ({
@@ -1484,7 +1484,7 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (canUseOpenworkServer) {
+    if (canUseTeamworkServer) {
       if (root !== skillsRoot) skillsLoaded = false;
       if (!optionsOverride?.force && skillsLoaded) return;
       if (refreshSkillsInFlight) return;
@@ -1493,7 +1493,7 @@ export function createExtensionsStore(options: {
       refreshSkillsAborted = false;
       try {
         setStateField("skillsStatus", null);
-        const response = await openworkClient.listSkills(openworkWorkspaceId, { includeGlobal: isLocalWorkspace });
+        const response = await teamworkClient.listSkills(teamworkWorkspaceId, { includeGlobal: isLocalWorkspace });
         if (refreshSkillsAborted) return;
         const next: SkillCard[] = Array.isArray(response.items)
           ? response.items.map((entry) => ({
@@ -1569,7 +1569,7 @@ export function createExtensionsStore(options: {
       mutateState((current) => ({
         ...current,
         skills: [],
-        skillsStatus: "OpenWork server unavailable. Connect to load skills.",
+        skillsStatus: "TeamWork server unavailable. Connect to load skills.",
       }));
       return;
     }
@@ -1624,14 +1624,14 @@ export function createExtensionsStore(options: {
   async function refreshPlugins(scopeOverride?: PluginScope) {
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.plugins?.read;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.plugins?.read;
 
     if (refreshPluginsInFlight) return;
     refreshPluginsInFlight = true;
@@ -1652,17 +1652,17 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (scope === "project" && canUseOpenworkServer) {
+    if (scope === "project" && canUseTeamworkServer) {
       mutateState((current) => ({
         ...current,
         pluginConfig: null,
-        pluginConfigPath: `opencode.json (${isRemoteWorkspace ? "remote" : "openwork"} server)`,
+        pluginConfigPath: `opencode.json (${isRemoteWorkspace ? "remote" : "teamwork"} server)`,
       }));
 
       try {
         mutateState((current) => ({ ...current, pluginStatus: null, sidebarPluginStatus: null }));
         if (refreshPluginsAborted) return;
-        const result = await openworkClient.listPlugins(openworkWorkspaceId, { includeGlobal: false });
+        const result = await teamworkClient.listPlugins(teamworkWorkspaceId, { includeGlobal: false });
         if (refreshPluginsAborted) return;
         const projectItems = result.items.filter((item) => item.scope === "project");
         const list = toProjectPluginListEntries(projectItems);
@@ -1701,12 +1701,12 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (!isLocalWorkspace && !canUseOpenworkServer) {
+    if (!isLocalWorkspace && !canUseTeamworkServer) {
       mutateState((current) => ({
         ...current,
-        pluginStatus: "OpenWork server unavailable. Connect to manage plugins.",
+        pluginStatus: "TeamWork server unavailable. Connect to manage plugins.",
         pluginList: [],
-        sidebarPluginStatus: "Connect an OpenWork server to load plugins.",
+        sidebarPluginStatus: "Connect an TeamWork server to load plugins.",
         sidebarPluginList: [],
       }));
       refreshPluginsInFlight = false;
@@ -1795,14 +1795,14 @@ export function createExtensionsStore(options: {
 
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.plugins?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.plugins?.write;
 
     if (!pluginName) {
       if (isManualInput) setStateField("pluginStatus", t("skills.enter_plugin_name"));
@@ -1814,10 +1814,10 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (snapshot.pluginScope === "project" && canUseOpenworkServer) {
+    if (snapshot.pluginScope === "project" && canUseTeamworkServer) {
       try {
         setStateField("pluginStatus", null);
-        await openworkClient.addPlugin(openworkWorkspaceId, pluginName);
+        await teamworkClient.addPlugin(teamworkWorkspaceId, pluginName);
         options.markReloadRequired?.("plugins", { type: "plugin", name: triggerName, action: "added" });
         if (isManualInput) setStateField("pluginInput", "");
         await refreshPlugins("project");
@@ -1832,8 +1832,8 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (!isLocalWorkspace && !canUseOpenworkServer) {
-      setStateField("pluginStatus", "OpenWork server unavailable. Connect to manage plugins.");
+    if (!isLocalWorkspace && !canUseTeamworkServer) {
+      setStateField("pluginStatus", "TeamWork server unavailable. Connect to manage plugins.");
       return;
     }
 
@@ -1889,24 +1889,24 @@ export function createExtensionsStore(options: {
     }
 
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.plugins?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.plugins?.write;
 
     if (snapshot.pluginScope !== "project" && !isLocalWorkspace) {
       setStateField("pluginStatus", "Global plugins are only available for local workers.");
       return;
     }
 
-    if (snapshot.pluginScope === "project" && canUseOpenworkServer) {
+    if (snapshot.pluginScope === "project" && canUseTeamworkServer) {
       try {
         setStateField("pluginStatus", null);
-        await openworkClient.removePlugin(openworkWorkspaceId, name);
+        await teamworkClient.removePlugin(teamworkWorkspaceId, name);
         options.markReloadRequired?.("plugins", { type: "plugin", name: triggerName, action: "removed" });
         await refreshPlugins("project");
       } catch (error) {
@@ -1920,8 +1920,8 @@ export function createExtensionsStore(options: {
       return;
     }
 
-    if (!isLocalWorkspace && !canUseOpenworkServer) {
-      setStateField("pluginStatus", "OpenWork server unavailable. Connect to manage plugins.");
+    if (!isLocalWorkspace && !canUseTeamworkServer) {
+      setStateField("pluginStatus", "TeamWork server unavailable. Connect to manage plugins.");
       return;
     }
 
@@ -2002,21 +2002,21 @@ export function createExtensionsStore(options: {
   async function installSkillCreator(): Promise<{ ok: boolean; message: string }> {
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.write;
 
-    if (canUseOpenworkServer) {
+    if (canUseTeamworkServer) {
       options.setBusy(true);
       options.setError(null);
       setStateField("skillsStatus", t("skills.installing_skill_creator"));
       try {
-        await openworkClient.upsertSkill(openworkWorkspaceId, { name: "skill-creator", content: skillCreatorTemplate });
+        await teamworkClient.upsertSkill(teamworkWorkspaceId, { name: "skill-creator", content: skillCreatorTemplate });
         const message = t("skills.skill_creator_installed");
         setStateField("skillsStatus", message);
         options.markReloadRequired?.("skills", { type: "skill", name: "skill-creator", action: "added" });
@@ -2034,7 +2034,7 @@ export function createExtensionsStore(options: {
     }
 
     if (isRemoteWorkspace) {
-      const message = "OpenWork server unavailable. Connect to install skills.";
+      const message = "TeamWork server unavailable. Connect to install skills.";
       setStateField("skillsStatus", message);
       return { ok: false, message };
     }
@@ -2159,19 +2159,19 @@ export function createExtensionsStore(options: {
 
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.read;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.read;
 
-    if (canUseOpenworkServer) {
+    if (canUseTeamworkServer) {
       try {
         setStateField("skillsStatus", null);
-        const result = await openworkClient.getSkill(openworkWorkspaceId, trimmed, { includeGlobal: isLocalWorkspace });
+        const result = await teamworkClient.getSkill(teamworkWorkspaceId, trimmed, { includeGlobal: isLocalWorkspace });
         return { name: result.item.name, path: result.item.path, content: result.content };
       } catch (error) {
         setStateField("skillsStatus", error instanceof Error ? error.message : t("skills.failed_to_load"));
@@ -2180,7 +2180,7 @@ export function createExtensionsStore(options: {
     }
 
     if (isRemoteWorkspace) {
-      setStateField("skillsStatus", "OpenWork server unavailable. Connect to view skills.");
+      setStateField("skillsStatus", "TeamWork server unavailable. Connect to view skills.");
       return null;
     }
     if (!isDesktopRuntime()) {
@@ -2213,21 +2213,21 @@ export function createExtensionsStore(options: {
 
     const isRemoteWorkspace = options.workspaceType() === "remote";
     const isLocalWorkspace = options.workspaceType() === "local";
-    const openworkSnapshot = getOpenworkServerSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkSnapshot.openworkServerCapabilities?.skills?.write;
+    const teamworkSnapshot = getTeamworkServerSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkSnapshot.teamworkServerCapabilities?.skills?.write;
 
-    if (canUseOpenworkServer) {
+    if (canUseTeamworkServer) {
       options.setBusy(true);
       options.setError(null);
       setStateField("skillsStatus", null);
       try {
-        await openworkClient.upsertSkill(openworkWorkspaceId, {
+        await teamworkClient.upsertSkill(teamworkWorkspaceId, {
           name: trimmed,
           content: input.content,
           description: input.description,
@@ -2245,7 +2245,7 @@ export function createExtensionsStore(options: {
     }
 
     if (isRemoteWorkspace) {
-      setStateField("skillsStatus", "OpenWork server unavailable. Connect to edit skills.");
+      setStateField("skillsStatus", "TeamWork server unavailable. Connect to edit skills.");
       return;
     }
     if (!isDesktopRuntime()) {
@@ -2395,11 +2395,11 @@ export function createExtensionsStore(options: {
         cloudOrgMarketplacesLoaded = false;
         mutateState((current) => ({ ...current, cloudOrgSkillsContextKey: "" }));
       };
-      window.addEventListener("openwork-den-session-updated", onDenSessionUpdated);
-      stopDenSessionListener = () => window.removeEventListener("openwork-den-session-updated", onDenSessionUpdated);
+      window.addEventListener("teamwork-den-session-updated", onDenSessionUpdated);
+      stopDenSessionListener = () => window.removeEventListener("teamwork-den-session-updated", onDenSessionUpdated);
     }
 
-    stopOpenworkSubscription = options.openworkServer.subscribe(() => {
+    stopTeamworkSubscription = options.teamworkServer.subscribe(() => {
       syncFromOptions();
     });
 
@@ -2411,8 +2411,8 @@ export function createExtensionsStore(options: {
     disposed = true;
     started = false;
     abortRefreshes();
-    stopOpenworkSubscription?.();
-    stopOpenworkSubscription = null;
+    stopTeamworkSubscription?.();
+    stopTeamworkSubscription = null;
     stopDenSessionListener?.();
     stopDenSessionListener = null;
     listeners.clear();

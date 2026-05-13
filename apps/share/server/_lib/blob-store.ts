@@ -18,14 +18,14 @@ function resolveLocalBlobDir(): string | null {
   }
 
   const isDevLike =
-    String(process.env.OPENWORK_DEV_MODE ?? "") === "1" ||
+    String(process.env.TEAMWORK_DEV_MODE ?? "") === "1" ||
     String(process.env.NODE_ENV ?? "").trim() !== "production";
 
   if (!isDevLike) {
     return null;
   }
 
-  return path.join(os.tmpdir(), "openwork-share-blobs");
+  return path.join(os.tmpdir(), "teamwork-share-blobs");
 }
 
 function resolveBundlePathname(id: string): string {

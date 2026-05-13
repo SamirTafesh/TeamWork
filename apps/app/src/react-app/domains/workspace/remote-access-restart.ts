@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 
-import { openworkServerRestart, type OpenworkServerInfo } from "../../../app/lib/desktop";
+import { teamworkServerRestart, type TeamworkServerInfo } from "../../../app/lib/desktop";
 import {
-  readOpenworkServerSettings,
-  writeOpenworkServerSettings,
-} from "../../../app/lib/openwork-server";
+  readTeamworkServerSettings,
+  writeTeamworkServerSettings,
+} from "../../../app/lib/teamwork-server";
 import { t } from "../../../i18n";
 
 export type RemoteAccessRestartPhase =
@@ -15,7 +15,7 @@ export type RemoteAccessRestartPhase =
 
 type UseRemoteAccessRestartOptions = {
   isEnabled: () => boolean;
-  onHostInfo: (info: OpenworkServerInfo) => void;
+  onHostInfo: (info: TeamworkServerInfo) => void;
   onSettingsChanged: () => void;
 };
 
@@ -27,17 +27,17 @@ export function useRemoteAccessRestart(options: UseRemoteAccessRestartOptions) {
     async (enabled: boolean) => {
       if (phase === "restarting" || phase === "reconnecting") return;
 
-      const previous = readOpenworkServerSettings();
+      const previous = readTeamworkServerSettings();
       const next = { ...previous, remoteAccessEnabled: enabled };
 
       setPhase("restarting");
       setError(null);
-      writeOpenworkServerSettings(next);
+      writeTeamworkServerSettings(next);
       options.onSettingsChanged();
 
       try {
-        const info = await openworkServerRestart({ remoteAccessEnabled: enabled });
-        writeOpenworkServerSettings({
+        const info = await teamworkServerRestart({ remoteAccessEnabled: enabled });
+        writeTeamworkServerSettings({
           urlOverride: info.baseUrl?.trim() || undefined,
           token:
             info.ownerToken?.trim() ||
@@ -51,7 +51,7 @@ export function useRemoteAccessRestart(options: UseRemoteAccessRestartOptions) {
         options.onSettingsChanged();
         setPhase("idle");
       } catch (caught) {
-        writeOpenworkServerSettings(previous);
+        writeTeamworkServerSettings(previous);
         options.onSettingsChanged();
         setError(caught instanceof Error ? caught.message : t("app.error_remote_access"));
         setPhase("failed");

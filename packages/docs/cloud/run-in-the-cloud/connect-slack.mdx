@@ -3,17 +3,17 @@ title: "Connecting Slack to your workspace"
 description: "Learn how to connect Slack with your workspace"
 ---
 
-In order to connect `slack` with your openwork `workspace`, you will need the following:
+In order to connect `slack` with your teamwork `workspace`, you will need the following:
 
 1. Valid slack admin permissions to add an app
 2. Create a simple slack app
 3. Connect said slack app with your workspace
 
-This is one of the most relevant and meaningful applications of Openwork, and we use it daily ourselves.
+This is one of the most relevant and meaningful applications of Teamwork, and we use it daily ourselves.
 
 > **Disclaimer:** We recommend setting the slackbot with a remote workspace instead of in your local machine to ensure there's `hardware isolation` between the remote workspace the ai can access and your local machine.
 
-For team-owned Slack or other long-running connectors, you can host the runtime in an OpenWork Cloud [shared workspace](/cloud/run-in-the-cloud/shared-workspace) instead of keeping it on a laptop or self-managed server.
+For team-owned Slack or other long-running connectors, you can host the runtime in an TeamWork Cloud [shared workspace](/cloud/run-in-the-cloud/shared-workspace) instead of keeping it on a laptop or self-managed server.
 
 ## Having the right slack permissions
 
@@ -21,7 +21,7 @@ You should either be a slack `owner`, `admin` or have the right level of approva
 
 ## Creating a slack app
 
-Go to [Create new app](https://api.slack.com/apps?new_app=1) in Slack. What you need to obtain are the `xoxb` (bot) and `xapp` (Websocket) tokens to paste into Openwork. For more guidelines, questions and instructions regarding slack, please follow [own slack's own documentation.](https://docs.slack.dev/tools/bolt-python/building-an-app)
+Go to [Create new app](https://api.slack.com/apps?new_app=1) in Slack. What you need to obtain are the `xoxb` (bot) and `xapp` (Websocket) tokens to paste into Teamwork. For more guidelines, questions and instructions regarding slack, please follow [own slack's own documentation.](https://docs.slack.dev/tools/bolt-python/building-an-app)
 
 1. Create the App Manifest: Go to `api.slack.com/apps` → `Create New App` → `From a manifest` → pick your workspace.
 2. Install to Workspace & Grab Tokens After creating the app:

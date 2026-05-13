@@ -1,7 +1,7 @@
-# OpenWork UI evals
+# TeamWork UI evals
 
 Human-readable scenarios that an LLM (or a person) can replay against a live
-OpenWork instance to verify end-to-end behavior of the UI.
+TeamWork instance to verify end-to-end behavior of the UI.
 
 Each eval is:
 - A short list of steps written in plain English.
@@ -9,7 +9,7 @@ Each eval is:
 - The most useful Chrome DevTools MCP calls to drive it.
 
 They are not unit tests. They intentionally exercise the running stack
-(OpenCode + OpenWork server + React UI) so regressions in wiring — not just
+(OpenCode + TeamWork server + React UI) so regressions in wiring — not just
 types — get caught.
 
 ## How to run

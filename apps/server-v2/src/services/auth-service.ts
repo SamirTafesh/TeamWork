@@ -12,7 +12,7 @@ export type AuthSummary = {
   };
   headers: {
     authorization: "Authorization";
-    hostToken: "X-OpenWork-Host-Token";
+    hostToken: "X-TeamWork-Host-Token";
   };
   required: boolean;
   scopes: {
@@ -37,18 +37,18 @@ export type AuthService = ReturnType<typeof createAuthService>;
 
 export function createAuthService() {
   const clientToken = trimToken(
-    process.env.OPENWORK_SERVER_V2_CLIENT_TOKEN
-      ?? process.env.OPENWORK_CLIENT_TOKEN
-      ?? process.env.OPENWORK_TOKEN,
+    process.env.TEAMWORK_SERVER_V2_CLIENT_TOKEN
+      ?? process.env.TEAMWORK_CLIENT_TOKEN
+      ?? process.env.TEAMWORK_TOKEN,
   );
   const hostToken = trimToken(
-    process.env.OPENWORK_SERVER_V2_HOST_TOKEN
-      ?? process.env.OPENWORK_HOST_TOKEN,
+    process.env.TEAMWORK_SERVER_V2_HOST_TOKEN
+      ?? process.env.TEAMWORK_HOST_TOKEN,
   );
   const required = Boolean(clientToken || hostToken);
 
   function resolveActor(headers: Headers): RequestActor {
-    const hostHeader = headers.get("x-openwork-host-token")?.trim() ?? "";
+    const hostHeader = headers.get("x-teamwork-host-token")?.trim() ?? "";
     if (hostToken && hostHeader && hostHeader === hostToken) {
       return { kind: "host" };
     }
@@ -74,7 +74,7 @@ export function createAuthService() {
       },
       headers: {
         authorization: "Authorization",
-        hostToken: "X-OpenWork-Host-Token",
+        hostToken: "X-TeamWork-Host-Token",
       },
       required,
       scopes: {

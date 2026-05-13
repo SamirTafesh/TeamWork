@@ -20,8 +20,8 @@ function createTestApp() {
     environment: "test",
     inMemory: true,
     legacy: {
-      desktopDataDir: `/tmp/openwork-server-v2-phase6-desktop-${Math.random().toString(16).slice(2)}`,
-      orchestratorDataDir: `/tmp/openwork-server-v2-phase6-orchestrator-${Math.random().toString(16).slice(2)}`,
+      desktopDataDir: `/tmp/teamwork-server-v2-phase6-desktop-${Math.random().toString(16).slice(2)}`,
+      orchestratorDataDir: `/tmp/teamwork-server-v2-phase6-orchestrator-${Math.random().toString(16).slice(2)}`,
     },
     runtime: {
       bootstrapPolicy: "disabled",
@@ -235,18 +235,18 @@ describe("workspace session routes", () => {
     });
     withMockOpencodeBaseUrl(dependencies, mock.url);
 
-    const listResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions?roots=true&limit=1`);
+    const listResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions?roots=true&limit=1`);
     expect(listResponse.status).toBe(200);
     expect((await listResponse.json()).data.items[0].id).toBe("ses_1");
 
-    const snapshotResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions/ses_1/snapshot?limit=5`);
+    const snapshotResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions/ses_1/snapshot?limit=5`);
     expect(snapshotResponse.status).toBe(200);
     const snapshot = await snapshotResponse.json();
     expect(snapshot.data.session.id).toBe("ses_1");
     expect(snapshot.data.status.type).toBe("busy");
     expect(snapshot.data.todos[0].content).toBe("Ship Phase 6");
 
-    const createResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions`, {
+    const createResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Create" }),
@@ -254,7 +254,7 @@ describe("workspace session routes", () => {
     expect(createResponse.status).toBe(200);
     expect((await createResponse.json()).data.id).toBe("ses_created");
 
-    const updateResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions/ses_1`, {
+    const updateResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions/ses_1`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Rename" }),
@@ -262,7 +262,7 @@ describe("workspace session routes", () => {
     expect(updateResponse.status).toBe(200);
     expect((await updateResponse.json()).data.title).toBe("Renamed Session");
 
-    const promptResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions/ses_1/prompt_async`, {
+    const promptResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions/ses_1/prompt_async`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ parts: [{ type: "text", text: "Hello" }] }),
@@ -270,7 +270,7 @@ describe("workspace session routes", () => {
     expect(promptResponse.status).toBe(200);
     expect((await promptResponse.json()).data.accepted).toBe(true);
 
-    const revertResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions/ses_1/revert`, {
+    const revertResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions/ses_1/revert`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messageID: "msg_1" }),
@@ -278,7 +278,7 @@ describe("workspace session routes", () => {
     expect(revertResponse.status).toBe(200);
     expect((await revertResponse.json()).data.title).toBe("Reverted Session");
 
-    const eventsResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/events`);
+    const eventsResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/events`);
     expect(eventsResponse.status).toBe(200);
     const eventsBody = await eventsResponse.text();
     expect(eventsBody).toContain("session.status");
@@ -294,21 +294,21 @@ describe("workspace session routes", () => {
       directory: "/srv/remote-alpha",
       displayName: "Remote Alpha",
       legacyNotes: { source: "test" },
-      remoteType: "openwork",
+      remoteType: "teamwork",
       remoteWorkspaceId: "alpha",
-      serverAuth: { openworkToken: "secret" },
+      serverAuth: { teamworkToken: "secret" },
       serverBaseUrl: remote.url,
       serverHostingKind: "self_hosted",
       serverLabel: "remote.example.com",
       workspaceStatus: "ready",
     });
 
-    const listResponse = await app.request(`http://openwork.local/workspaces/${workspace.id}/sessions`);
+    const listResponse = await app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions`);
     expect(listResponse.status).toBe(200);
     expect((await listResponse.json()).data.items[0].id).toBe("ses_1");
 
     const commandResponse = await Promise.race([
-      app.request(`http://openwork.local/workspaces/${workspace.id}/sessions/ses_1/command`, {
+      app.request(`http://teamwork.local/workspaces/${workspace.id}/sessions/ses_1/command`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ command: "review" }),

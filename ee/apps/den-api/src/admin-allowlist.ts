@@ -1,23 +1,23 @@
-import { sql } from "@openwork-ee/den-db/drizzle"
-import { AdminAllowlistTable } from "@openwork-ee/den-db/schema"
-import { createDenTypeId } from "@openwork-ee/utils/typeid"
+import { sql } from "@teamwork-ee/den-db/drizzle"
+import { AdminAllowlistTable } from "@teamwork-ee/den-db/schema"
+import { createDenTypeId } from "@teamwork-ee/utils/typeid"
 import { db } from "./db.js"
 
 const ADMIN_ALLOWLIST_SEEDS = [
   {
-    email: "ben@openworklabs.com",
+    email: "ben@teamworklabs.com",
     note: "Seeded internal admin",
   },
   {
-    email: "jan@openworklabs.com",
+    email: "jan@teamworklabs.com",
     note: "Seeded internal admin",
   },
   {
-    email: "omar@openworklabs.com",
+    email: "omar@teamworklabs.com",
     note: "Seeded internal admin",
   },
   {
-    email: "berk@openworklabs.com",
+    email: "berk@teamworklabs.com",
     note: "Seeded internal admin",
   },
 ] as const

@@ -3,7 +3,7 @@ import {
   PaperMeshGradient,
   getSeededPaperGrainGradientConfig,
   getSeededPaperMeshGradientConfig,
-} from "@openwork/ui/react"
+} from "@teamwork/ui/react"
 import { useMemo, useState } from "react"
 
 const sampleIds = [
@@ -26,11 +26,11 @@ export function App() {
 
       <section className="hero-card panel">
         <div className="hero-copy">
-          <span className="eyebrow">OpenWork UI demo</span>
+          <span className="eyebrow">TeamWork UI demo</span>
           <h1>Seeded Paper gradients on their own dev surface</h1>
           <p>
             Type a TypeID-like string, inspect the deterministic values derived from it, and preview
-            the gradients that `@openwork/ui/react` will render anywhere else in the repo.
+            the gradients that `@teamwork/ui/react` will render anywhere else in the repo.
           </p>
         </div>
 
@@ -114,10 +114,10 @@ export function App() {
         <div className="panel code-panel">
           <span className="eyebrow muted">Import paths</span>
           <div className="pill-stack">
-            <code className="import-pill">@openwork/ui/react</code>
-            <code className="import-pill">@openwork/ui/solid</code>
+            <code className="import-pill">@teamwork/ui/react</code>
+            <code className="import-pill">@teamwork/ui/solid</code>
           </div>
-          <pre>{`import { PaperMeshGradient, PaperGrainGradient } from "@openwork/ui/react"
+          <pre>{`import { PaperMeshGradient, PaperGrainGradient } from "@teamwork/ui/react"
 
 <PaperMeshGradient seed="${normalizedSeed}" />
 <PaperGrainGradient seed="${normalizedSeed}" />`}</pre>
@@ -146,7 +146,7 @@ function GradientCard({
         {surface}
         <div className="surface-overlay" />
         <div className="surface-copy">
-          <span className="eyebrow on-dark">@openwork/ui/react</span>
+          <span className="eyebrow on-dark">@teamwork/ui/react</span>
           <h2>{title}</h2>
           <p>{subtitle}</p>
         </div>

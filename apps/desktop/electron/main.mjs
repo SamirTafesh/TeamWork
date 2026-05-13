@@ -25,26 +25,26 @@ import { registerUpdaterIpc } from "./updater.mjs";
 import { exportWorkspaceConfig, importWorkspaceConfig } from "./workspace-archive.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const NATIVE_DEEP_LINK_EVENT = "openwork:deep-link-native";
-const TAURI_APP_IDENTIFIER = "com.differentai.openwork";
-const DEV_APP_IDENTIFIER = "com.differentai.openwork.dev";
-const DESKTOP_PROTOCOL_SCHEME = "openwork";
-const isDevMode = process.env.OPENWORK_DEV_MODE === "1";
-const APP_NAME = isDevMode ? "OpenWork - Dev" : "OpenWork";
+const NATIVE_DEEP_LINK_EVENT = "teamwork:deep-link-native";
+const TAURI_APP_IDENTIFIER = "com.differentai.teamwork";
+const DEV_APP_IDENTIFIER = "com.differentai.teamwork.dev";
+const DESKTOP_PROTOCOL_SCHEME = "teamwork";
+const isDevMode = process.env.TEAMWORK_DEV_MODE === "1";
+const APP_NAME = isDevMode ? "TeamWork - Dev" : "TeamWork";
 const APP_IDENTIFIER = isDevMode ? DEV_APP_IDENTIFIER : TAURI_APP_IDENTIFIER;
 
 // Production Electron shares the same on-disk state folder as the Tauri shell
 // so in-place migration is a no-op for almost every file. Dev mode uses the
 // separate dev identifier so it can run beside the production app.
 //
-// Override via OPENWORK_ELECTRON_USERDATA so dogfooders can isolate their
+// Override via TEAMWORK_ELECTRON_USERDATA so dogfooders can isolate their
 // Electron install from the real Tauri app.
 app.setName(APP_NAME);
 app.setAppUserModelId(APP_IDENTIFIER);
 if (app.isPackaged) {
   app.setAsDefaultProtocolClient(DESKTOP_PROTOCOL_SCHEME);
 }
-const userDataOverride = process.env.OPENWORK_ELECTRON_USERDATA?.trim();
+const userDataOverride = process.env.TEAMWORK_ELECTRON_USERDATA?.trim();
 if (userDataOverride) {
   app.setPath("userData", userDataOverride);
 } else {
@@ -88,16 +88,16 @@ if (process.platform === "darwin" && APP_ICON_IMAGE && !APP_ICON_IMAGE.isEmpty()
 
 // Optional: expose Chrome DevTools Protocol so external tools (chrome-devtools
 // MCP, raw CDP clients, etc.) can attach to this Electron instance.
-// Enable by setting OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=<port> before launch.
+// Enable by setting TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT=<port> before launch.
 const remoteDebugPort = Number.parseInt(
-  process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "",
+  process.env.TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "",
   10,
 );
 if (Number.isFinite(remoteDebugPort) && remoteDebugPort > 0) {
   app.commandLine.appendSwitch("remote-debugging-port", String(remoteDebugPort));
   app.commandLine.appendSwitch("remote-debugging-address", "127.0.0.1");
 }
-const DEFAULT_DEN_BASE_URL = "https://app.openworklabs.com";
+const DEFAULT_DEN_BASE_URL = "https://app.teamworklabs.com";
 const DEFAULT_LOCAL_BASE_URL = "http://127.0.0.1:4096";
 
 function envFlagDisabled(name) {
@@ -106,7 +106,7 @@ function envFlagDisabled(name) {
 }
 
 async function installReactDevToolsForDev() {
-  if (app.isPackaged || envFlagDisabled("OPENWORK_REACT_DEVTOOLS")) return;
+  if (app.isPackaged || envFlagDisabled("TEAMWORK_REACT_DEVTOOLS")) return;
   try {
     const mod = await import("electron-devtools-installer");
     const installExtension =
@@ -151,7 +151,7 @@ const IDLE_ENGINE_INFO = Object.freeze({
   lastStderr: null,
 });
 
-const IDLE_OPENWORK_SERVER_INFO = Object.freeze({
+const IDLE_TEAMWORK_SERVER_INFO = Object.freeze({
   running: false,
   remoteAccessEnabled: false,
   host: null,
@@ -199,7 +199,7 @@ function createBrowserView() {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
-      partition: "persist:openwork-browser",
+      partition: "persist:teamwork-browser",
     },
   });
   browserView.webContents.setWindowOpenHandler(({ url }) => {
@@ -217,7 +217,7 @@ function createBrowserView() {
 function sendBrowserState() {
   if (!mainWindow || !browserView) return;
   try {
-    mainWindow.webContents.send("openwork:browser:state", {
+    mainWindow.webContents.send("teamwork:browser:state", {
       url: browserView.webContents.getURL(),
       title: browserView.webContents.getTitle(),
       canGoBack: browserView.webContents.canGoBack(),
@@ -265,7 +265,7 @@ function destroyBrowserView() {
 
 // ── In-process browser MCP servers ─────────────────────────────────────
 // Two MCP servers run inside the Electron main process:
-//   "openwork-browser" — controls the embedded WebContentsView
+//   "teamwork-browser" — controls the embedded WebContentsView
 //   "chrome"           — connects to the user's external Chrome
 // Both are exposed as HTTP endpoints.  OpenCode connects as a remote client.
 let browserMcpPorts = null; // { builtinPort, externalPort, stop }
@@ -274,10 +274,10 @@ async function ensureBrowserMcpServers() {
   if (browserMcpPorts) return browserMcpPorts;
 
   // CDP port for the Electron app itself (WebContentsView is a target on it)
-  const cdpPortRaw = process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "";
+  const cdpPortRaw = process.env.TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "";
   const cdpPort = Number.parseInt(cdpPortRaw, 10);
   if (!Number.isFinite(cdpPort) || cdpPort <= 0) {
-    console.error("[browser-mcp] Cannot start — no Electron CDP port configured (OPENWORK_ELECTRON_REMOTE_DEBUG_PORT)");
+    console.error("[browser-mcp] Cannot start — no Electron CDP port configured (TEAMWORK_ELECTRON_REMOTE_DEBUG_PORT)");
     return null;
   }
 
@@ -302,7 +302,7 @@ async function ensureBrowserMcpServers() {
         // Always notify the renderer so it can render the BrowserPanel
         // toolbar.  The React component may have unmounted (session switch)
         // while the WebContentsView stayed open, so we re-send every time.
-        mainWindow.webContents.send("openwork:browser:panel-opened");
+        mainWindow.webContents.send("teamwork:browser:panel-opened");
         // Wait for the page to have a real URL (not about:blank)
         const url = view.webContents.getURL();
         if (!url || url === "about:blank") {
@@ -316,7 +316,7 @@ async function ensureBrowserMcpServers() {
       onHideBrowser: () => {
         hideBrowserView();
         if (mainWindow) {
-          mainWindow.webContents.send("openwork:browser:panel-closed");
+          mainWindow.webContents.send("teamwork:browser:panel-closed");
         }
       },
     });
@@ -357,8 +357,8 @@ async function seedBrowserMcpConfig(workspaceDir) {
   let changed = !configPath;
 
   const builtinUrl = `http://127.0.0.1:${ports.builtinPort}/mcp`;
-  if (config.mcp["openwork-browser"]?.url !== builtinUrl) {
-    config.mcp["openwork-browser"] = { type: "remote", url: builtinUrl };
+  if (config.mcp["teamwork-browser"]?.url !== builtinUrl) {
+    config.mcp["teamwork-browser"] = { type: "remote", url: builtinUrl };
     changed = true;
   }
 
@@ -394,8 +394,8 @@ function forwardedDeepLinks(argv) {
     .map((entry) => entry.trim())
     .filter(
       (entry) =>
-        entry.startsWith("openwork://") ||
-        entry.startsWith("openwork-dev://") ||
+        entry.startsWith("teamwork://") ||
+        entry.startsWith("teamwork-dev://") ||
         entry.startsWith("https://") ||
         entry.startsWith("http://"),
     );
@@ -417,19 +417,19 @@ function flushPendingDeepLinks() {
 }
 
 function desktopBootstrapPath() {
-  if (process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH?.trim()) {
-    return process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH.trim();
+  if (process.env.TEAMWORK_DESKTOP_BOOTSTRAP_PATH?.trim()) {
+    return process.env.TEAMWORK_DESKTOP_BOOTSTRAP_PATH.trim();
   }
-  return path.join(os.homedir(), ".config", "openwork", "desktop-bootstrap.json");
+  return path.join(os.homedir(), ".config", "teamwork", "desktop-bootstrap.json");
 }
 
 function workspaceStatePath() {
-  return path.join(app.getPath("userData"), "openwork-workspaces.json");
+  return path.join(app.getPath("userData"), "teamwork-workspaces.json");
 }
 
-// Earlier Electron alpha builds copied Tauri's openwork-workspaces.json into an
+// Earlier Electron alpha builds copied Tauri's teamwork-workspaces.json into an
 // Electron-only workspace-state.json. Keep importing that file when the shared
-// canonical file is missing, but write openwork-workspaces.json going forward so
+// canonical file is missing, but write teamwork-workspaces.json going forward so
 // Tauri rollback and Electron both read the same desktop workspace state.
 function legacyElectronWorkspaceStatePath() {
   return path.join(app.getPath("userData"), "workspace-state.json");
@@ -445,7 +445,7 @@ async function migrateLegacyElectronWorkspaceStateIfNeeded() {
     const raw = await readFile(legacy, "utf8");
     await writeFile(current, raw, "utf8");
     console.info(
-      "[migration] copied workspace-state.json → openwork-workspaces.json",
+      "[migration] copied workspace-state.json → teamwork-workspaces.json",
     );
     return true;
   } catch (error) {
@@ -581,7 +581,7 @@ function validateSkillName(raw) {
   return trimmed;
 }
 
-function defaultWorkspaceOpenworkConfig(workspacePath, preset = null) {
+function defaultWorkspaceTeamworkConfig(workspacePath, preset = null) {
   return {
     version: 1,
     workspace: workspacePath
@@ -628,27 +628,27 @@ function remoteWorkspaceId(baseUrl, directory) {
   return stableWorkspaceId(key);
 }
 
-function openworkRemoteWorkspaceId(hostUrl, workspaceId) {
+function teamworkRemoteWorkspaceId(hostUrl, workspaceId) {
   const key = String(workspaceId ?? "").trim()
-    ? `openwork::${hostUrl}::${String(workspaceId).trim()}`
-    : `openwork::${hostUrl}`;
+    ? `teamwork::${hostUrl}::${String(workspaceId).trim()}`
+    : `teamwork::${hostUrl}`;
   return stableWorkspaceId(key);
 }
 
-async function readWorkspaceOpenworkConfig(workspacePath) {
-  const openworkPath = path.join(workspacePath, ".opencode", "openwork.json");
-  if (!(await pathExists(openworkPath))) {
-    return defaultWorkspaceOpenworkConfig(workspacePath);
+async function readWorkspaceTeamworkConfig(workspacePath) {
+  const teamworkPath = path.join(workspacePath, ".opencode", "teamwork.json");
+  if (!(await pathExists(teamworkPath))) {
+    return defaultWorkspaceTeamworkConfig(workspacePath);
   }
-  const raw = await readFile(openworkPath, "utf8");
+  const raw = await readFile(teamworkPath, "utf8");
   return JSON.parse(raw);
 }
 
-async function writeWorkspaceOpenworkConfig(workspacePath, config) {
-  const openworkPath = path.join(workspacePath, ".opencode", "openwork.json");
-  await mkdir(path.dirname(openworkPath), { recursive: true });
-  await writeFile(openworkPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
-  return execResult(true, `Wrote ${openworkPath}`);
+async function writeWorkspaceTeamworkConfig(workspacePath, config) {
+  const teamworkPath = path.join(workspacePath, ".opencode", "teamwork.json");
+  await mkdir(path.dirname(teamworkPath), { recursive: true });
+  await writeFile(teamworkPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  return execResult(true, `Wrote ${teamworkPath}`);
 }
 
 async function readWorkspaceState() {
@@ -713,15 +713,15 @@ async function disposeRuntimeBeforeQuit() {
   await runtimeManager.dispose().catch(() => undefined);
 }
 
-function assertOpenworkServerReady(info) {
+function assertTeamworkServerReady(info) {
   if (!info?.running) {
-    throw new Error("OpenWork server did not stay running after startup.");
+    throw new Error("TeamWork server did not stay running after startup.");
   }
   if (!info.baseUrl) {
-    throw new Error("OpenWork server did not report a base URL after startup.");
+    throw new Error("TeamWork server did not report a base URL after startup.");
   }
   if (!info.ownerToken && !info.clientToken) {
-    throw new Error("OpenWork server did not report an access token after startup.");
+    throw new Error("TeamWork server did not report an access token after startup.");
   }
   return info;
 }
@@ -785,8 +785,8 @@ async function bootRuntimeForSelectedWorkspace() {
     workspacePath: bootWorkspaceRoot,
     name: bootWorkspace.name ?? bootWorkspace.displayName ?? null,
   }).catch(() => undefined);
-  const openworkServer = assertOpenworkServerReady(await runtimeManager.openworkServerInfo());
-  return { ok: true, skipped: false, engine, openworkServer, workspaceId: bootWorkspace.id ?? null };
+  const teamworkServer = assertTeamworkServerReady(await runtimeManager.teamworkServerInfo());
+  return { ok: true, skipped: false, engine, teamworkServer, workspaceId: bootWorkspace.id ?? null };
 }
 
 function ensureRuntimeBootstrap() {
@@ -810,12 +810,12 @@ function normalizeWorkspaceEntry(input) {
     baseUrl: input.baseUrl ?? null,
     directory: input.directory ?? null,
     displayName: input.displayName ?? null,
-    openworkHostUrl: input.openworkHostUrl ?? null,
-    openworkToken: input.openworkToken ?? null,
-    openworkClientToken: input.openworkClientToken ?? null,
-    openworkHostToken: input.openworkHostToken ?? null,
-    openworkWorkspaceId: input.openworkWorkspaceId ?? null,
-    openworkWorkspaceName: input.openworkWorkspaceName ?? null,
+    teamworkHostUrl: input.teamworkHostUrl ?? null,
+    teamworkToken: input.teamworkToken ?? null,
+    teamworkClientToken: input.teamworkClientToken ?? null,
+    teamworkHostToken: input.teamworkHostToken ?? null,
+    teamworkWorkspaceId: input.teamworkWorkspaceId ?? null,
+    teamworkWorkspaceName: input.teamworkWorkspaceName ?? null,
     sandboxBackend: input.sandboxBackend ?? null,
     sandboxRunId: input.sandboxRunId ?? null,
     sandboxContainerName: input.sandboxContainerName ?? null,
@@ -1139,7 +1139,7 @@ async function handleDesktopInvoke(event, command, ...args) {
         workspaceType: "local",
       });
       await mkdir(path.join(folderPath, ".opencode"), { recursive: true });
-      await writeWorkspaceOpenworkConfig(folderPath, defaultWorkspaceOpenworkConfig(folderPath, preset));
+      await writeWorkspaceTeamworkConfig(folderPath, defaultWorkspaceTeamworkConfig(folderPath, preset));
 
       // Clean up any legacy browser MCP entries from the new workspace config
       await seedBrowserMcpConfig(folderPath);
@@ -1162,20 +1162,20 @@ async function handleDesktopInvoke(event, command, ...args) {
       if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
         throw new Error("baseUrl must start with http:// or https://");
       }
-      const remoteType = input.remoteType === "opencode" ? "opencode" : "openwork";
+      const remoteType = input.remoteType === "opencode" ? "opencode" : "teamwork";
       const directory = typeof input.directory === "string" && input.directory.trim() ? input.directory.trim() : null;
-      const openworkHostUrl = typeof input.openworkHostUrl === "string" && input.openworkHostUrl.trim()
-        ? input.openworkHostUrl.trim()
+      const teamworkHostUrl = typeof input.teamworkHostUrl === "string" && input.teamworkHostUrl.trim()
+        ? input.teamworkHostUrl.trim()
         : null;
-      const openworkWorkspaceId = typeof input.openworkWorkspaceId === "string" && input.openworkWorkspaceId.trim()
-        ? input.openworkWorkspaceId.trim()
+      const teamworkWorkspaceId = typeof input.teamworkWorkspaceId === "string" && input.teamworkWorkspaceId.trim()
+        ? input.teamworkWorkspaceId.trim()
         : null;
-      const id = remoteType === "openwork"
-        ? openworkRemoteWorkspaceId(openworkHostUrl ?? baseUrl, openworkWorkspaceId)
+      const id = remoteType === "teamwork"
+        ? teamworkRemoteWorkspaceId(teamworkHostUrl ?? baseUrl, teamworkWorkspaceId)
         : remoteWorkspaceId(baseUrl, directory);
       const workspace = normalizeWorkspaceEntry({
         id,
-        name: String(input.displayName ?? input.openworkWorkspaceName ?? "Remote workspace"),
+        name: String(input.displayName ?? input.teamworkWorkspaceName ?? "Remote workspace"),
         displayName: input.displayName ?? null,
         path: directory ?? "",
         preset: "remote",
@@ -1183,12 +1183,12 @@ async function handleDesktopInvoke(event, command, ...args) {
         remoteType,
         baseUrl,
         directory,
-        openworkHostUrl,
-        openworkToken: input.openworkToken ?? null,
-        openworkClientToken: input.openworkClientToken ?? null,
-        openworkHostToken: input.openworkHostToken ?? null,
-        openworkWorkspaceId,
-        openworkWorkspaceName: input.openworkWorkspaceName ?? null,
+        teamworkHostUrl,
+        teamworkToken: input.teamworkToken ?? null,
+        teamworkClientToken: input.teamworkClientToken ?? null,
+        teamworkHostToken: input.teamworkHostToken ?? null,
+        teamworkWorkspaceId,
+        teamworkWorkspaceName: input.teamworkWorkspaceName ?? null,
         sandboxBackend: input.sandboxBackend ?? null,
         sandboxRunId: input.sandboxRunId ?? null,
         sandboxContainerName: input.sandboxContainerName ?? null,
@@ -1241,21 +1241,21 @@ async function handleDesktopInvoke(event, command, ...args) {
       if (!workspacePath || !authorizedRoot) {
         throw new Error("workspacePath and folderPath are required");
       }
-      const config = await readWorkspaceOpenworkConfig(workspacePath);
+      const config = await readWorkspaceTeamworkConfig(workspacePath);
       if (!Array.isArray(config.authorizedRoots)) {
         config.authorizedRoots = [];
       }
       if (!config.authorizedRoots.includes(authorizedRoot)) {
         config.authorizedRoots.push(authorizedRoot);
       }
-      return writeWorkspaceOpenworkConfig(workspacePath, config);
+      return writeWorkspaceTeamworkConfig(workspacePath, config);
     }
-    case "workspaceOpenworkRead":
-      return readWorkspaceOpenworkConfig(String(args[0]?.workspacePath ?? "").trim());
-    case "workspaceOpenworkWrite":
-      return writeWorkspaceOpenworkConfig(
+    case "workspaceTeamworkRead":
+      return readWorkspaceTeamworkConfig(String(args[0]?.workspacePath ?? "").trim());
+    case "workspaceTeamworkWrite":
+      return writeWorkspaceTeamworkConfig(
         String(args[0]?.workspacePath ?? "").trim(),
-        args[0]?.config ?? defaultWorkspaceOpenworkConfig(""),
+        args[0]?.config ?? defaultWorkspaceTeamworkConfig(""),
       );
     case "workspaceExportConfig": {
       const input = args[0] ?? {};
@@ -1346,15 +1346,15 @@ async function handleDesktopInvoke(event, command, ...args) {
     case "appBuildInfo":
       return {
         version: app.getVersion(),
-        gitSha: process.env.OPENWORK_GIT_SHA ?? null,
-        buildEpoch: process.env.OPENWORK_BUILD_EPOCH ?? null,
-        openworkDevMode: process.env.OPENWORK_DEV_MODE === "1",
+        gitSha: process.env.TEAMWORK_GIT_SHA ?? null,
+        buildEpoch: process.env.TEAMWORK_BUILD_EPOCH ?? null,
+        teamworkDevMode: process.env.TEAMWORK_DEV_MODE === "1",
       };
     case "getDesktopBootstrapConfig":
       return getDesktopBootstrapConfig();
     case "setDesktopBootstrapConfig":
       return setDesktopBootstrapConfig(args[0] ?? {});
-    case "nukeOpenworkAndOpencodeConfigAndExit": {
+    case "nukeTeamworkAndOpencodeConfigAndExit": {
       await rm(app.getPath("userData"), { recursive: true, force: true });
       app.exit(0);
       return undefined;
@@ -1366,14 +1366,14 @@ async function handleDesktopInvoke(event, command, ...args) {
       return runtimeManager.sandboxDoctor();
     case "sandboxStop":
       return runtimeManager.sandboxStop(String(args[0] ?? "").trim());
-    case "sandboxCleanupOpenworkContainers":
-      return runtimeManager.sandboxCleanupOpenworkContainers();
+    case "sandboxCleanupTeamworkContainers":
+      return runtimeManager.sandboxCleanupTeamworkContainers();
     case "sandboxDebugProbe":
       return runtimeManager.sandboxDebugProbe();
-    case "openworkServerInfo":
-      return runtimeManager.openworkServerInfo();
-    case "openworkServerRestart":
-      return runtimeManager.openworkServerRestart(args[0] ?? {});
+    case "teamworkServerInfo":
+      return runtimeManager.teamworkServerInfo();
+    case "teamworkServerRestart":
+      return runtimeManager.teamworkServerRestart(args[0] ?? {});
     case "pickDirectory": {
       const options = args[0] ?? {};
       /** @type {import("electron").OpenDialogOptions["properties"]} */
@@ -1496,7 +1496,7 @@ async function handleDesktopInvoke(event, command, ...args) {
         String(args[1] ?? "").trim(),
         String(args[2] ?? ""),
       );
-    case "resetOpenworkState": {
+    case "resetTeamworkState": {
       await rm(workspaceStatePath(), { force: true });
       await rm(desktopBootstrapPath(), { force: true });
       return undefined;
@@ -1601,7 +1601,7 @@ function jsonForJavaScript(value) {
   return JSON.stringify(JSON.stringify(value ?? {}));
 }
 
-async function evaluateOpenworkControl(expression, options = {}) {
+async function evaluateTeamworkControl(expression, options = {}) {
   const win = await createMainWindow();
   if (options.focus === true) {
     win.show();
@@ -1611,37 +1611,37 @@ async function evaluateOpenworkControl(expression, options = {}) {
   return win.webContents.executeJavaScript(expression, true);
 }
 
-async function runOpenworkControlCommand(command, args = {}) {
+async function runTeamworkControlCommand(command, args = {}) {
   const argsJsonLiteral = jsonForJavaScript(args);
   if (command === "snapshot") {
-    return evaluateOpenworkControl(`(async () => {
-      const control = window.__openworkControl;
-      if (!control) return { ok: false, error: "OpenWork control surface is not available yet." };
+    return evaluateTeamworkControl(`(async () => {
+      const control = window.__teamworkControl;
+      if (!control) return { ok: false, error: "TeamWork control surface is not available yet." };
       control.setEnabled?.(true);
       return { ok: true, ...control.snapshot() };
     })()`);
   }
   if (command === "actions") {
-    return evaluateOpenworkControl(`(async () => {
-      const control = window.__openworkControl;
-      if (!control) return { ok: false, error: "OpenWork control surface is not available yet." };
+    return evaluateTeamworkControl(`(async () => {
+      const control = window.__teamworkControl;
+      if (!control) return { ok: false, error: "TeamWork control surface is not available yet." };
       control.setEnabled?.(true);
       return { ok: true, actions: control.listActions() };
     })()`);
   }
   if (command === "execute") {
-    return evaluateOpenworkControl(`(async () => {
-      const control = window.__openworkControl;
+    return evaluateTeamworkControl(`(async () => {
+      const control = window.__teamworkControl;
       const input = JSON.parse(${argsJsonLiteral});
-      if (!control) return { ok: false, error: "OpenWork control surface is not available yet." };
+      if (!control) return { ok: false, error: "TeamWork control surface is not available yet." };
       if (!input || typeof input.actionId !== "string" || !input.actionId.trim()) {
-        return { ok: false, error: "Missing OpenWork actionId." };
+        return { ok: false, error: "Missing TeamWork actionId." };
       }
       control.setEnabled?.(true);
       return control.execute(input.actionId, input.args ?? {});
     })()`, { focus: true });
   }
-  return { ok: false, error: `Unknown OpenWork control command: ${command}` };
+  return { ok: false, error: `Unknown TeamWork control command: ${command}` };
 }
 
 async function startUiControlServer() {
@@ -1658,15 +1658,15 @@ async function startUiControlServer() {
         return;
       }
       if (request.method === "GET" && url.pathname === "/snapshot") {
-        sendJsonResponse(response, 200, await runOpenworkControlCommand("snapshot"));
+        sendJsonResponse(response, 200, await runTeamworkControlCommand("snapshot"));
         return;
       }
       if (request.method === "GET" && url.pathname === "/actions") {
-        sendJsonResponse(response, 200, await runOpenworkControlCommand("actions"));
+        sendJsonResponse(response, 200, await runTeamworkControlCommand("actions"));
         return;
       }
       if (request.method === "POST" && url.pathname === "/execute") {
-        sendJsonResponse(response, 200, await runOpenworkControlCommand("execute", await readJsonRequestBody(request)));
+        sendJsonResponse(response, 200, await runTeamworkControlCommand("execute", await readJsonRequestBody(request)));
         return;
       }
       sendJsonResponse(response, 404, { ok: false, error: "Not found" });
@@ -1680,8 +1680,8 @@ async function startUiControlServer() {
   });
   const address = uiControlServer.address();
   const port = typeof address === "object" && address ? address.port : null;
-  if (!port) throw new Error("Could not start OpenWork UI control bridge.");
-  uiControlDiscoveryPath = path.join(app.getPath("userData"), "openwork-ui-control.json");
+  if (!port) throw new Error("Could not start TeamWork UI control bridge.");
+  uiControlDiscoveryPath = path.join(app.getPath("userData"), "teamwork-ui-control.json");
   await writeFile(
     uiControlDiscoveryPath,
     `${JSON.stringify({ version: 1, app: APP_NAME, identifier: APP_IDENTIFIER, platform: process.platform, baseUrl: `http://127.0.0.1:${port}`, token: uiControlToken }, null, 2)}\n`,
@@ -1761,7 +1761,7 @@ async function createMainWindow() {
     return { action: "allow" };
   });
 
-  const startUrl = process.env.OPENWORK_ELECTRON_START_URL?.trim() || process.env.ELECTRON_START_URL?.trim();
+  const startUrl = process.env.TEAMWORK_ELECTRON_START_URL?.trim() || process.env.ELECTRON_START_URL?.trim();
   if (startUrl) {
     await mainWindow.loadURL(startUrl);
   } else {
@@ -1773,39 +1773,39 @@ async function createMainWindow() {
   return mainWindow;
 }
 
-ipcMain.handle("openwork:desktop", handleDesktopInvoke);
-ipcMain.handle("openwork:shell:openExternal", async (_event, url) => {
+ipcMain.handle("teamwork:desktop", handleDesktopInvoke);
+ipcMain.handle("teamwork:shell:openExternal", async (_event, url) => {
   if (typeof url === "string" && url.trim().length > 0) {
     await shell.openExternal(url);
   }
 });
-ipcMain.handle("openwork:shell:relaunch", async () => {
+ipcMain.handle("teamwork:shell:relaunch", async () => {
   app.relaunch();
   app.exit(0);
 });
 
 // ── Embedded browser IPC ────────────────────────────────────────────────
-ipcMain.handle("openwork:browser:show", (_event, bounds) => showBrowserView(bounds));
-ipcMain.handle("openwork:browser:hide", () => hideBrowserView());
-ipcMain.handle("openwork:browser:navigate", (_event, url) => {
+ipcMain.handle("teamwork:browser:show", (_event, bounds) => showBrowserView(bounds));
+ipcMain.handle("teamwork:browser:hide", () => hideBrowserView());
+ipcMain.handle("teamwork:browser:navigate", (_event, url) => {
   if (!browserView) return;
   const target = typeof url === "string" && url.trim() ? url.trim() : BROWSER_DEFAULT_URL;
   const finalUrl = /^https?:\/\//i.test(target) ? target : `https://${target}`;
   browserView.webContents.loadURL(finalUrl);
 });
-ipcMain.handle("openwork:browser:back", () => {
+ipcMain.handle("teamwork:browser:back", () => {
   if (browserView?.webContents.canGoBack()) browserView.webContents.goBack();
 });
-ipcMain.handle("openwork:browser:forward", () => {
+ipcMain.handle("teamwork:browser:forward", () => {
   if (browserView?.webContents.canGoForward()) browserView.webContents.goForward();
 });
-ipcMain.handle("openwork:browser:reload", () => browserView?.webContents.reload());
-ipcMain.handle("openwork:browser:bounds", (_event, bounds) => {
+ipcMain.handle("teamwork:browser:reload", () => browserView?.webContents.reload());
+ipcMain.handle("teamwork:browser:bounds", (_event, bounds) => {
   if (browserView && browserViewVisible && bounds.width > 0 && bounds.height > 0) {
     browserView.setBounds(bounds);
   }
 });
-ipcMain.handle("openwork:browser:state", () => {
+ipcMain.handle("teamwork:browser:state", () => {
   if (!browserView) return null;
   return {
     url: browserView.webContents.getURL(),
@@ -1815,7 +1815,7 @@ ipcMain.handle("openwork:browser:state", () => {
     isLoading: browserView.webContents.isLoading(),
   };
 });
-ipcMain.handle("openwork:browser:destroy", () => destroyBrowserView());
+ipcMain.handle("teamwork:browser:destroy", () => destroyBrowserView());
 
 registerMigrationIpc({ app, ipcMain });
 const { ensureAutoUpdater } = registerUpdaterIpc({ app, ipcMain, getMainWindow: () => mainWindow });

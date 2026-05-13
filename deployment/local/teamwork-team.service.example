@@ -1,0 +1,19 @@
+[Unit]
+Description=TeamWork Team Host (LAN)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=CHANGE_ME_USER
+Group=CHANGE_ME_GROUP
+WorkingDirectory=/opt/teamwork/teamwork
+EnvironmentFile=/etc/teamwork/teamwork.env
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter teamwork-orchestrator dev -- serve --workspace "$WORKSPACE_DIR" --remote-access --teamwork-host 0.0.0.0 --teamwork-port "$TEAMWORK_PORT" --connect-host "$TEAMWORK_CONNECT_HOST" --teamwork-token "$TEAMWORK_TOKEN" --teamwork-host-token "$TEAMWORK_HOST_TOKEN" --approval manual'
+Restart=always
+RestartSec=3
+TimeoutStopSec=25
+
+[Install]
+WantedBy=multi-user.target
+

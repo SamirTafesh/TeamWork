@@ -1,19 +1,19 @@
 {
-  "name": "@openwork-ee/den-web",
+  "name": "@teamwork-ee/den-web",
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "OPENWORK_DEV_MODE=1 NEXT_PUBLIC_POSTHOG_KEY= NEXT_PUBLIC_POSTHOG_API_KEY= next dev --hostname 0.0.0.0 --port 3005",
-    "dev:local": "sh -lc 'OPENWORK_DEV_MODE=1 NEXT_PUBLIC_POSTHOG_KEY= NEXT_PUBLIC_POSTHOG_API_KEY= next dev --hostname 0.0.0.0 --port ${DEN_WEB_PORT:-3005}'",
+    "dev": "TEAMWORK_DEV_MODE=1 NEXT_PUBLIC_POSTHOG_KEY= NEXT_PUBLIC_POSTHOG_API_KEY= next dev --hostname 0.0.0.0 --port 3005",
+    "dev:local": "sh -lc 'TEAMWORK_DEV_MODE=1 NEXT_PUBLIC_POSTHOG_KEY= NEXT_PUBLIC_POSTHOG_API_KEY= next dev --hostname 0.0.0.0 --port ${DEN_WEB_PORT:-3005}'",
     "prebuild": "pnpm --dir ../../../packages/ui build && pnpm --dir ../../packages/utils build",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 3005",
     "lint": "next lint"
   },
   "dependencies": {
-    "@openwork/types": "workspace:*",
-    "@openwork-ee/utils": "workspace:*",
-    "@openwork/ui": "workspace:*",
+    "@teamwork/types": "workspace:*",
+    "@teamwork-ee/utils": "workspace:*",
+    "@teamwork/ui": "workspace:*",
     "@paper-design/shaders-react": "0.0.72",
     "@tanstack/react-query": "^5.96.2",
     "lucide-react": "^0.577.0",

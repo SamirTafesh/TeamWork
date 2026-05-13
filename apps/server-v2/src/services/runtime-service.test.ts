@@ -32,7 +32,7 @@ async function sha256(filePath: string) {
 }
 
 async function createFakeBinary(kind: "opencode" | "router", mode: string, exitAfterMs?: number) {
-  const wrapperDir = makeTempDir(`openwork-server-v2-${kind}`);
+  const wrapperDir = makeTempDir(`teamwork-server-v2-${kind}`);
   const binaryPath = path.join(wrapperDir, kind === "opencode" ? "opencode" : "opencode-router");
   const fixturePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "test-fixtures", "fake-runtime.ts");
   const script = [
@@ -118,13 +118,13 @@ async function createFakeAssetService(opencodePath: string, routerPath: string) 
 }
 
 function createPersistence() {
-  const workingDirectory = makeTempDir("openwork-server-v2-runtime-service");
+  const workingDirectory = makeTempDir("teamwork-server-v2-runtime-service");
   return createServerPersistence({
     environment: "test",
     localServer: {
       baseUrl: null,
       hostingKind: "self_hosted",
-      label: "Local OpenWork Server",
+      label: "Local TeamWork Server",
     },
     version: "0.0.0-test",
     workingDirectory,
@@ -186,7 +186,7 @@ test("runtime bootstrap surfaces OpenCode readiness timeouts", async () => {
   const opencodePath = await createFakeBinary("opencode", "timeout");
   const routerPath = await createFakeBinary("router", "success");
   const assetService = await createFakeAssetService(opencodePath, routerPath);
-  process.env.OPENWORK_SERVER_V2_OPENCODE_START_TIMEOUT_MS = "300";
+  process.env.TEAMWORK_SERVER_V2_OPENCODE_START_TIMEOUT_MS = "300";
   const runtime = createRuntimeService({
     assetService,
     bootstrapPolicy: "manual",
@@ -200,7 +200,7 @@ test("runtime bootstrap surfaces OpenCode readiness timeouts", async () => {
 
   await expect(runtime.bootstrap()).rejects.toThrow("did not become ready");
   expect(runtime.getOpencodeHealth().status).toBe("error");
-  delete process.env.OPENWORK_SERVER_V2_OPENCODE_START_TIMEOUT_MS;
+  delete process.env.TEAMWORK_SERVER_V2_OPENCODE_START_TIMEOUT_MS;
 
   await runtime.dispose();
   persistence.close();

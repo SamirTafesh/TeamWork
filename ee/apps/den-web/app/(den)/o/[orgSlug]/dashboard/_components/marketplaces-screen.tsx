@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Cable, Search, Store } from "lucide-react";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { DashboardPageTemplate } from "../../../../_components/ui/dashboard-page-template";
 import { DenInput } from "../../../../_components/ui/input";
 import { buttonVariants } from "../../../../_components/ui/button";
@@ -147,7 +147,7 @@ function ConnectIntegrationEmptyState({ integrationsHref }: { integrationsHref: 
   return (
     <EmptyState
       title="Connect an integration to discover marketplaces"
-      description="Marketplaces are created when OpenWork finds a `.claude-plugin/marketplace.json` manifest in a connected repository."
+      description="Marketplaces are created when TeamWork finds a `.claude-plugin/marketplace.json` manifest in a connected repository."
       action={{ href: integrationsHref, label: "Open Integrations", icon: Cable }}
     />
   );

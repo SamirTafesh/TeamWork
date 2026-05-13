@@ -26,15 +26,15 @@ function run(command, args) {
 const commands = [
   {
     name: "server",
-    args: ["--filter", "openwork-server-v2", "dev"],
+    args: ["--filter", "teamwork-server-v2", "dev"],
   },
   {
     name: "openapi",
-    args: ["--filter", "openwork-server-v2", "openapi:watch"],
+    args: ["--filter", "teamwork-server-v2", "openapi:watch"],
   },
   {
     name: "sdk",
-    args: ["--filter", "@openwork/server-sdk", "watch"],
+    args: ["--filter", "@teamwork/server-sdk", "watch"],
   },
 ];
 

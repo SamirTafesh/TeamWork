@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "@openwork-ee/den-db/drizzle"
+import { and, asc, eq, inArray } from "@teamwork-ee/den-db/drizzle"
 import {
   AuthSessionTable,
   AuthUserTable,
@@ -8,9 +8,9 @@ import {
   OrganizationTable,
   TeamMemberTable,
   TeamTable,
-} from "@openwork-ee/den-db/schema"
-import { normalizeDesktopAppRestrictions, type DesktopAppRestrictions } from "@openwork/types/den/desktop-app-restrictions"
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+} from "@teamwork-ee/den-db/schema"
+import { normalizeDesktopAppRestrictions, type DesktopAppRestrictions } from "@teamwork/types/den/desktop-app-restrictions"
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import { db } from "./db.js"
 import { DEFAULT_ORGANIZATION_LIMITS, normalizeOrganizationMetadata, serializeOrganizationMetadata } from "./organization-limits.js"
 import { denDefaultDynamicOrganizationRoles, denOrganizationStaticRoles } from "./organization-access.js"

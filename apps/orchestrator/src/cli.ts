@@ -126,30 +126,30 @@ type OpenCodeRouterHealthSnapshot = {
 
 const FALLBACK_VERSION = "0.1.0";
 
-declare const __OPENWORK_ORCHESTRATOR_VERSION__: string | undefined;
-declare const __OPENWORK_PINNED_OPENCODE_VERSION__: string | undefined;
-const DEFAULT_OPENWORK_PORT = 8787;
+declare const __TEAMWORK_ORCHESTRATOR_VERSION__: string | undefined;
+declare const __TEAMWORK_PINNED_OPENCODE_VERSION__: string | undefined;
+const DEFAULT_TEAMWORK_PORT = 8787;
 const DEFAULT_APPROVAL_TIMEOUT = 30000;
 const MANAGED_OPENCODE_CREDENTIAL_LENGTH = 512;
 const INTERNAL_OPENCODE_CREDENTIALS_ENV =
-  "OPENWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS";
+  "TEAMWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS";
 const DEFAULT_OPENCODE_HOT_RELOAD_DEBOUNCE_MS = 700;
 const DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS = 1500;
 const DEFAULT_ACTIVITY_WINDOW_MS = 5 * 60_000;
 const DEFAULT_ACTIVITY_HEARTBEAT_INTERVAL_MS = 5 * 60_000;
 
 const SANDBOX_INTERNAL_OPENCODE_PORT = 4096;
-const SANDBOX_INTERNAL_OPENWORK_PORT = DEFAULT_OPENWORK_PORT;
+const SANDBOX_INTERNAL_TEAMWORK_PORT = DEFAULT_TEAMWORK_PORT;
 // OpenCodeRouter defaults its health server to 3005 when not overridden. In sandbox
 // mode we keep the *internal* port stable and only vary the published host
 // port to avoid collisions.
 const SANDBOX_INTERNAL_OPENCODE_ROUTER_HEALTH_PORT = 3005;
-const OPENWORK_DEV_DATA_DIR = "openwork-dev-data";
+const TEAMWORK_DEV_DATA_DIR = "teamwork-dev-data";
 
 const SANDBOX_OPENCODE_GLOBAL_CONFIG_CONTAINER_PATH =
   "/persist/.config/opencode";
 const SANDBOX_OPENCODE_GLOBAL_DATA_IMPORT_CONTAINER_PATH =
-  "/persist/.openwork-host-opencode-data";
+  "/persist/.teamwork-host-opencode-data";
 const CLI_SOURCE_DIR = dirname(fileURLToPath(import.meta.url));
 const ORCHESTRATOR_ROOT_DIR = resolve(CLI_SOURCE_DIR, "..");
 const REPO_ROOT_DIR = resolve(ORCHESTRATOR_ROOT_DIR, "..", "..");
@@ -169,7 +169,7 @@ type VersionInfo = {
   sha256: string;
 };
 
-type SidecarName = "openwork-server" | "opencode-router" | "opencode";
+type SidecarName = "teamwork-server" | "opencode-router" | "opencode";
 
 type SidecarTarget =
   | "darwin-arm64"
@@ -226,7 +226,7 @@ type BinaryDiagnostics = {
   actualVersion?: string;
 };
 
-type RuntimeServiceName = "openwork-server" | "opencode" | "opencode-router";
+type RuntimeServiceName = "teamwork-server" | "opencode" | "opencode-router";
 
 type RuntimeServiceSnapshot = {
   name: RuntimeServiceName;
@@ -625,9 +625,9 @@ let cachedSandboxAllowlist: SandboxMountAllowlist | null | undefined;
 let cachedSandboxAllowlistError: string | null = null;
 
 function resolveSandboxAllowlistPath(): string {
-  const override = process.env.OPENWORK_SANDBOX_MOUNT_ALLOWLIST?.trim();
+  const override = process.env.TEAMWORK_SANDBOX_MOUNT_ALLOWLIST?.trim();
   if (override) return resolve(override);
-  return join(homedir(), ".config", "openwork", "sandbox-mount-allowlist.json");
+  return join(homedir(), ".config", "teamwork", "sandbox-mount-allowlist.json");
 }
 
 function expandTildePath(input: string): string {
@@ -649,7 +649,7 @@ async function isDir(input: string): Promise<boolean> {
 async function resolveHostOpencodeGlobalConfigDir(): Promise<string | null> {
   const enabled =
     (
-      process.env.OPENWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
+      process.env.TEAMWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
       (internalDevModeFromEnv() ? "0" : "1")
     ).trim() !== "0";
   if (!enabled) return null;
@@ -694,7 +694,7 @@ async function resolveHostOpencodeGlobalConfigDir(): Promise<string | null> {
 async function resolveHostOpencodeGlobalDataDir(): Promise<string | null> {
   const enabled =
     (
-      process.env.OPENWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
+      process.env.TEAMWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
       (internalDevModeFromEnv() ? "0" : "1")
     ).trim() !== "0";
   if (!enabled) return null;
@@ -949,10 +949,10 @@ async function fileExists(path: string): Promise<boolean> {
 
 async function resolveCliVersion(): Promise<string> {
   if (
-    typeof __OPENWORK_ORCHESTRATOR_VERSION__ === "string" &&
-    __OPENWORK_ORCHESTRATOR_VERSION__.trim()
+    typeof __TEAMWORK_ORCHESTRATOR_VERSION__ === "string" &&
+    __TEAMWORK_ORCHESTRATOR_VERSION__.trim()
   ) {
-    return __OPENWORK_ORCHESTRATOR_VERSION__.trim();
+    return __TEAMWORK_ORCHESTRATOR_VERSION__.trim();
   }
   const candidates = [
     join(dirname(process.execPath), "..", "package.json"),
@@ -976,10 +976,10 @@ async function resolveCliVersion(): Promise<string> {
 
 async function readPinnedOpencodeVersion(): Promise<string | undefined> {
   if (
-    typeof __OPENWORK_PINNED_OPENCODE_VERSION__ === "string" &&
-    __OPENWORK_PINNED_OPENCODE_VERSION__.trim()
+    typeof __TEAMWORK_PINNED_OPENCODE_VERSION__ === "string" &&
+    __TEAMWORK_PINNED_OPENCODE_VERSION__.trim()
   ) {
-    return __OPENWORK_PINNED_OPENCODE_VERSION__.trim();
+    return __TEAMWORK_PINNED_OPENCODE_VERSION__.trim();
   }
 
   const candidates = [
@@ -1055,7 +1055,7 @@ async function resolveDockerCandidates(): Promise<string[]> {
   };
 
   for (const key of [
-    "OPENWORK_DOCKER_BIN",
+    "TEAMWORK_DOCKER_BIN",
     "OPENWRK_DOCKER_BIN",
     "DOCKER_BIN",
   ]) {
@@ -1248,12 +1248,12 @@ function resolveManagedOpencodeCredentials(args: ParsedArgs): {
   const requestedUsername =
     typeof explicitUsernameFlag === "string"
       ? explicitUsernameFlag
-      : process.env.OPENWORK_OPENCODE_USERNAME ??
+      : process.env.TEAMWORK_OPENCODE_USERNAME ??
         process.env.OPENCODE_SERVER_USERNAME;
   const requestedPassword =
     typeof explicitPasswordFlag === "string"
       ? explicitPasswordFlag
-      : process.env.OPENWORK_OPENCODE_PASSWORD ??
+      : process.env.TEAMWORK_OPENCODE_PASSWORD ??
         process.env.OPENCODE_SERVER_PASSWORD;
   const allowInjectedCredentials =
     (process.env[INTERNAL_OPENCODE_CREDENTIALS_ENV] ?? "").trim() === "1";
@@ -1274,7 +1274,7 @@ function resolveManagedOpencodeCredentials(args: ParsedArgs): {
   if (requestedUsername && requestedPassword && hasExplicitCredentialFlags) {
     if (!allowInjectedCredentials) {
       throw new Error(
-        "OpenCode credentials are managed by OpenWork. Custom --opencode-username/--opencode-password values are not supported.",
+        "OpenCode credentials are managed by TeamWork. Custom --opencode-username/--opencode-password values are not supported.",
       );
     }
     return {
@@ -1298,11 +1298,11 @@ function assertManagedOpencodeAuth(args: ParsedArgs) {
     args.flags,
     "opencode-auth",
     true,
-    "OPENWORK_OPENCODE_AUTH",
+    "TEAMWORK_OPENCODE_AUTH",
   );
   if (!authEnabled) {
     throw new Error(
-      "OpenCode basic auth is always enabled when OpenWork launches OpenCode.",
+      "OpenCode basic auth is always enabled when TeamWork launches OpenCode.",
     );
   }
 }
@@ -1332,11 +1332,11 @@ function resolveOpencodeLogLevel(requested?: string): string | undefined {
   return normalized;
 }
 
-function resolveOpenworkRemoteAccess(args: ParsedArgs): boolean {
+function resolveTeamworkRemoteAccess(args: ParsedArgs): boolean {
   const explicitHost =
-    readFlag(args.flags, "openwork-host") ?? process.env.OPENWORK_HOST;
+    readFlag(args.flags, "teamwork-host") ?? process.env.TEAMWORK_HOST;
   const remoteAccessRequested =
-    readBool(args.flags, "remote-access", false, "OPENWORK_REMOTE_ACCESS") ||
+    readBool(args.flags, "remote-access", false, "TEAMWORK_REMOTE_ACCESS") ||
     explicitHost?.trim() === "0.0.0.0";
 
   if (explicitHost) {
@@ -1345,7 +1345,7 @@ function resolveOpenworkRemoteAccess(args: ParsedArgs): boolean {
     if (normalized === "0.0.0.0") return true;
     if (!isLoopbackHost(normalized)) {
       throw new Error(
-        `Unsupported --openwork-host value: ${normalized}. Use loopback by default or --remote-access for shared access.`,
+        `Unsupported --teamwork-host value: ${normalized}. Use loopback by default or --remote-access for shared access.`,
       );
     }
   }
@@ -1485,7 +1485,7 @@ async function postWorkerActivityHeartbeat(input: {
       lastActivityAt: payload.lastActivityAt,
       openSessionCount: payload.openSessionCount,
     },
-    "openwork-orchestrator",
+    "teamwork-orchestrator",
   );
 }
 
@@ -1534,7 +1534,7 @@ function prefixStream(
 
 function shouldUseBun(bin: string): boolean {
   if (!bin.endsWith(`${join("dist", "cli.js")}`)) return false;
-  if (bin.includes("openwork-server")) return true;
+  if (bin.includes("teamwork-server")) return true;
   return bin.includes(`${join("packages", "server")}`);
 }
 
@@ -1557,8 +1557,8 @@ function resolveBinCommand(bin: string): {
 async function readVersionManifest(): Promise<VersionManifest | null> {
   const binDir = dirname(process.execPath);
   const moduleDir = dirname(fileURLToPath(import.meta.url));
-  const envManifestPath = process.env.OPENWORK_VERSION_MANIFEST?.trim();
-  const envSidecarDir = process.env.OPENWORK_BUNDLED_SIDECAR_DIR?.trim();
+  const envManifestPath = process.env.TEAMWORK_VERSION_MANIFEST?.trim();
+  const envSidecarDir = process.env.TEAMWORK_BUNDLED_SIDECAR_DIR?.trim();
   const candidates = [
     ...(envManifestPath
       ? [
@@ -1634,7 +1634,7 @@ function resolveExtraPathEntries(): string[] {
 
   const entries: string[] = [];
   const sidecarOverride =
-    process.env.OPENWRK_SIDECAR_DIR ?? process.env.OPENWORK_SIDECAR_DIR;
+    process.env.OPENWRK_SIDECAR_DIR ?? process.env.TEAMWORK_SIDECAR_DIR;
   const sidecarCandidates = [
     sidecarOverride,
     dirname(process.execPath),
@@ -1701,21 +1701,21 @@ function resolveExtraPathEntries(): string[] {
   return entries;
 }
 
-// Resolves ~/.config/openwork/env.json (or %APPDATA%\openwork\env.json on
+// Resolves ~/.config/teamwork/env.json (or %APPDATA%\teamwork\env.json on
 // Windows) — must agree byte-for-byte with apps/server/src/env-file.ts and
-// apps/desktop/src-tauri/src/env_file.rs. Honor OPENWORK_ENV_STORE override.
+// apps/desktop/src-tauri/src/env_file.rs. Honor TEAMWORK_ENV_STORE override.
 function resolveUserEnvFilePath(): string {
-  const override = (process.env.OPENWORK_ENV_STORE ?? "").trim();
+  const override = (process.env.TEAMWORK_ENV_STORE ?? "").trim();
   if (override) return resolve(override);
   if (platform() === "win32") {
     const appData = (process.env.APPDATA ?? "").trim();
     const root = appData || join(homedir(), "AppData", "Roaming");
-    return join(root, "openwork", "env.json");
+    return join(root, "teamwork", "env.json");
   }
-  return join(homedir(), ".config", "openwork", "env.json");
+  return join(homedir(), ".config", "teamwork", "env.json");
 }
 
-const USER_ENV_RESERVED_PREFIXES = ["OPENWORK_", "OPENCODE_"] as const;
+const USER_ENV_RESERVED_PREFIXES = ["TEAMWORK_", "OPENCODE_"] as const;
 
 // Synchronous, best-effort, never throws. Absent or malformed files return {}.
 // Reads on every spawn so UI edits are picked up on the next child start.
@@ -1744,7 +1744,7 @@ function buildSpawnEnv(env?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   // User env is layered first so existing process.env / caller overrides
   // always win. This is what makes Linux GUI launches work: the shell env
   // is empty for ANTHROPIC_API_KEY, the user file supplies it, but anything
-  // the shell or spawn-site already set (OPENWORK_TOKEN, etc.) is untouched.
+  // the shell or spawn-site already set (TEAMWORK_TOKEN, etc.) is untouched.
   const merged: NodeJS.ProcessEnv = { ...loadUserEnvFile() };
   for (const [key, value] of Object.entries(base)) {
     if (value !== undefined) merged[key] = value;
@@ -1882,12 +1882,12 @@ function addEnvPassThroughArgs(args: string[], names: string[]) {
 }
 
 const SANDBOX_INTERNAL_ENV_NAMES = [
-  "OPENWORK_TOKEN",
-  "OPENWORK_HOST_TOKEN",
+  "TEAMWORK_TOKEN",
+  "TEAMWORK_HOST_TOKEN",
   "OPENCODE_SERVER_USERNAME",
   "OPENCODE_SERVER_PASSWORD",
-  "OPENWORK_OPENCODE_USERNAME",
-  "OPENWORK_OPENCODE_PASSWORD",
+  "TEAMWORK_OPENCODE_USERNAME",
+  "TEAMWORK_OPENCODE_PASSWORD",
 ] as const;
 
 function sandboxEnvPassThroughNames(userEnv: Record<string, string>): string[] {
@@ -1898,7 +1898,7 @@ function sandboxEnvPassThroughNames(userEnv: Record<string, string>): string[] {
 
 function resolveSidecarDir(flags: Map<string, string | boolean>): string {
   const override =
-    readFlag(flags, "sidecar-dir") ?? process.env.OPENWORK_SIDECAR_DIR;
+    readFlag(flags, "sidecar-dir") ?? process.env.TEAMWORK_SIDECAR_DIR;
   if (override && override.trim()) return resolve(override.trim());
   return join(resolveRouterDataDir(flags), "sidecars");
 }
@@ -1909,9 +1909,9 @@ function resolveSidecarBaseUrl(
 ): string {
   const override =
     readFlag(flags, "sidecar-base-url") ??
-    process.env.OPENWORK_SIDECAR_BASE_URL;
+    process.env.TEAMWORK_SIDECAR_BASE_URL;
   if (override && override.trim()) return override.trim();
-  return `https://github.com/different-ai/openwork/releases/download/openwork-orchestrator-v${cliVersion}`;
+  return `https://github.com/SamirTafesh/TeamWork/releases/download/teamwork-orchestrator-v${cliVersion}`;
 }
 
 function resolveSidecarManifestUrl(
@@ -1920,9 +1920,9 @@ function resolveSidecarManifestUrl(
 ): string {
   const override =
     readFlag(flags, "sidecar-manifest") ??
-    process.env.OPENWORK_SIDECAR_MANIFEST_URL;
+    process.env.TEAMWORK_SIDECAR_MANIFEST_URL;
   if (override && override.trim()) return override.trim();
-  return `${baseUrl.replace(/\/$/, "")}/openwork-orchestrator-sidecars.json`;
+  return `${baseUrl.replace(/\/$/, "")}/teamwork-orchestrator-sidecars.json`;
 }
 
 function resolveSidecarConfig(
@@ -2112,7 +2112,7 @@ async function resolveOpencodeDownload(
   if (!sidecar.target) return null;
 
   const assetOverride =
-    process.env.OPENWORK_OPENCODE_ASSET ?? process.env.OPENCODE_ASSET;
+    process.env.TEAMWORK_OPENCODE_ASSET ?? process.env.OPENCODE_ASSET;
   const asset = assetOverride?.trim() || resolveOpencodeAsset(sidecar.target);
   if (!asset) return null;
 
@@ -2145,10 +2145,10 @@ async function resolveOpencodeDownload(
   const stamp = Date.now();
   const archivePath = join(
     tmpdir(),
-    `openwork-orchestrator-opencode-${stamp}-${asset}`,
+    `teamwork-orchestrator-opencode-${stamp}-${asset}`,
   );
   const extractDir = await mkdtemp(
-    join(tmpdir(), "openwork-orchestrator-opencode-"),
+    join(tmpdir(), "teamwork-orchestrator-opencode-"),
   );
 
   try {
@@ -2277,7 +2277,7 @@ async function resolveExpectedVersion(
 
   try {
     const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-    if (name === "openwork-server") {
+    if (name === "teamwork-server") {
       const localPath = join(root, "..", "server", "package.json");
       const localVersion = await readPackageVersion(localPath);
       if (localVersion) return localVersion;
@@ -2299,9 +2299,9 @@ async function resolveExpectedVersion(
   }
 
   const require = createRequire(import.meta.url);
-  if (name === "openwork-server") {
+  if (name === "teamwork-server") {
     try {
-      const pkgPath = require.resolve("openwork-server/package.json");
+      const pkgPath = require.resolve("teamwork-server/package.json");
       const version = await readPackageVersion(pkgPath);
       if (version) return version;
     } catch {
@@ -2492,7 +2492,7 @@ async function assertSandboxBinaryFile(
   }
 }
 
-async function resolveOpenworkServerBin(options: {
+async function resolveTeamworkServerBin(options: {
   explicit?: string;
   manifest: VersionManifest | null;
   allowExternal: boolean;
@@ -2500,7 +2500,7 @@ async function resolveOpenworkServerBin(options: {
   source: BinarySourcePreference;
 }): Promise<ResolvedBinary> {
   if (options.explicit && !options.allowExternal) {
-    throw new Error("openwork-server-bin requires --allow-external");
+    throw new Error("teamwork-server-bin requires --allow-external");
   }
   if (
     options.explicit &&
@@ -2508,17 +2508,17 @@ async function resolveOpenworkServerBin(options: {
     options.source !== "external"
   ) {
     throw new Error(
-      "openwork-server-bin requires --sidecar-source external or auto",
+      "teamwork-server-bin requires --sidecar-source external or auto",
     );
   }
 
   const expectedVersion = await resolveExpectedVersion(
     options.manifest,
-    "openwork-server",
+    "teamwork-server",
   );
   const resolveExternal = async (): Promise<ResolvedBinary> => {
     if (!options.allowExternal) {
-      throw new Error("External openwork-server requires --allow-external");
+      throw new Error("External teamwork-server requires --allow-external");
     }
     if (options.explicit) {
       const resolved = resolveBinPath(options.explicit);
@@ -2526,16 +2526,16 @@ async function resolveOpenworkServerBin(options: {
         (resolved.includes("/") || resolved.startsWith(".")) &&
         !(await fileExists(resolved))
       ) {
-        throw new Error(`openwork-server-bin not found: ${resolved}`);
+        throw new Error(`teamwork-server-bin not found: ${resolved}`);
       }
       return { bin: resolved, source: "external", expectedVersion };
     }
 
     const require = createRequire(import.meta.url);
     try {
-      const pkgPath = require.resolve("openwork-server/package.json");
+      const pkgPath = require.resolve("teamwork-server/package.json");
       const pkgDir = dirname(pkgPath);
-      const binaryPath = join(pkgDir, "dist", "bin", "openwork-server");
+      const binaryPath = join(pkgDir, "dist", "bin", "teamwork-server");
       if (await isExecutable(binaryPath)) {
         return { bin: binaryPath, source: "external", expectedVersion };
       }
@@ -2547,17 +2547,17 @@ async function resolveOpenworkServerBin(options: {
       // ignore
     }
 
-    return { bin: "openwork-server", source: "external", expectedVersion };
+    return { bin: "teamwork-server", source: "external", expectedVersion };
   };
 
   if (options.source === "bundled") {
     const bundled = await resolveBundledBinary(
       options.manifest,
-      "openwork-server",
+      "teamwork-server",
     );
     if (!bundled) {
       throw new Error(
-        "Bundled openwork-server binary missing. Build with pnpm --filter openwork-orchestrator build:bin:bundled.",
+        "Bundled teamwork-server binary missing. Build with pnpm --filter teamwork-orchestrator build:bin:bundled.",
       );
     }
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2565,12 +2565,12 @@ async function resolveOpenworkServerBin(options: {
 
   if (options.source === "downloaded") {
     const downloaded = await downloadSidecarBinary({
-      name: "openwork-server",
+      name: "teamwork-server",
       sidecar: options.sidecar,
     });
     if (!downloaded) {
       throw new Error(
-        "openwork-server download failed. Check sidecar manifest or base URL.",
+        "teamwork-server download failed. Check sidecar manifest or base URL.",
       );
     }
     return downloaded;
@@ -2582,7 +2582,7 @@ async function resolveOpenworkServerBin(options: {
 
   const bundled = await resolveBundledBinary(
     options.manifest,
-    "openwork-server",
+    "teamwork-server",
   );
   if (bundled && !(options.allowExternal && options.explicit)) {
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2593,14 +2593,14 @@ async function resolveOpenworkServerBin(options: {
   }
 
   const downloaded = await downloadSidecarBinary({
-    name: "openwork-server",
+    name: "teamwork-server",
     sidecar: options.sidecar,
   });
   if (downloaded) return downloaded;
 
   if (!options.allowExternal) {
     throw new Error(
-      "Bundled openwork-server binary missing and download failed. Use --allow-external or --sidecar-source external.",
+      "Bundled teamwork-server binary missing and download failed. Use --allow-external or --sidecar-source external.",
     );
   }
 
@@ -2650,7 +2650,7 @@ async function resolveOpencodeBin(options: {
     const bundled = await resolveBundledBinary(options.manifest, "opencode");
     if (!bundled) {
       throw new Error(
-        "Bundled opencode binary missing. Build with pnpm --filter openwork-orchestrator build:bin:bundled.",
+        "Bundled opencode binary missing. Build with pnpm --filter teamwork-orchestrator build:bin:bundled.",
       );
     }
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2791,7 +2791,7 @@ async function resolveOpenCodeRouterBin(options: {
     );
     if (!bundled) {
       throw new Error(
-        "Bundled opencodeRouter binary missing. Build with pnpm --filter openwork-orchestrator build:bin:bundled.",
+        "Bundled opencodeRouter binary missing. Build with pnpm --filter teamwork-orchestrator build:bin:bundled.",
       );
     }
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2842,15 +2842,15 @@ async function resolveOpenCodeRouterBin(options: {
 }
 
 function resolveRouterDataDir(flags: Map<string, string | boolean>): string {
-  const override = readFlag(flags, "data-dir") ?? process.env.OPENWORK_DATA_DIR;
+  const override = readFlag(flags, "data-dir") ?? process.env.TEAMWORK_DATA_DIR;
   if (override && override.trim()) {
     return resolve(override.trim());
   }
-  return join(homedir(), ".openwork", "openwork-orchestrator");
+  return join(homedir(), ".teamwork", "teamwork-orchestrator");
 }
 
-function resolveWorkspaceOpenworkConfigPath(workspaceRoot: string): string {
-  return join(workspaceRoot, ".opencode", "openwork.json");
+function resolveWorkspaceTeamworkConfigPath(workspaceRoot: string): string {
+  return join(workspaceRoot, ".opencode", "teamwork.json");
 }
 
 function resolveOpencodeRouterConfigPath(): string {
@@ -2858,7 +2858,7 @@ function resolveOpencodeRouterConfigPath(): string {
   if (override) return resolve(override.replace(/^~\//, `${homedir()}/`));
   const dataDir =
     process.env.OPENCODE_ROUTER_DATA_DIR?.trim() ||
-    join(homedir(), ".openwork", "opencode-router");
+    join(homedir(), ".teamwork", "opencode-router");
   const expanded = dataDir.replace(/^~\//, `${homedir()}/`);
   return join(resolve(expanded), "opencode-router.json");
 }
@@ -2869,10 +2869,10 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-function readMessagingEnabledFromOpenworkConfig(
-  openworkConfig: Record<string, unknown>,
+function readMessagingEnabledFromTeamworkConfig(
+  teamworkConfig: Record<string, unknown>,
 ): boolean | undefined {
-  const messaging = asRecord(openworkConfig.messaging);
+  const messaging = asRecord(teamworkConfig.messaging);
   return readOptionalBool(messaging.enabled);
 }
 
@@ -2933,22 +2933,22 @@ async function resolveOpencodeRouterEnabled(
   }
 
   const envValue = readOptionalBool(
-    process.env.OPENWORK_OPENCODE_ROUTER,
+    process.env.TEAMWORK_OPENCODE_ROUTER,
   );
   if (envValue !== undefined) {
     return { enabled: envValue, source: "env" };
   }
 
-  const openworkConfigPath = resolveWorkspaceOpenworkConfigPath(workspaceRoot);
-  let openworkConfig: Record<string, unknown> = {};
+  const teamworkConfigPath = resolveWorkspaceTeamworkConfigPath(workspaceRoot);
+  let teamworkConfig: Record<string, unknown> = {};
   try {
-    const raw = await readFile(openworkConfigPath, "utf8");
-    openworkConfig = asRecord(JSON.parse(raw));
+    const raw = await readFile(teamworkConfigPath, "utf8");
+    teamworkConfig = asRecord(JSON.parse(raw));
   } catch {
-    openworkConfig = {};
+    teamworkConfig = {};
   }
 
-  const configured = readMessagingEnabledFromOpenworkConfig(openworkConfig);
+  const configured = readMessagingEnabledFromTeamworkConfig(teamworkConfig);
   if (configured !== undefined) {
     return { enabled: configured, source: "workspace-config" };
   }
@@ -2962,29 +2962,29 @@ async function resolveOpencodeRouterEnabled(
     inferredEnabled = false;
   }
 
-  const nextOpenworkConfig: Record<string, unknown> = {
-    ...openworkConfig,
+  const nextTeamworkConfig: Record<string, unknown> = {
+    ...teamworkConfig,
     messaging: {
-      ...asRecord(openworkConfig.messaging),
+      ...asRecord(teamworkConfig.messaging),
       enabled: inferredEnabled,
     },
   };
 
   try {
-    await mkdir(dirname(openworkConfigPath), { recursive: true });
+    await mkdir(dirname(teamworkConfigPath), { recursive: true });
     await writeFile(
-      openworkConfigPath,
-      `${JSON.stringify(nextOpenworkConfig, null, 2)}\n`,
+      teamworkConfigPath,
+      `${JSON.stringify(nextTeamworkConfig, null, 2)}\n`,
       "utf8",
     );
   } catch (error) {
     logger.warn(
       "Failed to persist messaging enabled default",
       {
-        path: openworkConfigPath,
+        path: teamworkConfigPath,
         error: error instanceof Error ? error.message : String(error),
       },
-      "openwork-orchestrator",
+      "teamwork-orchestrator",
     );
   }
 
@@ -2992,11 +2992,11 @@ async function resolveOpencodeRouterEnabled(
 }
 
 function resolveInternalDevMode(flags: Map<string, string | boolean>): boolean {
-  return readBool(flags, "internal-dev-mode", false, "OPENWORK_DEV_MODE");
+  return readBool(flags, "internal-dev-mode", false, "TEAMWORK_DEV_MODE");
 }
 
 function internalDevModeFromEnv(): boolean {
-  const value = process.env.OPENWORK_DEV_MODE?.trim().toLowerCase();
+  const value = process.env.TEAMWORK_DEV_MODE?.trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes" || value === "on";
 }
 
@@ -3014,7 +3014,7 @@ function resolveOpencodeStateLayout(options: {
     };
   }
 
-  const rootDir = join(options.dataDir, OPENWORK_DEV_DATA_DIR);
+  const rootDir = join(options.dataDir, TEAMWORK_DEV_DATA_DIR);
   const homeDir = join(rootDir, "home");
   const xdgConfigHome = join(rootDir, "xdg", "config");
   const xdgDataHome = join(rootDir, "xdg", "data");
@@ -3027,11 +3027,11 @@ function resolveOpencodeStateLayout(options: {
     rootDir,
     configDir,
     importConfigDir:
-      process.env.OPENWORK_DEV_OPENCODE_IMPORT_CONFIG_DIR?.trim() || undefined,
+      process.env.TEAMWORK_DEV_OPENCODE_IMPORT_CONFIG_DIR?.trim() || undefined,
     importDataDir:
-      process.env.OPENWORK_DEV_OPENCODE_IMPORT_DATA_DIR?.trim() || undefined,
+      process.env.TEAMWORK_DEV_OPENCODE_IMPORT_DATA_DIR?.trim() || undefined,
     env: {
-      OPENWORK_DEV_MODE: "1",
+      TEAMWORK_DEV_MODE: "1",
       OPENCODE_TEST_HOME: homeDir,
       HOME: homeDir,
       XDG_CONFIG_HOME: xdgConfigHome,
@@ -3098,7 +3098,7 @@ async function ensureOpencodeStateLayout(
 }
 
 function routerStatePath(dataDir: string): string {
-  return join(dataDir, "openwork-orchestrator-state.json");
+  return join(dataDir, "teamwork-orchestrator-state.json");
 }
 
 function nowMs(): number {
@@ -3510,11 +3510,11 @@ async function fetchOpenCodeRouterHealth(
   )) as OpenCodeRouterHealthSnapshot;
 }
 
-async function fetchOpenCodeRouterHealthViaOpenwork(
-  openworkUrl: string,
+async function fetchOpenCodeRouterHealthViaTeamwork(
+  teamworkUrl: string,
   token: string,
 ): Promise<OpenCodeRouterHealthSnapshot> {
-  const url = `${openworkUrl.replace(/\/$/, "")}/opencode-router/health`;
+  const url = `${teamworkUrl.replace(/\/$/, "")}/opencode-router/health`;
   return (await fetchJson(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -3544,13 +3544,13 @@ async function waitForOpenCodeRouterHealthy(
   throw new Error(lastError ?? "Timed out waiting for opencodeRouter health");
 }
 
-async function waitForOpenCodeRouterHealthyViaOpenwork(
-  openworkUrl: string,
+async function waitForOpenCodeRouterHealthyViaTeamwork(
+  teamworkUrl: string,
   token: string,
   timeoutMs = 10_000,
   pollMs = 500,
 ): Promise<OpenCodeRouterHealthSnapshot> {
-  const url = `${openworkUrl.replace(/\/$/, "")}/opencode-router/health`;
+  const url = `${teamworkUrl.replace(/\/$/, "")}/opencode-router/health`;
   const start = Date.now();
   let lastError: string | null = null;
   while (Date.now() - start < timeoutMs) {
@@ -3571,7 +3571,7 @@ async function waitForOpenCodeRouterHealthyViaOpenwork(
   }
   throw new Error(
     lastError ??
-      "Timed out waiting for opencodeRouter health via openwork-server",
+      "Timed out waiting for opencodeRouter health via teamwork-server",
   );
 }
 
@@ -3609,7 +3609,7 @@ async function waitForOpencodeHealthy(
 }
 
 /**
- * In sandbox mode the released openwork-server binary may not have our latest
+ * In sandbox mode the released teamwork-server binary may not have our latest
  * token/proxy changes.  Instead of relying on the OpenCode SDK client (which
  * sends Bearer auth that the proxy may not understand yet), we do a simple
  * HTTP fetch through the proxy path.  The server's /opencode/* proxy already
@@ -3620,7 +3620,7 @@ async function waitForOpencodeHealthy(
  * We try multiple path patterns because:
  * - `/opencode/health` — most common OpenCode health endpoint proxied by the
  *   server's catch-all /opencode/* route.
- * - `/health` on the openwork-server itself — already verified by the caller,
+ * - `/health` on the teamwork-server itself — already verified by the caller,
  *   but serves as a fallback signal.
  */
 async function waitForHealthyViaProxy(
@@ -3644,7 +3644,7 @@ async function waitForHealthyViaProxy(
       if (res.ok) return;
       // Some older server versions may return 401/403 on the proxy but that
       // still proves the server is up and proxying.  Accept any non-5xx as
-      // "alive" — the real auth validation happens in verifyOpenworkServer.
+      // "alive" — the real auth validation happens in verifyTeamworkServer.
       if (res.status < 500) return;
       lastError = `Proxy returned ${res.status}`;
     } catch (error) {
@@ -3659,21 +3659,21 @@ async function waitForHealthyViaProxy(
 
 function printHelp(): void {
   const message = [
-    "openwork",
+    "teamwork",
     "",
     "Usage:",
-    "  openwork start [--workspace <path>] [options]",
-    "  openwork serve [--workspace <path>] [options]",
-    "  openwork daemon [run|start|stop|status] [options]",
-    "  openwork workspace <action> [options]",
-    "  openwork instance dispose <id> [options]",
-    "  openwork approvals list --openwork-url <url> --host-token <token>",
-    "  openwork approvals reply <id> --allow|--deny --openwork-url <url> --host-token <token>",
-    "  openwork files <action> [options]",
-    "  openwork status [--openwork-url <url>] [--opencode-url <url>]",
+    "  teamwork start [--workspace <path>] [options]",
+    "  teamwork serve [--workspace <path>] [options]",
+    "  teamwork daemon [run|start|stop|status] [options]",
+    "  teamwork workspace <action> [options]",
+    "  teamwork instance dispose <id> [options]",
+    "  teamwork approvals list --teamwork-url <url> --host-token <token>",
+    "  teamwork approvals reply <id> --allow|--deny --teamwork-url <url> --host-token <token>",
+    "  teamwork files <action> [options]",
+    "  teamwork status [--teamwork-url <url>] [--opencode-url <url>]",
     "",
     "Commands:",
-    "  start                   Start OpenCode + OpenWork server + OpenCodeRouter",
+    "  start                   Start OpenCode + TeamWork server + OpenCodeRouter",
     "  serve                   Start services and stream logs (no TUI)",
     "  daemon                  Run orchestrator router daemon (multi-workspace)",
     "  workspace               Manage workspaces (add/list/switch/path)",
@@ -3681,7 +3681,7 @@ function printHelp(): void {
     "  approvals list           List pending approval requests",
     "  approvals reply <id>     Approve or deny a request",
     "  files                   Manage file sessions and batch file sync",
-    "  status                  Check OpenCode/OpenWork health",
+    "  status                  Check OpenCode/TeamWork health",
     "",
     "Options:",
     "  --workspace <path>        Workspace directory (default: cwd)",
@@ -3699,11 +3699,11 @@ function printHelp(): void {
     "  --opencode-hot-reload-cooldown-ms <ms>  Minimum interval between hot reloads (default: 1500)",
     "  --opencode-username <u>   Internal-only override for managed OpenCode auth username",
     "  --opencode-password <p>   Internal-only override for managed OpenCode auth password",
-    "  --openwork-host <host>    Bind host for openwork-server (default: 127.0.0.1)",
-    "  --openwork-port <port>    Port for openwork-server (default: 8787)",
-    "  --remote-access           Expose OpenWork on 0.0.0.0 for remote sharing",
-    "  --openwork-token <token>  Client token for openwork-server",
-    "  --openwork-host-token <t> Host token for approvals",
+    "  --teamwork-host <host>    Bind host for teamwork-server (default: 127.0.0.1)",
+    "  --teamwork-port <port>    Port for teamwork-server (default: 8787)",
+    "  --remote-access           Expose TeamWork on 0.0.0.0 for remote sharing",
+    "  --teamwork-token <token>  Client token for teamwork-server",
+    "  --teamwork-host-token <t> Host token for approvals",
     "  --workspace-id <id>       Workspace id for file session commands",
     "  --session-id <id>         File session id for file session commands",
     "  --path <path>             Workspace-relative file path",
@@ -3720,10 +3720,10 @@ function printHelp(): void {
     "  --recursive               Recursive delete for files delete",
     "  --approval <mode>         manual | auto (default: manual)",
     "  --approval-timeout <ms>   Approval timeout in ms",
-    "  --read-only               Start OpenWork server in read-only mode",
+    "  --read-only               Start TeamWork server in read-only mode",
     "  --cors <origins>          Comma-separated CORS origins or *",
     "  --connect-host <host>     Override LAN host used for pairing URLs",
-    "  --openwork-server-bin <p> Path to openwork-server binary (requires --allow-external)",
+    "  --teamwork-server-bin <p> Path to teamwork-server binary (requires --allow-external)",
     "  --opencode-router-bin <path>     Path to opencodeRouter binary (requires --allow-external)",
     "  --opencode-router-health-port <p> Health server port for opencodeRouter (default: random)",
     "  --opencode-router                Enable opencodeRouter sidecar (default from workspace messaging config)",
@@ -3818,10 +3818,10 @@ async function startOpencode(options: {
     env: {
       ...process.env,
       ...(options.stateLayout?.env ?? {}),
-      OPENCODE_CLIENT: "openwork-orchestrator",
-      OPENWORK: "1",
-      OPENWORK_RUN_ID: options.runId,
-      OPENWORK_LOG_FORMAT: options.logFormat,
+      OPENCODE_CLIENT: "teamwork-orchestrator",
+      TEAMWORK: "1",
+      TEAMWORK_RUN_ID: options.runId,
+      TEAMWORK_LOG_FORMAT: options.logFormat,
       OTEL_RESOURCE_ATTRIBUTES: mergeResourceAttributes(
         {
           "service.name": "opencode",
@@ -3869,7 +3869,7 @@ async function startOpencode(options: {
   return child;
 }
 
-async function startOpenworkServer(options: {
+async function startTeamworkServer(options: {
   bin: string;
   host: string;
   port: number;
@@ -3932,13 +3932,13 @@ async function startOpenworkServer(options: {
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
-        OPENWORK_TOKEN: options.token,
-        OPENWORK_HOST_TOKEN: options.hostToken,
-        OPENWORK_RUN_ID: options.runId,
-        OPENWORK_LOG_FORMAT: options.logFormat,
+        TEAMWORK_TOKEN: options.token,
+        TEAMWORK_HOST_TOKEN: options.hostToken,
+        TEAMWORK_RUN_ID: options.runId,
+        TEAMWORK_LOG_FORMAT: options.logFormat,
         OTEL_RESOURCE_ATTRIBUTES: mergeResourceAttributes(
           {
-            "service.name": "openwork-server",
+            "service.name": "teamwork-server",
             "service.instance.id": options.runId,
           },
           process.env.OTEL_RESOURCE_ATTRIBUTES,
@@ -3954,22 +3954,22 @@ async function startOpenworkServer(options: {
           ? { OPENCODE_ROUTER_DATA_DIR: options.opencodeRouterDataDir }
           : {}),
         ...(options.opencodeBaseUrl
-          ? { OPENWORK_OPENCODE_BASE_URL: options.opencodeBaseUrl }
+          ? { TEAMWORK_OPENCODE_BASE_URL: options.opencodeBaseUrl }
           : {}),
         ...(options.opencodeDirectory
-          ? { OPENWORK_OPENCODE_DIRECTORY: options.opencodeDirectory }
+          ? { TEAMWORK_OPENCODE_DIRECTORY: options.opencodeDirectory }
           : {}),
         ...(options.opencodeUsername
-          ? { OPENWORK_OPENCODE_USERNAME: options.opencodeUsername }
+          ? { TEAMWORK_OPENCODE_USERNAME: options.opencodeUsername }
           : {}),
         ...(options.opencodePassword
-          ? { OPENWORK_OPENCODE_PASSWORD: options.opencodePassword }
+          ? { TEAMWORK_OPENCODE_PASSWORD: options.opencodePassword }
           : {}),
         ...(options.controlBaseUrl
-          ? { OPENWORK_CONTROL_BASE_URL: options.controlBaseUrl }
+          ? { TEAMWORK_CONTROL_BASE_URL: options.controlBaseUrl }
           : {}),
         ...(options.controlToken
-          ? { OPENWORK_CONTROL_TOKEN: options.controlToken }
+          ? { TEAMWORK_CONTROL_TOKEN: options.controlToken }
           : {}),
       },
     },
@@ -3977,14 +3977,14 @@ async function startOpenworkServer(options: {
 
   prefixStream(
     child.stdout,
-    "openwork-server",
+    "teamwork-server",
     "stdout",
     options.logger,
     child.pid ?? undefined,
   );
   prefixStream(
     child.stderr,
-    "openwork-server",
+    "teamwork-server",
     "stderr",
     options.logger,
     child.pid ?? undefined,
@@ -4022,8 +4022,8 @@ async function startOpenCodeRouter(options: {
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
-        OPENWORK_RUN_ID: options.runId,
-        OPENWORK_LOG_FORMAT: options.logFormat,
+        TEAMWORK_RUN_ID: options.runId,
+        TEAMWORK_LOG_FORMAT: options.logFormat,
         OTEL_RESOURCE_ATTRIBUTES: mergeResourceAttributes(
           {
             "service.name": "opencode-router",
@@ -4203,7 +4203,7 @@ async function stageSandboxRuntime(options: {
   containerName: string;
   sidecars: {
     opencode: string;
-    openworkServer: string;
+    teamworkServer: string;
     opencodeRouter?: string | null;
   };
   detach: boolean;
@@ -4215,7 +4215,7 @@ async function stageSandboxRuntime(options: {
 }> {
   const baseDir = join(
     options.persistDir,
-    "openwork-orchestrator-sandbox",
+    "teamwork-orchestrator-sandbox",
     options.containerName,
   );
   await mkdir(baseDir, { recursive: true });
@@ -4225,11 +4225,11 @@ async function stageSandboxRuntime(options: {
   const entrypointHostPath = join(baseDir, "entrypoint.sh");
 
   const stagedOpencode = join(sidecarsDir, "opencode");
-  const stagedOpenwork = join(sidecarsDir, "openwork-server");
+  const stagedTeamwork = join(sidecarsDir, "teamwork-server");
   await copyFile(options.sidecars.opencode, stagedOpencode);
-  await copyFile(options.sidecars.openworkServer, stagedOpenwork);
+  await copyFile(options.sidecars.teamworkServer, stagedTeamwork);
   await ensureExecutable(stagedOpencode);
-  await ensureExecutable(stagedOpenwork);
+  await ensureExecutable(stagedTeamwork);
 
   if (options.sidecars.opencodeRouter) {
     const stagedOpenCodeRouter = join(sidecarsDir, "opencode-router");
@@ -4237,7 +4237,7 @@ async function stageSandboxRuntime(options: {
     await ensureExecutable(stagedOpenCodeRouter);
   }
 
-  const rootInContainer = `/persist/openwork-orchestrator-sandbox/${options.containerName}`;
+  const rootInContainer = `/persist/teamwork-orchestrator-sandbox/${options.containerName}`;
   const cleanup = async () => {
     if (options.detach) return;
     try {
@@ -4262,7 +4262,7 @@ async function writeSandboxEntrypoint(options: {
     hotReload: OpencodeHotReload;
     logLevel?: string;
   };
-  openwork: {
+  teamwork: {
     token: string;
     hostToken: string;
     approvalMode: ApprovalMode;
@@ -4278,7 +4278,7 @@ async function writeSandboxEntrypoint(options: {
   logFormat: LogFormat;
 }): Promise<void> {
   const opencodeBin = `${options.rootInContainer}/sidecars/opencode`;
-  const openworkBin = `${options.rootInContainer}/sidecars/openwork-server`;
+  const teamworkBin = `${options.rootInContainer}/sidecars/teamwork-server`;
   const opencodeRouterBin = `${options.rootInContainer}/sidecars/opencode-router`;
   const workspaceDir = "/workspace";
   const opencodeConfigDir = options.opencodeConfigDirInContainer;
@@ -4294,34 +4294,34 @@ async function writeSandboxEntrypoint(options: {
     ? `--log-level ${shQuote(options.opencode.logLevel)}`
     : "";
 
-  const openworkCors = options.openwork.corsOrigins.length
-    ? `--cors ${shQuote(options.openwork.corsOrigins.join(","))}`
+  const teamworkCors = options.teamwork.corsOrigins.length
+    ? `--cors ${shQuote(options.teamwork.corsOrigins.join(","))}`
     : "";
 
   const requiredSecretEnv = [
-    ': "${OPENWORK_TOKEN:?OPENWORK_TOKEN is required}"',
-    ': "${OPENWORK_HOST_TOKEN:?OPENWORK_HOST_TOKEN is required}"',
+    ': "${TEAMWORK_TOKEN:?TEAMWORK_TOKEN is required}"',
+    ': "${TEAMWORK_HOST_TOKEN:?TEAMWORK_HOST_TOKEN is required}"',
     options.opencode.username
       ? ': "${OPENCODE_SERVER_USERNAME:?OPENCODE_SERVER_USERNAME is required}"'
       : "",
     options.opencode.password
       ? ': "${OPENCODE_SERVER_PASSWORD:?OPENCODE_SERVER_PASSWORD is required}"'
       : "",
-    options.openwork.opencodeUsername
-      ? ': "${OPENWORK_OPENCODE_USERNAME:?OPENWORK_OPENCODE_USERNAME is required}"'
+    options.teamwork.opencodeUsername
+      ? ': "${TEAMWORK_OPENCODE_USERNAME:?TEAMWORK_OPENCODE_USERNAME is required}"'
       : "",
-    options.openwork.opencodePassword
-      ? ': "${OPENWORK_OPENCODE_PASSWORD:?OPENWORK_OPENCODE_PASSWORD is required}"'
+    options.teamwork.opencodePassword
+      ? ': "${TEAMWORK_OPENCODE_PASSWORD:?TEAMWORK_OPENCODE_PASSWORD is required}"'
       : "",
   ]
     .filter(Boolean)
     .join("\n");
 
-  const opencodeRouterEnv = options.openwork.opencodeRouterEnabled
+  const opencodeRouterEnv = options.teamwork.opencodeRouterEnabled
     ? `export OPENCODE_ROUTER_HEALTH_PORT=${shQuote(String(SANDBOX_INTERNAL_OPENCODE_ROUTER_HEALTH_PORT))}`
     : "";
-  const openworkDevMode = (process.env.OPENWORK_DEV_MODE ?? "").trim() === "1";
-  const sandboxHomeDir = openworkDevMode ? "/persist/openwork-dev-data/home" : "/persist";
+  const teamworkDevMode = (process.env.TEAMWORK_DEV_MODE ?? "").trim() === "1";
+  const sandboxHomeDir = teamworkDevMode ? "/persist/teamwork-dev-data/home" : "/persist";
 
   const script = [
     "set -eu",
@@ -4343,16 +4343,16 @@ async function writeSandboxEntrypoint(options: {
     'mkdir -p "$XDG_DATA_HOME/opencode"',
     `if [ -d ${shQuote(hostOpencodeDataDir)} ]; then cp ${shQuote(`${hostOpencodeDataDir}/auth.json`)} \"$XDG_DATA_HOME/opencode/auth.json\" 2>/dev/null || true; cp ${shQuote(`${hostOpencodeDataDir}/mcp-auth.json`)} \"$XDG_DATA_HOME/opencode/mcp-auth.json\" 2>/dev/null || true; fi`,
     `export OPENCODE_URL=${shQuote(`http://127.0.0.1:${SANDBOX_INTERNAL_OPENCODE_PORT}`)}`,
-    `export OPENCODE_CLIENT=openwork-orchestrator`,
+    `export OPENCODE_CLIENT=teamwork-orchestrator`,
     `export OPENCODE_HOT_RELOAD=${shQuote(options.opencode.hotReload.enabled ? "1" : "0")}`,
     `export OPENCODE_HOT_RELOAD_DEBOUNCE_MS=${shQuote(String(options.opencode.hotReload.debounceMs))}`,
     `export OPENCODE_HOT_RELOAD_COOLDOWN_MS=${shQuote(String(options.opencode.hotReload.cooldownMs))}`,
-    `export OPENWORK=1`,
-    `export OPENWORK_DEV_MODE=${shQuote(openworkDevMode ? "1" : "0")}`,
-    `export OPENWORK_RUN_ID=${shQuote(options.runId)}`,
-    `export OPENWORK_LOG_FORMAT=${shQuote(options.logFormat)}`,
-    `export OPENWORK_SANDBOX_ENABLED=1`,
-    `export OPENWORK_SANDBOX_BACKEND=${shQuote(options.backend)}`,
+    `export TEAMWORK=1`,
+    `export TEAMWORK_DEV_MODE=${shQuote(teamworkDevMode ? "1" : "0")}`,
+    `export TEAMWORK_RUN_ID=${shQuote(options.runId)}`,
+    `export TEAMWORK_LOG_FORMAT=${shQuote(options.logFormat)}`,
+    `export TEAMWORK_SANDBOX_ENABLED=1`,
+    `export TEAMWORK_SANDBOX_BACKEND=${shQuote(options.backend)}`,
     opencodeRouterEnv,
     requiredSecretEnv,
     'opencode_pid=""',
@@ -4364,22 +4364,22 @@ async function writeSandboxEntrypoint(options: {
     "trap cleanup INT TERM",
     `${shQuote(opencodeBin)} serve --hostname 127.0.0.1 --port ${shQuote(String(SANDBOX_INTERNAL_OPENCODE_PORT))}${opencodeLogLevelArg ? ` ${opencodeLogLevelArg}` : ""} ${opencodeCors} &`,
     "opencode_pid=$!",
-    options.openwork.opencodeRouterEnabled
+    options.teamwork.opencodeRouterEnabled
       ? `${shQuote(opencodeRouterBin)} serve ${shQuote(workspaceDir)} &`
       : "",
-    options.openwork.opencodeRouterEnabled ? "opencodeRouter_pid=$!" : "",
-    `exec ${shQuote(openworkBin)} --host 0.0.0.0 --port ${shQuote(String(SANDBOX_INTERNAL_OPENWORK_PORT))}` +
+    options.teamwork.opencodeRouterEnabled ? "opencodeRouter_pid=$!" : "",
+    `exec ${shQuote(teamworkBin)} --host 0.0.0.0 --port ${shQuote(String(SANDBOX_INTERNAL_TEAMWORK_PORT))}` +
       ` --workspace ${shQuote(workspaceDir)}` +
-      ` --approval ${shQuote(options.openwork.approvalMode)}` +
-      ` --approval-timeout ${shQuote(String(options.openwork.approvalTimeoutMs))}` +
-      (options.openwork.readOnly ? " --read-only" : "") +
+      ` --approval ${shQuote(options.teamwork.approvalMode)}` +
+      ` --approval-timeout ${shQuote(String(options.teamwork.approvalTimeoutMs))}` +
+      (options.teamwork.readOnly ? " --read-only" : "") +
       ` --opencode-base-url ${shQuote(`http://127.0.0.1:${SANDBOX_INTERNAL_OPENCODE_PORT}`)}` +
       ` --opencode-directory ${shQuote(workspaceDir)}` +
-      ` --log-format ${shQuote(options.openwork.logFormat)}` +
-      (options.openwork.opencodeRouterEnabled
+      ` --log-format ${shQuote(options.teamwork.logFormat)}` +
+      (options.teamwork.opencodeRouterEnabled
         ? ` --opencode-router-health-port ${shQuote(String(SANDBOX_INTERNAL_OPENCODE_ROUTER_HEALTH_PORT))}`
         : "") +
-      (openworkCors ? ` ${openworkCors}` : ""),
+      (teamworkCors ? ` ${teamworkCors}` : ""),
   ]
     .filter(Boolean)
     .join("\n");
@@ -4397,10 +4397,10 @@ async function startDockerSandbox(options: {
   extraMounts: SandboxMount[];
   sidecars: {
     opencode: string;
-    openworkServer: string;
+    teamworkServer: string;
     opencodeRouter?: string | null;
   };
-  ports: { openwork: number; opencodeRouterHealth?: number | null };
+  ports: { teamwork: number; opencodeRouterHealth?: number | null };
   opencode: {
     corsOrigins: string[];
     username?: string;
@@ -4408,7 +4408,7 @@ async function startDockerSandbox(options: {
     hotReload: OpencodeHotReload;
     logLevel?: string;
   };
-  openwork: {
+  teamwork: {
     token: string;
     hostToken: string;
     approvalMode: ApprovalMode;
@@ -4437,16 +4437,16 @@ async function startDockerSandbox(options: {
     opencodeConfigDirInContainer: "/opencode-config",
     backend: "docker",
     opencode: options.opencode,
-    openwork: {
-      token: options.openwork.token,
-      hostToken: options.openwork.hostToken,
-      approvalMode: options.openwork.approvalMode,
-      approvalTimeoutMs: options.openwork.approvalTimeoutMs,
-      readOnly: options.openwork.readOnly,
-      corsOrigins: options.openwork.corsOrigins,
-      opencodeUsername: options.openwork.opencodeUsername,
-      opencodePassword: options.openwork.opencodePassword,
-      logFormat: options.openwork.logFormat,
+    teamwork: {
+      token: options.teamwork.token,
+      hostToken: options.teamwork.hostToken,
+      approvalMode: options.teamwork.approvalMode,
+      approvalTimeoutMs: options.teamwork.approvalTimeoutMs,
+      readOnly: options.teamwork.readOnly,
+      corsOrigins: options.teamwork.corsOrigins,
+      opencodeUsername: options.teamwork.opencodeUsername,
+      opencodePassword: options.teamwork.opencodePassword,
+      logFormat: options.teamwork.logFormat,
       opencodeRouterEnabled: !!options.sidecars.opencodeRouter,
     },
     runId: options.runId,
@@ -4459,7 +4459,7 @@ async function startDockerSandbox(options: {
     "--name",
     options.containerName,
     "-p",
-    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_OPENWORK_PORT}`,
+    `127.0.0.1:${options.ports.teamwork}:${SANDBOX_INTERNAL_TEAMWORK_PORT}`,
     "-v",
     `${options.workspace}:/workspace`,
     "-v",
@@ -4536,19 +4536,19 @@ async function startDockerSandbox(options: {
     env: {
       ...userEnv,
       ...process.env,
-      OPENWORK_TOKEN: options.openwork.token,
-      OPENWORK_HOST_TOKEN: options.openwork.hostToken,
+      TEAMWORK_TOKEN: options.teamwork.token,
+      TEAMWORK_HOST_TOKEN: options.teamwork.hostToken,
       ...(options.opencode.username
         ? { OPENCODE_SERVER_USERNAME: options.opencode.username }
         : {}),
       ...(options.opencode.password
         ? { OPENCODE_SERVER_PASSWORD: options.opencode.password }
         : {}),
-      ...(options.openwork.opencodeUsername
-        ? { OPENWORK_OPENCODE_USERNAME: options.openwork.opencodeUsername }
+      ...(options.teamwork.opencodeUsername
+        ? { TEAMWORK_OPENCODE_USERNAME: options.teamwork.opencodeUsername }
         : {}),
-      ...(options.openwork.opencodePassword
-        ? { OPENWORK_OPENCODE_PASSWORD: options.openwork.opencodePassword }
+      ...(options.teamwork.opencodePassword
+        ? { TEAMWORK_OPENCODE_PASSWORD: options.teamwork.opencodePassword }
         : {}),
     },
   });
@@ -4579,10 +4579,10 @@ async function startAppleContainerSandbox(options: {
   extraMounts: SandboxMount[];
   sidecars: {
     opencode: string;
-    openworkServer: string;
+    teamworkServer: string;
     opencodeRouter?: string | null;
   };
-  ports: { openwork: number; opencodeRouterHealth?: number | null };
+  ports: { teamwork: number; opencodeRouterHealth?: number | null };
   opencode: {
     corsOrigins: string[];
     username?: string;
@@ -4590,7 +4590,7 @@ async function startAppleContainerSandbox(options: {
     hotReload: OpencodeHotReload;
     logLevel?: string;
   };
-  openwork: {
+  teamwork: {
     token: string;
     hostToken: string;
     approvalMode: ApprovalMode;
@@ -4621,16 +4621,16 @@ async function startAppleContainerSandbox(options: {
     opencodeConfigDirInContainer: "/opencode-config",
     backend: "container",
     opencode: options.opencode,
-    openwork: {
-      token: options.openwork.token,
-      hostToken: options.openwork.hostToken,
-      approvalMode: options.openwork.approvalMode,
-      approvalTimeoutMs: options.openwork.approvalTimeoutMs,
-      readOnly: options.openwork.readOnly,
-      corsOrigins: options.openwork.corsOrigins,
-      opencodeUsername: options.openwork.opencodeUsername,
-      opencodePassword: options.openwork.opencodePassword,
-      logFormat: options.openwork.logFormat,
+    teamwork: {
+      token: options.teamwork.token,
+      hostToken: options.teamwork.hostToken,
+      approvalMode: options.teamwork.approvalMode,
+      approvalTimeoutMs: options.teamwork.approvalTimeoutMs,
+      readOnly: options.teamwork.readOnly,
+      corsOrigins: options.teamwork.corsOrigins,
+      opencodeUsername: options.teamwork.opencodeUsername,
+      opencodePassword: options.teamwork.opencodePassword,
+      logFormat: options.teamwork.logFormat,
       opencodeRouterEnabled: !!options.sidecars.opencodeRouter,
     },
     runId: options.runId,
@@ -4643,7 +4643,7 @@ async function startAppleContainerSandbox(options: {
     "--name",
     options.containerName,
     "-p",
-    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_OPENWORK_PORT}`,
+    `127.0.0.1:${options.ports.teamwork}:${SANDBOX_INTERNAL_TEAMWORK_PORT}`,
     "-v",
     `${options.workspace}:/workspace`,
     "-v",
@@ -4718,19 +4718,19 @@ async function startAppleContainerSandbox(options: {
     env: {
       ...userEnv,
       ...process.env,
-      OPENWORK_TOKEN: options.openwork.token,
-      OPENWORK_HOST_TOKEN: options.openwork.hostToken,
+      TEAMWORK_TOKEN: options.teamwork.token,
+      TEAMWORK_HOST_TOKEN: options.teamwork.hostToken,
       ...(options.opencode.username
         ? { OPENCODE_SERVER_USERNAME: options.opencode.username }
         : {}),
       ...(options.opencode.password
         ? { OPENCODE_SERVER_PASSWORD: options.opencode.password }
         : {}),
-      ...(options.openwork.opencodeUsername
-        ? { OPENWORK_OPENCODE_USERNAME: options.openwork.opencodeUsername }
+      ...(options.teamwork.opencodeUsername
+        ? { TEAMWORK_OPENCODE_USERNAME: options.teamwork.opencodeUsername }
         : {}),
-      ...(options.openwork.opencodePassword
-        ? { OPENWORK_OPENCODE_PASSWORD: options.openwork.opencodePassword }
+      ...(options.teamwork.opencodePassword
+        ? { TEAMWORK_OPENCODE_PASSWORD: options.teamwork.opencodePassword }
         : {}),
     },
   });
@@ -4774,7 +4774,7 @@ async function verifyOpencodeVersion(
   const actual = await readCliVersion(binary.bin);
   // When the binary was explicitly provided via --opencode-bin (source "external"),
   // a strict version check would break desktop app users whenever a new opencode
-  // release ships on GitHub before OpenWork updates its bundled binary. Log a
+  // release ships on GitHub before TeamWork updates its bundled binary. Log a
   // warning instead of throwing so the caller can still proceed.
   if (
     binary.source === "external" &&
@@ -4783,7 +4783,7 @@ async function verifyOpencodeVersion(
     binary.expectedVersion !== actual
   ) {
     process.stderr.write(
-      `[openwork-orchestrator] Warning: opencode version mismatch (expected ${binary.expectedVersion}, got ${actual}). Proceeding with ${binary.bin}.\n`,
+      `[teamwork-orchestrator] Warning: opencode version mismatch (expected ${binary.expectedVersion}, got ${actual}). Proceeding with ${binary.bin}.\n`,
     );
     return actual;
   }
@@ -4791,7 +4791,7 @@ async function verifyOpencodeVersion(
   return actual;
 }
 
-async function verifyOpenworkServer(input: {
+async function verifyTeamworkServer(input: {
   baseUrl: string;
   token: string;
   hostToken: string;
@@ -4806,7 +4806,7 @@ async function verifyOpenworkServer(input: {
   const actualVersion =
     typeof health?.version === "string" ? health.version : undefined;
   assertVersionMatch(
-    "openwork-server",
+    "teamwork-server",
     input.expectedVersion,
     actualVersion,
     `${input.baseUrl}/health`,
@@ -4820,7 +4820,7 @@ async function verifyOpenworkServer(input: {
     ? (workspaces.items as Array<Record<string, unknown>>)
     : [];
   if (!items.length) {
-    throw new Error("OpenWork server returned no workspaces");
+    throw new Error("TeamWork server returned no workspaces");
   }
 
   const expectedPath = normalizeWorkspacePath(input.expectedWorkspace);
@@ -4843,7 +4843,7 @@ async function verifyOpenworkServer(input: {
 
   if (!matched) {
     throw new Error(
-      `OpenWork server workspace mismatch. Expected ${expectedPath}.`,
+      `TeamWork server workspace mismatch. Expected ${expectedPath}.`,
     );
   }
 
@@ -4853,7 +4853,7 @@ async function verifyOpenworkServer(input: {
     opencode?.baseUrl !== input.expectedOpencodeBaseUrl
   ) {
     throw new Error(
-      `OpenWork server OpenCode base URL mismatch: expected ${input.expectedOpencodeBaseUrl}, got ${opencode?.baseUrl ?? "<missing>"}.`,
+      `TeamWork server OpenCode base URL mismatch: expected ${input.expectedOpencodeBaseUrl}, got ${opencode?.baseUrl ?? "<missing>"}.`,
     );
   }
   if (
@@ -4861,23 +4861,23 @@ async function verifyOpenworkServer(input: {
     opencode?.directory !== input.expectedOpencodeDirectory
   ) {
     throw new Error(
-      `OpenWork server OpenCode directory mismatch: expected ${input.expectedOpencodeDirectory}, got ${opencode?.directory ?? "<missing>"}.`,
+      `TeamWork server OpenCode directory mismatch: expected ${input.expectedOpencodeDirectory}, got ${opencode?.directory ?? "<missing>"}.`,
     );
   }
   if (
     input.expectedOpencodeUsername &&
     opencode?.username !== input.expectedOpencodeUsername
   ) {
-    throw new Error("OpenWork server OpenCode username mismatch.");
+    throw new Error("TeamWork server OpenCode username mismatch.");
   }
   if (
     input.expectedOpencodePassword &&
     opencode?.password !== input.expectedOpencodePassword
   ) {
-    throw new Error("OpenWork server OpenCode password mismatch.");
+    throw new Error("TeamWork server OpenCode password mismatch.");
   }
 
-  const hostHeaders = { "X-OpenWork-Host-Token": input.hostToken };
+  const hostHeaders = { "X-TeamWork-Host-Token": input.hostToken };
   await fetchJson(`${input.baseUrl}/approvals`, { headers: hostHeaders });
 
   return actualVersion;
@@ -4918,17 +4918,17 @@ function buildRuntimeServiceSnapshot(input: {
 
 async function runChecks(input: {
   opencodeClient: ReturnType<typeof createOpencodeClient>;
-  openworkUrl: string;
-  openworkToken: string;
+  teamworkUrl: string;
+  teamworkToken: string;
   hostToken: string;
   checkEvents: boolean;
 }) {
-  const baseUrl = input.openworkUrl.replace(/\/$/, "");
-  const headers = { Authorization: `Bearer ${input.openworkToken}` };
-  const hostHeaders = { "X-OpenWork-Host-Token": input.hostToken };
+  const baseUrl = input.teamworkUrl.replace(/\/$/, "");
+  const headers = { Authorization: `Bearer ${input.teamworkToken}` };
+  const hostHeaders = { "X-TeamWork-Host-Token": input.hostToken };
   const workspaces = await fetchJson(`${baseUrl}/workspaces`, { headers });
   if (!workspaces?.items?.length) {
-    throw new Error("OpenWork server returned no workspaces");
+    throw new Error("TeamWork server returned no workspaces");
   }
 
   const workspaceId = workspaces.items[0].id as string;
@@ -4981,7 +4981,7 @@ async function runChecks(input: {
   }
 
   const created = await input.opencodeClient.session.create({
-    title: "OpenWork headless check",
+    title: "TeamWork headless check",
   });
   const createdSession = unwrap(created);
   unwrap(
@@ -5012,7 +5012,7 @@ async function runChecks(input: {
 
     unwrap(
       await input.opencodeClient.session.create({
-        title: "OpenWork headless check events",
+        title: "TeamWork headless check events",
       }),
     );
     await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -5030,29 +5030,29 @@ async function runChecks(input: {
 
 /**
  * Lighter check suite for sandbox mode.  Uses only raw HTTP against the
- * openwork-server endpoints — no OpenCode SDK calls that rely on Bearer
+ * teamwork-server endpoints — no OpenCode SDK calls that rely on Bearer
  * auth through the proxy (since the released server binary may predate our
  * token/proxy changes).
  */
 async function runSandboxChecks(input: {
-  openworkUrl: string;
-  openworkToken: string;
+  teamworkUrl: string;
+  teamworkToken: string;
   hostToken: string;
 }) {
-  const baseUrl = input.openworkUrl.replace(/\/$/, "");
-  const headers = { Authorization: `Bearer ${input.openworkToken}` };
-  const hostHeaders = { "X-OpenWork-Host-Token": input.hostToken };
+  const baseUrl = input.teamworkUrl.replace(/\/$/, "");
+  const headers = { Authorization: `Bearer ${input.teamworkToken}` };
+  const hostHeaders = { "X-TeamWork-Host-Token": input.hostToken };
 
   // 1. Server health
   const health = await fetchJson(`${baseUrl}/health`);
   if (!health || typeof health !== "object") {
-    throw new Error("openwork-server /health returned invalid payload");
+    throw new Error("teamwork-server /health returned invalid payload");
   }
 
   // 2. Workspaces list
   const workspaces = await fetchJson(`${baseUrl}/workspaces`, { headers });
   if (!workspaces?.items?.length) {
-    throw new Error("openwork-server returned no workspaces");
+    throw new Error("teamwork-server returned no workspaces");
   }
   const workspaceId = workspaces.items[0].id as string;
 
@@ -5139,22 +5139,22 @@ async function fetchJson(url: string, init?: RequestInit): Promise<any> {
   return payload;
 }
 
-async function issueOpenworkOwnerToken(
+async function issueTeamworkOwnerToken(
   baseUrl: string,
   hostToken: string,
-  label = "OpenWork owner token",
+  label = "TeamWork owner token",
 ): Promise<string> {
   const payload = await fetchJson(`${baseUrl.replace(/\/$/, "")}/tokens`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-OpenWork-Host-Token": hostToken,
+      "X-TeamWork-Host-Token": hostToken,
     },
     body: JSON.stringify({ scope: "owner", label }),
   });
   const token = typeof payload?.token === "string" ? payload.token.trim() : "";
   if (!token) {
-    throw new Error("OpenWork server did not return an owner token");
+    throw new Error("TeamWork server did not return an owner token");
   }
   return token;
 }
@@ -5214,7 +5214,7 @@ function outputError(error: unknown, json: boolean): void {
 function createVerboseLogger(
   enabled: boolean,
   logger?: Logger,
-  component = "openwork-orchestrator",
+  component = "teamwork-orchestrator",
 ) {
   return (message: string) => {
     if (!enabled) return;
@@ -5281,8 +5281,8 @@ const REDACTED_LOG_VALUE = "[REDACTED]";
 const SENSITIVE_FLAG_NAMES = [
   "--token",
   "--host-token",
-  "--openwork-token",
-  "--openwork-host-token",
+  "--teamwork-token",
+  "--teamwork-host-token",
   "--opencode-password",
   "--opencode-username",
 ];
@@ -5311,7 +5311,7 @@ function isSensitiveAttributeKey(key?: string): boolean {
   const normalized = trimmed.toLowerCase();
   if (SENSITIVE_ATTRIBUTE_KEYS.has(normalized)) return true;
   return (
-    (trimmed.startsWith("OPENWORK_") ||
+    (trimmed.startsWith("TEAMWORK_") ||
       trimmed.startsWith("OPENCODE_") ||
       trimmed.startsWith("DEN_")) &&
     /TOKEN|PASSWORD|USERNAME|AUTHORIZATION/.test(trimmed)
@@ -5323,7 +5323,7 @@ function redactSensitiveString(input: string): string {
   redacted = redacted.replace(/\b(Bearer)\s+[^\s"']+/gi, "$1 [REDACTED]");
   redacted = redacted.replace(/\b(Basic)\s+[A-Za-z0-9+/=]+/g, "$1 [REDACTED]");
   redacted = redacted.replace(
-    /((?:OPENWORK|OPENCODE|DEN)_[A-Z0-9_]*(?:TOKEN|PASSWORD|USERNAME|AUTHORIZATION)[A-Z0-9_]*=)([^\s]+)/g,
+    /((?:TEAMWORK|OPENCODE|DEN)_[A-Z0-9_]*(?:TOKEN|PASSWORD|USERNAME|AUTHORIZATION)[A-Z0-9_]*=)([^\s]+)/g,
     `$1${REDACTED_LOG_VALUE}`,
   );
   redacted = redacted.replace(
@@ -5405,11 +5405,11 @@ function createLogger(options: {
   const output = options.output ?? "stdout";
   const colorEnabled = options.color ?? false;
   const componentColors: Record<string, string> = {
-    "openwork-orchestrator": ANSI.gray,
+    "teamwork-orchestrator": ANSI.gray,
     opencode: ANSI.cyan,
-    "openwork-server": ANSI.green,
+    "teamwork-server": ANSI.green,
     opencodeRouter: ANSI.magenta,
-    "openwork-orchestrator-router": ANSI.cyan,
+    "teamwork-orchestrator-router": ANSI.cyan,
   };
   const levelColors: Record<LogLevel, string> = {
     debug: ANSI.gray,
@@ -5615,50 +5615,50 @@ async function spawnRouterDaemon(
   ];
 
   const opencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.TEAMWORK_OPENCODE_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeHost = resolveManagedOpencodeHost(
-    readFlag(args.flags, "opencode-host") ?? process.env.OPENWORK_OPENCODE_HOST,
+    readFlag(args.flags, "opencode-host") ?? process.env.TEAMWORK_OPENCODE_HOST,
   );
   const opencodePort =
-    readFlag(args.flags, "opencode-port") ?? process.env.OPENWORK_OPENCODE_PORT;
+    readFlag(args.flags, "opencode-port") ?? process.env.TEAMWORK_OPENCODE_PORT;
   const opencodeWorkdir =
     readFlag(args.flags, "opencode-workdir") ??
-    process.env.OPENWORK_OPENCODE_WORKDIR;
+    process.env.TEAMWORK_OPENCODE_WORKDIR;
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.TEAMWORK_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload =
     readFlag(args.flags, "opencode-hot-reload") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD;
+    process.env.TEAMWORK_OPENCODE_HOT_RELOAD;
   const opencodeHotReloadDebounceMs =
     readFlag(args.flags, "opencode-hot-reload-debounce-ms") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS;
+    process.env.TEAMWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS;
   const opencodeHotReloadCooldownMs =
     readFlag(args.flags, "opencode-hot-reload-cooldown-ms") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS;
+    process.env.TEAMWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS;
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
   const opencodeUsername = opencodeCredentials.username;
   const opencodePassword = opencodeCredentials.password;
   const corsValue =
-    readFlag(args.flags, "cors") ?? process.env.OPENWORK_OPENCODE_CORS;
+    readFlag(args.flags, "cors") ?? process.env.TEAMWORK_OPENCODE_CORS;
   const allowExternal = readBool(
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "TEAMWORK_ALLOW_EXTERNAL",
   );
   const sidecarSource =
     readFlag(args.flags, "sidecar-source") ??
-    process.env.OPENWORK_SIDECAR_SOURCE;
+    process.env.TEAMWORK_SIDECAR_SOURCE;
   const opencodeSource =
     readFlag(args.flags, "opencode-source") ??
-    process.env.OPENWORK_OPENCODE_SOURCE;
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+    process.env.TEAMWORK_OPENCODE_SOURCE;
+  const verbose = readBool(args.flags, "verbose", false, "TEAMWORK_VERBOSE");
   const logFormat =
-    readFlag(args.flags, "log-format") ?? process.env.OPENWORK_LOG_FORMAT;
-  const runId = readFlag(args.flags, "run-id") ?? process.env.OPENWORK_RUN_ID;
+    readFlag(args.flags, "log-format") ?? process.env.TEAMWORK_LOG_FORMAT;
+  const runId = readFlag(args.flags, "run-id") ?? process.env.TEAMWORK_RUN_ID;
 
   if (opencodeBin) commandArgs.push("--opencode-bin", opencodeBin);
   if (opencodeHost) commandArgs.push("--opencode-host", opencodeHost);
@@ -5691,8 +5691,8 @@ async function spawnRouterDaemon(
     stdio: "ignore",
     env: {
       ...process.env,
-      OPENWORK_OPENCODE_USERNAME: opencodeUsername,
-      OPENWORK_OPENCODE_PASSWORD: opencodePassword,
+      TEAMWORK_OPENCODE_USERNAME: opencodeUsername,
+      TEAMWORK_OPENCODE_PASSWORD: opencodePassword,
     },
   });
   child.unref();
@@ -5721,7 +5721,7 @@ async function ensureRouterDaemon(
 
   const host = readFlag(args.flags, "daemon-host") ?? "127.0.0.1";
   const port = await resolvePort(
-    readNumber(args.flags, "daemon-port", undefined, "OPENWORK_DAEMON_PORT"),
+    readNumber(args.flags, "daemon-port", undefined, "TEAMWORK_DAEMON_PORT"),
     "127.0.0.1",
   );
   const baseUrl = `http://${host}:${port}`;
@@ -5883,25 +5883,25 @@ async function runInstanceCommand(args: ParsedArgs) {
 
 async function runRouterDaemon(args: ParsedArgs) {
   const outputJson = readBool(args.flags, "json", false);
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+  const verbose = readBool(args.flags, "verbose", false, "TEAMWORK_VERBOSE");
   const logFormat = readLogFormat(
     args.flags,
     "log-format",
     "pretty",
-    "OPENWORK_LOG_FORMAT",
+    "TEAMWORK_LOG_FORMAT",
   );
   const colorEnabled =
-    readBool(args.flags, "color", process.stdout.isTTY, "OPENWORK_COLOR") &&
+    readBool(args.flags, "color", process.stdout.isTTY, "TEAMWORK_COLOR") &&
     !process.env.NO_COLOR;
   const runId =
     readFlag(args.flags, "run-id") ??
-    process.env.OPENWORK_RUN_ID ??
+    process.env.TEAMWORK_RUN_ID ??
     randomUUID();
   const cliVersion = await resolveCliVersion();
   const logger = createLogger({
     format: logFormat,
     runId,
-    serviceName: "openwork-orchestrator",
+    serviceName: "teamwork-orchestrator",
     serviceVersion: cliVersion,
     output: "stdout",
     color: colorEnabled,
@@ -5909,19 +5909,19 @@ async function runRouterDaemon(args: ParsedArgs) {
   const logVerbose = createVerboseLogger(
     verbose && !outputJson,
     logger,
-    "openwork-orchestrator",
+    "teamwork-orchestrator",
   );
   const sidecarSourceInput = readBinarySource(
     args.flags,
     "sidecar-source",
     "auto",
-    "OPENWORK_SIDECAR_SOURCE",
+    "TEAMWORK_SIDECAR_SOURCE",
   );
   const opencodeSourceInput = readBinarySource(
     args.flags,
     "opencode-source",
     "auto",
-    "OPENWORK_OPENCODE_SOURCE",
+    "TEAMWORK_OPENCODE_SOURCE",
   );
   const sidecarSource = sidecarSourceInput;
   const opencodeSource = opencodeSourceInput;
@@ -5931,15 +5931,15 @@ async function runRouterDaemon(args: ParsedArgs) {
 
   const host = readFlag(args.flags, "daemon-host") ?? "127.0.0.1";
   const port = await resolvePort(
-    readNumber(args.flags, "daemon-port", undefined, "OPENWORK_DAEMON_PORT"),
+    readNumber(args.flags, "daemon-port", undefined, "TEAMWORK_DAEMON_PORT"),
     "127.0.0.1",
   );
 
   const opencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.TEAMWORK_OPENCODE_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeHost = resolveManagedOpencodeHost(
-    readFlag(args.flags, "opencode-host") ?? process.env.OPENWORK_OPENCODE_HOST,
+    readFlag(args.flags, "opencode-host") ?? process.env.TEAMWORK_OPENCODE_HOST,
   );
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
   const opencodeUsername = opencodeCredentials.username;
@@ -5952,14 +5952,14 @@ async function runRouterDaemon(args: ParsedArgs) {
       args.flags,
       "opencode-port",
       state.opencode?.port,
-      "OPENWORK_OPENCODE_PORT",
+      "TEAMWORK_OPENCODE_PORT",
     ),
     "127.0.0.1",
     state.opencode?.port,
   );
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.TEAMWORK_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload = readOpencodeHotReload(
     args.flags,
@@ -5969,19 +5969,19 @@ async function runRouterDaemon(args: ParsedArgs) {
       cooldownMs: DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS,
     },
     {
-      enabled: "OPENWORK_OPENCODE_HOT_RELOAD",
-      debounceMs: "OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
-      cooldownMs: "OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
+      enabled: "TEAMWORK_OPENCODE_HOT_RELOAD",
+      debounceMs: "TEAMWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
+      cooldownMs: "TEAMWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
     },
   );
   const corsValue =
     readFlag(args.flags, "cors") ??
-    process.env.OPENWORK_OPENCODE_CORS ??
+    process.env.TEAMWORK_OPENCODE_CORS ??
     "http://localhost:5173,tauri://localhost,http://tauri.localhost";
   const corsOrigins = parseList(corsValue);
   const opencodeWorkdirFlag =
     readFlag(args.flags, "opencode-workdir") ??
-    process.env.OPENWORK_OPENCODE_WORKDIR;
+    process.env.TEAMWORK_OPENCODE_WORKDIR;
   const activeWorkspace = state.workspaces.find(
     (entry) => entry.id === state.activeId && entry.workspaceType === "local",
   );
@@ -6000,7 +6000,7 @@ async function runRouterDaemon(args: ParsedArgs) {
   logger.info(
     "Daemon starting",
     { runId, logFormat, workdir: resolvedWorkdir, host, port },
-    "openwork-orchestrator",
+    "teamwork-orchestrator",
   );
 
   const sidecar = resolveSidecarConfig(args.flags, cliVersion);
@@ -6008,7 +6008,7 @@ async function runRouterDaemon(args: ParsedArgs) {
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "TEAMWORK_ALLOW_EXTERNAL",
   );
   const manifest = await readVersionManifest();
   logVerbose(`cli version: ${cliVersion}`);
@@ -6133,7 +6133,7 @@ async function runRouterDaemon(args: ParsedArgs) {
           durationMs: Date.now() - startedAt,
           activeId: state.activeId,
         },
-        "openwork-orchestrator-router",
+        "teamwork-orchestrator-router",
       );
     });
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -6381,7 +6381,7 @@ async function runRouterDaemon(args: ParsedArgs) {
     logger.info(
       "Daemon shutting down",
       { host, port },
-      "openwork-orchestrator-router",
+      "teamwork-orchestrator-router",
     );
     try {
       await new Promise<void>((resolve) => server.close(() => resolve()));
@@ -6417,7 +6417,7 @@ async function runRouterDaemon(args: ParsedArgs) {
         logger.info(
           "Daemon running",
           { host, port },
-          "openwork-orchestrator-router",
+          "teamwork-orchestrator-router",
         );
       } else {
         console.log(`orchestrator daemon running on ${host}:${port}`);
@@ -6430,26 +6430,26 @@ async function runRouterDaemon(args: ParsedArgs) {
   await new Promise(() => undefined);
 }
 
-function readOpenworkClientAuth(args: ParsedArgs): {
-  openworkUrl: string;
+function readTeamworkClientAuth(args: ParsedArgs): {
+  teamworkUrl: string;
   token: string;
 } {
-  const openworkUrl =
-    readFlag(args.flags, "openwork-url") ??
-    process.env.OPENWORK_URL ??
-    process.env.OPENWORK_SERVER_URL ??
+  const teamworkUrl =
+    readFlag(args.flags, "teamwork-url") ??
+    process.env.TEAMWORK_URL ??
+    process.env.TEAMWORK_SERVER_URL ??
     "";
   const token =
     readFlag(args.flags, "token") ??
-    readFlag(args.flags, "openwork-token") ??
-    process.env.OPENWORK_TOKEN ??
+    readFlag(args.flags, "teamwork-token") ??
+    process.env.TEAMWORK_TOKEN ??
     "";
 
-  if (!openworkUrl || !token) {
-    throw new Error("openwork-url and token are required");
+  if (!teamworkUrl || !token) {
+    throw new Error("teamwork-url and token are required");
   }
 
-  return { openworkUrl, token };
+  return { teamworkUrl, token };
 }
 
 function readSessionId(args: ParsedArgs, fallbackIndex: number): string {
@@ -6465,8 +6465,8 @@ function readSessionId(args: ParsedArgs, fallbackIndex: number): string {
 async function runFiles(args: ParsedArgs) {
   const outputJson = readBool(args.flags, "json", false);
   const subcommand = args.positionals[1] ?? "";
-  const { openworkUrl, token } = readOpenworkClientAuth(args);
-  const baseUrl = openworkUrl.replace(/\/$/, "");
+  const { teamworkUrl, token } = readTeamworkClientAuth(args);
+  const baseUrl = teamworkUrl.replace(/\/$/, "");
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
@@ -6722,26 +6722,26 @@ async function runApprovals(args: ParsedArgs) {
     throw new Error("approvals requires 'list' or 'reply'");
   }
 
-  const openworkUrl =
-    readFlag(args.flags, "openwork-url") ??
-    process.env.OPENWORK_URL ??
-    process.env.OPENWORK_SERVER_URL ??
+  const teamworkUrl =
+    readFlag(args.flags, "teamwork-url") ??
+    process.env.TEAMWORK_URL ??
+    process.env.TEAMWORK_SERVER_URL ??
     "";
   const hostToken =
-    readFlag(args.flags, "host-token") ?? process.env.OPENWORK_HOST_TOKEN ?? "";
+    readFlag(args.flags, "host-token") ?? process.env.TEAMWORK_HOST_TOKEN ?? "";
 
-  if (!openworkUrl || !hostToken) {
-    throw new Error("openwork-url and host-token are required for approvals");
+  if (!teamworkUrl || !hostToken) {
+    throw new Error("teamwork-url and host-token are required for approvals");
   }
 
   const headers = {
     "Content-Type": "application/json",
-    "X-OpenWork-Host-Token": hostToken,
+    "X-TeamWork-Host-Token": hostToken,
   };
 
   if (subcommand === "list") {
     const response = await fetch(
-      `${openworkUrl.replace(/\/$/, "")}/approvals`,
+      `${teamworkUrl.replace(/\/$/, "")}/approvals`,
       { headers },
     );
     if (!response.ok) {
@@ -6765,7 +6765,7 @@ async function runApprovals(args: ParsedArgs) {
 
   const payload = { reply: allow ? "allow" : "deny" };
   const response = await fetch(
-    `${openworkUrl.replace(/\/$/, "")}/approvals/${approvalId}`,
+    `${teamworkUrl.replace(/\/$/, "")}/approvals/${approvalId}`,
     {
       method: "POST",
       headers,
@@ -6780,8 +6780,8 @@ async function runApprovals(args: ParsedArgs) {
 }
 
 async function runStatus(args: ParsedArgs) {
-  const openworkUrl =
-    readFlag(args.flags, "openwork-url") ?? process.env.OPENWORK_URL ?? "";
+  const teamworkUrl =
+    readFlag(args.flags, "teamwork-url") ?? process.env.TEAMWORK_URL ?? "";
   const opencodeUrl =
     readFlag(args.flags, "opencode-url") ?? process.env.OPENCODE_URL ?? "";
   const username =
@@ -6794,12 +6794,12 @@ async function runStatus(args: ParsedArgs) {
 
   const status: Record<string, unknown> = {};
 
-  if (openworkUrl) {
+  if (teamworkUrl) {
     try {
-      await waitForHealthy(openworkUrl, 5000, 400);
-      status.openwork = { ok: true, url: openworkUrl };
+      await waitForHealthy(teamworkUrl, 5000, 400);
+      status.teamwork = { ok: true, url: teamworkUrl };
     } catch (error) {
-      status.openwork = { ok: false, url: openworkUrl, error: String(error) };
+      status.teamwork = { ok: false, url: teamworkUrl, error: String(error) };
     }
   }
 
@@ -6823,16 +6823,16 @@ async function runStatus(args: ParsedArgs) {
   if (outputJson) {
     console.log(JSON.stringify(status, null, 2));
   } else {
-    if (status.openwork) {
-      const openwork = status.openwork as {
+    if (status.teamwork) {
+      const teamwork = status.teamwork as {
         ok: boolean;
         url: string;
         error?: string;
       };
       console.log(
-        `OpenWork server: ${openwork.ok ? "ok" : "error"} (${openwork.url})`,
+        `TeamWork server: ${teamwork.ok ? "ok" : "error"} (${teamwork.url})`,
       );
-      if (openwork.error) console.log(`  ${openwork.error}`);
+      if (teamwork.error) console.log(`  ${teamwork.error}`);
     }
     if (status.opencode) {
       const opencode = status.opencode as {
@@ -6852,18 +6852,18 @@ async function runStart(args: ParsedArgs) {
   const outputJson = readBool(args.flags, "json", false);
   const checkOnly = readBool(args.flags, "check", false);
   const checkEvents = readBool(args.flags, "check-events", false);
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+  const verbose = readBool(args.flags, "verbose", false, "TEAMWORK_VERBOSE");
   const logFormat = readLogFormat(
     args.flags,
     "log-format",
     "pretty",
-    "OPENWORK_LOG_FORMAT",
+    "TEAMWORK_LOG_FORMAT",
   );
   const detachRequested = readBool(
     args.flags,
     "detach",
     false,
-    "OPENWORK_DETACH",
+    "TEAMWORK_DETACH",
   );
   const defaultTui =
     process.stdout.isTTY && !outputJson && !checkOnly && !checkEvents;
@@ -6876,11 +6876,11 @@ async function runStart(args: ParsedArgs) {
     !checkEvents &&
     logFormat === "pretty";
   const colorPreferred =
-    readBool(args.flags, "color", process.stdout.isTTY, "OPENWORK_COLOR") &&
+    readBool(args.flags, "color", process.stdout.isTTY, "TEAMWORK_COLOR") &&
     !process.env.NO_COLOR;
   const runId =
     readFlag(args.flags, "run-id") ??
-    process.env.OPENWORK_RUN_ID ??
+    process.env.TEAMWORK_RUN_ID ??
     randomUUID();
   const cliVersion = await resolveCliVersion();
   const compiledBinary = isCompiledBunBinary();
@@ -6889,11 +6889,11 @@ async function runStart(args: ParsedArgs) {
   const baseLoggerOptions = {
     format: logFormat,
     runId,
-    serviceName: "openwork-orchestrator",
+    serviceName: "teamwork-orchestrator",
     serviceVersion: cliVersion,
     onLog: (event: LogEvent) => {
       if (!tui) return;
-      const component = event.component ?? "openwork-orchestrator";
+      const component = event.component ?? "teamwork-orchestrator";
       const tuiComponent =
         component === "opencode-router" ? "router" : component;
       tui.pushLog({
@@ -6912,7 +6912,7 @@ async function runStart(args: ParsedArgs) {
   let logVerbose = createVerboseLogger(
     verbose && !outputJson,
     logger,
-    "openwork-orchestrator",
+    "teamwork-orchestrator",
   );
   const switchToPlainOutput = (error: string) => {
     if (!useTui) return;
@@ -6929,52 +6929,52 @@ async function runStart(args: ParsedArgs) {
     logVerbose = createVerboseLogger(
       verbose && !outputJson,
       logger,
-      "openwork-orchestrator",
+      "teamwork-orchestrator",
     );
     logger.warn(
-      "TUI failed to start; falling back to plain output. Use `openwork serve` for explicit non-TUI mode.",
+      "TUI failed to start; falling back to plain output. Use `teamwork serve` for explicit non-TUI mode.",
       { error },
-      "openwork-orchestrator",
+      "teamwork-orchestrator",
     );
   };
   const sidecarSourceInput = readBinarySource(
     args.flags,
     "sidecar-source",
     "auto",
-    "OPENWORK_SIDECAR_SOURCE",
+    "TEAMWORK_SIDECAR_SOURCE",
   );
   const opencodeSourceInput = readBinarySource(
     args.flags,
     "opencode-source",
     "auto",
-    "OPENWORK_OPENCODE_SOURCE",
+    "TEAMWORK_OPENCODE_SOURCE",
   );
 
   const workspace =
     readFlag(args.flags, "workspace") ??
-    process.env.OPENWORK_WORKSPACE ??
+    process.env.TEAMWORK_WORKSPACE ??
     process.cwd();
   const resolvedWorkspace = await ensureWorkspace(workspace);
   logger.info(
     "Run starting",
     { workspace: resolvedWorkspace, logFormat, runId },
-    "openwork-orchestrator",
+    "teamwork-orchestrator",
   );
 
   const sandboxRequested = readSandboxMode(
     args.flags,
     "sandbox",
     "none",
-    "OPENWORK_SANDBOX",
+    "TEAMWORK_SANDBOX",
   );
   const sandboxMode = await resolveSandboxMode(sandboxRequested);
   const sandboxImage =
     readFlag(args.flags, "sandbox-image") ??
-    process.env.OPENWORK_SANDBOX_IMAGE ??
+    process.env.TEAMWORK_SANDBOX_IMAGE ??
     "debian:bookworm-slim";
   const sandboxPersistOverride =
     readFlag(args.flags, "sandbox-persist-dir") ??
-    process.env.OPENWORK_SANDBOX_PERSIST_DIR;
+    process.env.TEAMWORK_SANDBOX_PERSIST_DIR;
   const dataDir = resolveRouterDataDir(args.flags);
   const devMode = resolveInternalDevMode(args.flags);
   const opencodeStateLayout = resolveOpencodeStateLayout({
@@ -7002,7 +7002,7 @@ async function runStart(args: ParsedArgs) {
   }
 
   const sandboxMountValue =
-    readFlag(args.flags, "sandbox-mount") ?? process.env.OPENWORK_SANDBOX_MOUNT;
+    readFlag(args.flags, "sandbox-mount") ?? process.env.TEAMWORK_SANDBOX_MOUNT;
   const sandboxMountSpecs = parseList(sandboxMountValue);
   const sandboxExtraMounts =
     sandboxMode !== "none" && sandboxMountSpecs.length
@@ -7010,17 +7010,17 @@ async function runStart(args: ParsedArgs) {
       : [];
 
   const explicitOpencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
-  const explicitOpenworkServerBin =
-    readFlag(args.flags, "openwork-server-bin") ??
-    process.env.OPENWORK_SERVER_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.TEAMWORK_OPENCODE_BIN;
+  const explicitTeamworkServerBin =
+    readFlag(args.flags, "teamwork-server-bin") ??
+    process.env.TEAMWORK_SERVER_BIN;
   const explicitOpenCodeRouterBin =
     readFlag(args.flags, "opencode-router-bin") ??
     process.env.OPENCODE_ROUTER_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeBindHost = resolveManagedOpencodeHost(
     readFlag(args.flags, "opencode-host") ??
-      process.env.OPENWORK_OPENCODE_BIND_HOST,
+      process.env.TEAMWORK_OPENCODE_BIND_HOST,
   );
   const opencodePort =
     sandboxMode !== "none"
@@ -7030,13 +7030,13 @@ async function runStart(args: ParsedArgs) {
             args.flags,
             "opencode-port",
             undefined,
-            "OPENWORK_OPENCODE_PORT",
+            "TEAMWORK_OPENCODE_PORT",
           ),
           "127.0.0.1",
         );
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.TEAMWORK_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload = readOpencodeHotReload(
     args.flags,
@@ -7046,19 +7046,19 @@ async function runStart(args: ParsedArgs) {
       cooldownMs: DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS,
     },
     {
-      enabled: "OPENWORK_OPENCODE_HOT_RELOAD",
-      debounceMs: "OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
-      cooldownMs: "OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
+      enabled: "TEAMWORK_OPENCODE_HOT_RELOAD",
+      debounceMs: "TEAMWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
+      cooldownMs: "TEAMWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
     },
   );
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
   const opencodeUsername = opencodeCredentials.username;
   const opencodePassword = opencodeCredentials.password;
 
-  const remoteAccessEnabled = resolveOpenworkRemoteAccess(args);
-  const openworkHost = remoteAccessEnabled ? "0.0.0.0" : "127.0.0.1";
-  const openworkPort = await resolvePort(
-    readNumber(args.flags, "openwork-port", undefined, "OPENWORK_PORT"),
+  const remoteAccessEnabled = resolveTeamworkRemoteAccess(args);
+  const teamworkHost = remoteAccessEnabled ? "0.0.0.0" : "127.0.0.1";
+  const teamworkPort = await resolvePort(
+    readNumber(args.flags, "teamwork-port", undefined, "TEAMWORK_PORT"),
     "127.0.0.1",
   );
   // Always choose a free opencodeRouter health port by default (avoid conflicts with
@@ -7072,32 +7072,32 @@ async function runStart(args: ParsedArgs) {
     ),
     "127.0.0.1",
   );
-  const openworkToken =
-    readFlag(args.flags, "openwork-token") ??
-    process.env.OPENWORK_TOKEN ??
+  const teamworkToken =
+    readFlag(args.flags, "teamwork-token") ??
+    process.env.TEAMWORK_TOKEN ??
     randomUUID();
-  const openworkHostToken =
-    readFlag(args.flags, "openwork-host-token") ??
-    process.env.OPENWORK_HOST_TOKEN ??
+  const teamworkHostToken =
+    readFlag(args.flags, "teamwork-host-token") ??
+    process.env.TEAMWORK_HOST_TOKEN ??
     randomUUID();
   const approvalMode =
     (readFlag(args.flags, "approval") as ApprovalMode | undefined) ??
-    (process.env.OPENWORK_APPROVAL_MODE as ApprovalMode | undefined) ??
+    (process.env.TEAMWORK_APPROVAL_MODE as ApprovalMode | undefined) ??
     "manual";
   const approvalTimeoutMs = readNumber(
     args.flags,
     "approval-timeout",
     DEFAULT_APPROVAL_TIMEOUT,
-    "OPENWORK_APPROVAL_TIMEOUT_MS",
+    "TEAMWORK_APPROVAL_TIMEOUT_MS",
   ) as number;
   const readOnly = readBool(
     args.flags,
     "read-only",
     false,
-    "OPENWORK_READONLY",
+    "TEAMWORK_READONLY",
   );
   const corsValue =
-    readFlag(args.flags, "cors") ?? process.env.OPENWORK_CORS_ORIGINS ?? "*";
+    readFlag(args.flags, "cors") ?? process.env.TEAMWORK_CORS_ORIGINS ?? "*";
   const corsOrigins = parseList(corsValue);
   const connectHost = readFlag(args.flags, "connect-host");
 
@@ -7106,7 +7106,7 @@ async function runStart(args: ParsedArgs) {
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "TEAMWORK_ALLOW_EXTERNAL",
   );
   const sidecarTarget = resolveSandboxSidecarTarget(sandboxMode);
   const sidecar = resolveSidecarConfigForTarget(
@@ -7131,7 +7131,7 @@ async function runStart(args: ParsedArgs) {
     // accidentally pick host (darwin) bundled binaries.
     if (sidecarSourceInput === "auto") {
       sidecarSource =
-        explicitOpenworkServerBin || explicitOpenCodeRouterBin
+        explicitTeamworkServerBin || explicitOpenCodeRouterBin
           ? "external"
           : "downloaded";
     }
@@ -7205,13 +7205,13 @@ async function runStart(args: ParsedArgs) {
     args.flags,
     "opencode-router-required",
     false,
-    "OPENWORK_OPENCODE_ROUTER_REQUIRED",
+    "TEAMWORK_OPENCODE_ROUTER_REQUIRED",
   );
   logVerbose(
     `opencodeRouter enabled: ${opencodeRouterEnabled ? "true" : "false"} (${opencodeRouterMode.source})`,
   );
-  let openworkServerBinary = await resolveOpenworkServerBin({
-    explicit: explicitOpenworkServerBin,
+  let teamworkServerBinary = await resolveTeamworkServerBin({
+    explicit: explicitTeamworkServerBin,
     manifest,
     allowExternal,
     sidecar,
@@ -7230,7 +7230,7 @@ async function runStart(args: ParsedArgs) {
   if (sandboxMode !== "none") {
     // Ensure the binaries we stage into the container are actual files.
     await assertSandboxBinaryFile("opencode", opencodeBinary.bin);
-    await assertSandboxBinaryFile("openwork-server", openworkServerBinary.bin);
+    await assertSandboxBinaryFile("teamwork-server", teamworkServerBinary.bin);
     if (opencodeRouterBinary) {
       await assertSandboxBinaryFile(
         "opencode-router",
@@ -7241,7 +7241,7 @@ async function runStart(args: ParsedArgs) {
   let opencodeRouterActualVersion: string | undefined;
   logVerbose(`opencode bin: ${opencodeBinary.bin} (${opencodeBinary.source})`);
   logVerbose(
-    `openwork-server bin: ${openworkServerBinary.bin} (${openworkServerBinary.source})`,
+    `teamwork-server bin: ${teamworkServerBinary.bin} (${teamworkServerBinary.source})`,
   );
   if (opencodeRouterBinary) {
     logVerbose(
@@ -7249,24 +7249,24 @@ async function runStart(args: ParsedArgs) {
     );
   }
 
-  const openworkBaseUrl = `http://127.0.0.1:${openworkPort}`;
-  const openworkConnect = remoteAccessEnabled
-    ? resolveConnectUrl(openworkPort, connectHost)
+  const teamworkBaseUrl = `http://127.0.0.1:${teamworkPort}`;
+  const teamworkConnect = remoteAccessEnabled
+    ? resolveConnectUrl(teamworkPort, connectHost)
     : {};
-  const openworkConnectUrl = openworkConnect.connectUrl ?? openworkBaseUrl;
+  const teamworkConnectUrl = teamworkConnect.connectUrl ?? teamworkBaseUrl;
 
   const opencodeBaseUrl =
     sandboxMode !== "none"
-      ? `${openworkBaseUrl}/opencode`
+      ? `${teamworkBaseUrl}/opencode`
       : `http://127.0.0.1:${opencodePort}`;
   const opencodeConnectUrl =
     sandboxMode !== "none"
-      ? `${openworkConnectUrl.replace(/\/$/, "")}/opencode`
+      ? `${teamworkConnectUrl.replace(/\/$/, "")}/opencode`
       : opencodeBaseUrl;
 
   const attachCommand =
     sandboxMode !== "none"
-      ? `OpenCode is proxied via ${opencodeConnectUrl} (requires OpenWork token)`
+      ? `OpenCode is proxied via ${opencodeConnectUrl} (requires TeamWork token)`
       : buildAttachCommand({
           url: opencodeConnectUrl,
           workspace: resolvedWorkspace,
@@ -7294,15 +7294,15 @@ async function runStart(args: ParsedArgs) {
   let sandboxStopCommand: string | null = null;
   let sandboxCleanup: (() => Promise<void>) | null = null;
   let opencodeChild: ChildProcess | null = null;
-  let openworkChild: ChildProcess | null = null;
+  let teamworkChild: ChildProcess | null = null;
   let opencodeRouterChild: ChildProcess | null = null;
   let controlServer: ReturnType<typeof createHttpServer> | null = null;
   const controlPort = await resolvePort(undefined, "127.0.0.1");
   const controlToken = randomUUID();
   const controlBaseUrl = `http://127.0.0.1:${controlPort}`;
   let opencodeActualVersion: string | undefined;
-  let openworkActualVersion: string | undefined;
-  let openworkOwnerToken: string | undefined;
+  let teamworkActualVersion: string | undefined;
+  let teamworkOwnerToken: string | undefined;
   const startedAt = Date.now();
   let opencodeRouterHealthInterval: NodeJS.Timeout | null = null;
   const workerActivityHeartbeat = resolveWorkerActivityHeartbeatConfig();
@@ -7323,11 +7323,11 @@ async function runStart(args: ParsedArgs) {
   const getRuntimeSnapshot = () => {
     const services = [
       buildRuntimeServiceSnapshot({
-        name: "openwork-server",
+        name: "teamwork-server",
         enabled: true,
-        running: Boolean(openworkChild && isProcessAlive(openworkChild.pid)),
-        binary: openworkServerBinary,
-        actualVersion: openworkActualVersion,
+        running: Boolean(teamworkChild && isProcessAlive(teamworkChild.pid)),
+        binary: teamworkServerBinary,
+        actualVersion: teamworkActualVersion,
       }),
       buildRuntimeServiceSnapshot({
         name: "opencode",
@@ -7415,25 +7415,25 @@ async function runStart(args: ParsedArgs) {
       }),
     );
   };
-  const restartOpenworkServer = async () => {
+  const restartTeamworkServer = async () => {
     if (sandboxMode !== "none") {
       throw new Error(
         "Runtime upgrade is not supported while sandbox mode is enabled",
       );
     }
-    if (openworkChild) {
-      restartingServices.add("openwork-server");
-      removeChildHandle("openwork-server");
-      await stopChild(openworkChild);
-      openworkChild = null;
+    if (teamworkChild) {
+      restartingServices.add("teamwork-server");
+      removeChildHandle("teamwork-server");
+      await stopChild(teamworkChild);
+      teamworkChild = null;
     }
-    const child = await startOpenworkServer({
-      bin: openworkServerBinary.bin,
-      host: openworkHost,
-      port: openworkPort,
+    const child = await startTeamworkServer({
+      bin: teamworkServerBinary.bin,
+      host: teamworkHost,
+      port: teamworkPort,
       workspace: resolvedWorkspace,
-      token: openworkToken,
-      hostToken: openworkHostToken,
+      token: teamworkToken,
+      hostToken: teamworkHostToken,
       approvalMode: approvalMode === "auto" ? "auto" : "manual",
       approvalTimeoutMs,
       readOnly,
@@ -7454,23 +7454,23 @@ async function runStart(args: ParsedArgs) {
       controlBaseUrl,
       controlToken,
     });
-    openworkChild = child;
-    children.push({ name: "openwork-server", child });
+    teamworkChild = child;
+    children.push({ name: "teamwork-server", child });
     logger.info(
       "Process spawned",
       { pid: child.pid ?? 0, cause: "runtime-upgrade" },
-      "openwork-server",
+      "teamwork-server",
     );
     child.on("exit", (code, signal) =>
-      handleExit("openwork-server", code, signal),
+      handleExit("teamwork-server", code, signal),
     );
-    child.on("error", (error) => handleSpawnError("openwork-server", error));
-    await waitForHealthy(openworkBaseUrl);
-    openworkActualVersion = await verifyOpenworkServer({
-      baseUrl: openworkBaseUrl,
-      token: openworkToken,
-      hostToken: openworkHostToken,
-      expectedVersion: openworkServerBinary.expectedVersion,
+    child.on("error", (error) => handleSpawnError("teamwork-server", error));
+    await waitForHealthy(teamworkBaseUrl);
+    teamworkActualVersion = await verifyTeamworkServer({
+      baseUrl: teamworkBaseUrl,
+      token: teamworkToken,
+      hostToken: teamworkHostToken,
+      expectedVersion: teamworkServerBinary.expectedVersion,
       expectedWorkspace: resolvedWorkspace,
       expectedOpencodeBaseUrl: opencodeConnectUrl,
       expectedOpencodeDirectory: resolvedWorkspace,
@@ -7534,12 +7534,12 @@ async function runStart(args: ParsedArgs) {
         );
       }
       if (
-        services.includes("openwork-server") &&
-        openworkServerBinary.source === "external" &&
-        openworkServerBinary.expectedVersion
+        services.includes("teamwork-server") &&
+        teamworkServerBinary.source === "external" &&
+        teamworkServerBinary.expectedVersion
       ) {
         await installGlobalPackages([
-          `openwork-server@${openworkServerBinary.expectedVersion}`,
+          `teamwork-server@${teamworkServerBinary.expectedVersion}`,
         ]);
       }
       if (
@@ -7551,9 +7551,9 @@ async function runStart(args: ParsedArgs) {
           `opencode-router@${opencodeRouterBinary.expectedVersion}`,
         ]);
       }
-      if (services.includes("openwork-server")) {
-        openworkServerBinary = await resolveOpenworkServerBin({
-          explicit: explicitOpenworkServerBin,
+      if (services.includes("teamwork-server")) {
+        teamworkServerBinary = await resolveTeamworkServerBin({
+          explicit: explicitTeamworkServerBin,
           manifest,
           allowExternal,
           sidecar,
@@ -7585,10 +7585,10 @@ async function runStart(args: ParsedArgs) {
         await restartOpenCodeRouter();
       }
       if (
-        services.includes("openwork-server") ||
+        services.includes("teamwork-server") ||
         services.includes("opencode")
       ) {
-        await restartOpenworkServer();
+        await restartTeamworkServer();
       }
       runtimeUpgradeState.status = "idle";
       runtimeUpgradeState.finishedAt = Date.now();
@@ -7600,7 +7600,7 @@ async function runStart(args: ParsedArgs) {
       logger.error(
         "Runtime upgrade failed",
         { error: runtimeUpgradeState.error, services },
-        "openwork-orchestrator",
+        "teamwork-orchestrator",
       );
     }
   };
@@ -7626,7 +7626,7 @@ async function runStart(args: ParsedArgs) {
     logger.info(
       "Shutting down",
       { children: children.map((handle) => handle.name) },
-      "openwork-orchestrator",
+      "teamwork-orchestrator",
     );
     if (sandboxContainerName && sandboxStop) {
       await sandboxStop(sandboxContainerName);
@@ -7684,9 +7684,9 @@ async function runStart(args: ParsedArgs) {
             `Stop: ${sandboxStopCommand} ${sandboxContainerName}`,
           ]
         : []),
-      `OpenWork URL: ${openworkConnectUrl}`,
+      `TeamWork URL: ${teamworkConnectUrl}`,
       "Credentials withheld from detached stdout.",
-      ...(openworkOwnerToken ? ["OpenWork owner token issued."] : []),
+      ...(teamworkOwnerToken ? ["TeamWork owner token issued."] : []),
       `OpenCode URL: ${opencodeConnectUrl}`,
       `Attach: ${redactSensitiveString(attachCommand)}`,
       "Use `--json` only when you explicitly need the raw tokens or passwords in command output.",
@@ -7711,8 +7711,8 @@ async function runStart(args: ParsedArgs) {
           .join(" ");
         if (
           text.includes("React is not defined") ||
-          text.includes("/$bunfs/root/openwork-orchestrator") ||
-          text.includes("/$bunfs/root/openwork")
+          text.includes("/$bunfs/root/teamwork-orchestrator") ||
+          text.includes("/$bunfs/root/teamwork")
         ) {
           switchToPlainOutput(text);
         }
@@ -7726,10 +7726,10 @@ async function runStart(args: ParsedArgs) {
         connect: {
           runId,
           workspace: resolvedWorkspace,
-          openworkUrl: openworkConnectUrl,
-          openworkToken,
-          ownerToken: openworkOwnerToken,
-          hostToken: openworkHostToken,
+          teamworkUrl: teamworkConnectUrl,
+          teamworkToken,
+          ownerToken: teamworkOwnerToken,
+          hostToken: teamworkHostToken,
           opencodeUrl: opencodeConnectUrl,
           opencodePassword:
             sandboxMode !== "none"
@@ -7749,10 +7749,10 @@ async function runStart(args: ParsedArgs) {
             port: opencodePort,
           },
           {
-            name: "openwork-server",
-            label: "openwork-server",
+            name: "teamwork-server",
+            label: "teamwork-server",
             status: "starting",
-            port: openworkPort,
+            port: teamworkPort,
           },
           {
             name: "router",
@@ -7769,22 +7769,22 @@ async function runStart(args: ParsedArgs) {
         },
         onCopySelection: async (text) => copyToClipboard(text),
         onRouterHealth: async () =>
-          fetchOpenCodeRouterHealthViaOpenwork(openworkBaseUrl, openworkToken),
+          fetchOpenCodeRouterHealthViaTeamwork(teamworkBaseUrl, teamworkToken),
         onRouterTelegramIdentities: async () => {
-          const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/telegram`;
+          const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/telegram`;
           const result = await fetchJson(url, {
             headers: {
-              "X-OpenWork-Host-Token": openworkHostToken,
+              "X-TeamWork-Host-Token": teamworkHostToken,
             },
           });
           const items = Array.isArray(result?.items) ? result.items : [];
           return { items };
         },
         onRouterSlackIdentities: async () => {
-          const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/slack`;
+          const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/slack`;
           const result = await fetchJson(url, {
             headers: {
-              "X-OpenWork-Host-Token": openworkHostToken,
+              "X-TeamWork-Host-Token": teamworkHostToken,
             },
           });
           const items = Array.isArray(result?.items) ? result.items : [];
@@ -7792,12 +7792,12 @@ async function runStart(args: ParsedArgs) {
         },
         onRouterSetGroupsEnabled: async (enabled) => {
           try {
-            const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/config/groups`;
+            const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/config/groups`;
             await fetchJson(url, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "X-OpenWork-Host-Token": openworkHostToken,
+                "X-TeamWork-Host-Token": teamworkHostToken,
               },
               body: JSON.stringify({ enabled }),
             });
@@ -7811,12 +7811,12 @@ async function runStart(args: ParsedArgs) {
         },
         onRouterSetTelegramToken: async (token) => {
           try {
-            const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/telegram`;
+            const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/telegram`;
             await fetchJson(url, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "X-OpenWork-Host-Token": openworkHostToken,
+                "X-TeamWork-Host-Token": teamworkHostToken,
               },
               body: JSON.stringify({ id: "default", token, enabled: true }),
             });
@@ -7830,12 +7830,12 @@ async function runStart(args: ParsedArgs) {
         },
         onRouterSetSlackTokens: async (botToken, appToken) => {
           try {
-            const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/slack`;
+            const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/identities/slack`;
             await fetchJson(url, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                "X-OpenWork-Host-Token": openworkHostToken,
+                "X-TeamWork-Host-Token": teamworkHostToken,
               },
               body: JSON.stringify({
                 id: "default",
@@ -7878,7 +7878,7 @@ async function runStart(args: ParsedArgs) {
       code !== null ? `code ${code}` : signal ? `signal ${signal}` : "unknown";
     const services =
       name === "sandbox"
-        ? ["opencode", "openwork-server", "router"]
+        ? ["opencode", "teamwork-server", "router"]
         : [tuiServiceName(name)];
     for (const service of services) {
       tui?.updateService(service, { status: "stopped", message: reason });
@@ -7936,12 +7936,12 @@ async function runStart(args: ParsedArgs) {
         }
         const requested = Array.isArray(body?.services)
           ? body.services
-          : ["openwork-server", "opencode"];
+          : ["teamwork-server", "opencode"];
         const services = Array.from(
           new Set(
             requested.filter(
               (item): item is RuntimeServiceName =>
-                item === "openwork-server" ||
+                item === "teamwork-server" ||
                 item === "opencode" ||
                 item === "opencode-router",
             ),
@@ -7984,7 +7984,7 @@ async function runStart(args: ParsedArgs) {
     });
 
     if (sandboxMode !== "none") {
-      const containerName = `openwork-orchestrator-${runId.replace(/[^a-zA-Z0-9_.-]+/g, "-").slice(0, 24)}`;
+      const containerName = `teamwork-orchestrator-${runId.replace(/[^a-zA-Z0-9_.-]+/g, "-").slice(0, 24)}`;
       sandboxContainerName = containerName;
 
       sandboxStop =
@@ -8007,14 +8007,14 @@ async function runStart(args: ParsedArgs) {
               extraMounts: sandboxExtraMounts,
               sidecars: {
                 opencode: opencodeBinary.bin,
-                openworkServer: openworkServerBinary.bin,
+                teamworkServer: teamworkServerBinary.bin,
                 opencodeRouter: opencodeRouterEnabled
                   ? (opencodeRouterBinary?.bin ?? null)
                   : null,
               },
               ports: {
-                openwork: openworkPort,
-                // In sandbox mode, opencodeRouter is only reachable via openwork-server
+                teamwork: teamworkPort,
+                // In sandbox mode, opencodeRouter is only reachable via teamwork-server
                 // proxy (/opencode-router/*). Do not publish a separate host port.
                 opencodeRouterHealth: null,
               },
@@ -8025,9 +8025,9 @@ async function runStart(args: ParsedArgs) {
                 hotReload: opencodeHotReload,
                 logLevel: opencodeLogLevel,
               },
-              openwork: {
-                token: openworkToken,
-                hostToken: openworkHostToken,
+              teamwork: {
+                token: teamworkToken,
+                hostToken: teamworkHostToken,
                 approvalMode: approvalMode === "auto" ? "auto" : "manual",
                 approvalTimeoutMs,
                 readOnly,
@@ -8051,14 +8051,14 @@ async function runStart(args: ParsedArgs) {
               extraMounts: sandboxExtraMounts,
               sidecars: {
                 opencode: opencodeBinary.bin,
-                openworkServer: openworkServerBinary.bin,
+                teamworkServer: teamworkServerBinary.bin,
                 opencodeRouter: opencodeRouterEnabled
                   ? (opencodeRouterBinary?.bin ?? null)
                   : null,
               },
               ports: {
-                openwork: openworkPort,
-                // In sandbox mode, opencodeRouter is only reachable via openwork-server
+                teamwork: teamworkPort,
+                // In sandbox mode, opencodeRouter is only reachable via teamwork-server
                 // proxy (/opencode-router/*). Do not publish a separate host port.
                 opencodeRouterHealth: null,
               },
@@ -8069,9 +8069,9 @@ async function runStart(args: ParsedArgs) {
                 hotReload: opencodeHotReload,
                 logLevel: opencodeLogLevel,
               },
-              openwork: {
-                token: openworkToken,
-                hostToken: openworkHostToken,
+              teamwork: {
+                token: teamworkToken,
+                hostToken: teamworkHostToken,
                 approvalMode: approvalMode === "auto" ? "auto" : "manual",
                 approvalTimeoutMs,
                 readOnly,
@@ -8091,9 +8091,9 @@ async function runStart(args: ParsedArgs) {
         status: "running",
         port: SANDBOX_INTERNAL_OPENCODE_PORT,
       });
-      tui?.updateService("openwork-server", {
+      tui?.updateService("teamwork-server", {
         status: "running",
-        port: openworkPort,
+        port: teamworkPort,
       });
       if (opencodeRouterEnabled) {
         tui?.updateService("router", { status: "running", port: undefined });
@@ -8119,45 +8119,45 @@ async function runStart(args: ParsedArgs) {
 
       logger.info(
         "Waiting for health",
-        { url: openworkBaseUrl },
-        "openwork-server",
+        { url: teamworkBaseUrl },
+        "teamwork-server",
       );
-      await waitForHealthy(openworkBaseUrl);
-      logger.info("Healthy", { url: openworkBaseUrl }, "openwork-server");
-      tui?.updateService("openwork-server", { status: "healthy" });
+      await waitForHealthy(teamworkBaseUrl);
+      logger.info("Healthy", { url: teamworkBaseUrl }, "teamwork-server");
+      tui?.updateService("teamwork-server", { status: "healthy" });
 
       opencodeClient = createOpencodeClient({
-        baseUrl: `${openworkBaseUrl.replace(/\/$/, "")}/opencode`,
-        headers: { Authorization: `Bearer ${openworkToken}` },
+        baseUrl: `${teamworkBaseUrl.replace(/\/$/, "")}/opencode`,
+        headers: { Authorization: `Bearer ${teamworkToken}` },
       });
 
-      // In sandbox mode, the released openwork-server binary may not have our
+      // In sandbox mode, the released teamwork-server binary may not have our
       // latest proxy/auth changes yet.  Instead of using the OpenCode SDK client
       // (which relies on the proxy handling Bearer tokens), do a direct health
-      // check against the openwork-server's own /opencode proxy path.  If the
+      // check against the teamwork-server's own /opencode proxy path.  If the
       // server is healthy *and* is proxying to a healthy opencode, we're good.
       logger.info(
         "Waiting for health (proxy)",
-        { url: `${openworkBaseUrl}/opencode` },
+        { url: `${teamworkBaseUrl}/opencode` },
         "opencode",
       );
       await waitForHealthyViaProxy(
-        `${openworkBaseUrl.replace(/\/$/, "")}/opencode`,
-        openworkToken,
+        `${teamworkBaseUrl.replace(/\/$/, "")}/opencode`,
+        teamworkToken,
       );
       logger.info(
         "Healthy (proxy)",
-        { url: `${openworkBaseUrl}/opencode` },
+        { url: `${teamworkBaseUrl}/opencode` },
         "opencode",
       );
       tui?.updateService("opencode", { status: "healthy" });
 
       try {
-        openworkActualVersion = await verifyOpenworkServer({
-          baseUrl: openworkBaseUrl,
-          token: openworkToken,
-          hostToken: openworkHostToken,
-          expectedVersion: openworkServerBinary.expectedVersion,
+        teamworkActualVersion = await verifyTeamworkServer({
+          baseUrl: teamworkBaseUrl,
+          token: teamworkToken,
+          hostToken: teamworkHostToken,
+          expectedVersion: teamworkServerBinary.expectedVersion,
           expectedWorkspace: "/workspace",
           expectedOpencodeBaseUrl: opencodeInternalBaseUrl,
           expectedOpencodeDirectory: "/workspace",
@@ -8172,17 +8172,17 @@ async function runStart(args: ParsedArgs) {
         logger.warn(
           "Sandbox server verification warning (non-fatal)",
           { error: String(verifyError) },
-          "openwork-server",
+          "teamwork-server",
         );
       }
-      openworkOwnerToken = await issueOpenworkOwnerToken(
-        openworkBaseUrl,
-        openworkHostToken,
-        "OpenWork sandbox owner token",
+      teamworkOwnerToken = await issueTeamworkOwnerToken(
+        teamworkBaseUrl,
+        teamworkHostToken,
+        "TeamWork sandbox owner token",
       );
-      tui?.setConnectInfo({ ownerToken: openworkOwnerToken });
+      tui?.setConnectInfo({ ownerToken: teamworkOwnerToken });
       logVerbose(
-        `openwork-server version: ${openworkActualVersion ?? "unknown"}`,
+        `teamwork-server version: ${teamworkActualVersion ?? "unknown"}`,
       );
     } else {
       const startedOpencodeChild = await startOpencode({
@@ -8350,13 +8350,13 @@ async function runStart(args: ParsedArgs) {
         }
       }
 
-      const startedOpenworkChild = await startOpenworkServer({
-        bin: openworkServerBinary.bin,
-        host: openworkHost,
-        port: openworkPort,
+      const startedTeamworkChild = await startTeamworkServer({
+        bin: teamworkServerBinary.bin,
+        host: teamworkHost,
+        port: teamworkPort,
         workspace: resolvedWorkspace,
-        token: openworkToken,
-        hostToken: openworkHostToken,
+        token: teamworkToken,
+        hostToken: teamworkHostToken,
         approvalMode: approvalMode === "auto" ? "auto" : "manual",
         approvalTimeoutMs,
         readOnly,
@@ -8377,58 +8377,58 @@ async function runStart(args: ParsedArgs) {
         controlBaseUrl,
         controlToken,
       });
-      openworkChild = startedOpenworkChild;
-      children.push({ name: "openwork-server", child: startedOpenworkChild });
-      tui?.updateService("openwork-server", {
+      teamworkChild = startedTeamworkChild;
+      children.push({ name: "teamwork-server", child: startedTeamworkChild });
+      tui?.updateService("teamwork-server", {
         status: "running",
-        pid: startedOpenworkChild.pid ?? undefined,
-        port: openworkPort,
+        pid: startedTeamworkChild.pid ?? undefined,
+        port: teamworkPort,
       });
       logger.info(
         "Process spawned",
-        { pid: startedOpenworkChild.pid ?? 0 },
-        "openwork-server",
+        { pid: startedTeamworkChild.pid ?? 0 },
+        "teamwork-server",
       );
-      startedOpenworkChild.on("exit", (code, signal) =>
-        handleExit("openwork-server", code, signal),
+      startedTeamworkChild.on("exit", (code, signal) =>
+        handleExit("teamwork-server", code, signal),
       );
-      startedOpenworkChild.on("error", (error) =>
-        handleSpawnError("openwork-server", error),
+      startedTeamworkChild.on("error", (error) =>
+        handleSpawnError("teamwork-server", error),
       );
 
       logger.info(
         "Waiting for health",
-        { url: openworkBaseUrl },
-        "openwork-server",
+        { url: teamworkBaseUrl },
+        "teamwork-server",
       );
-      await waitForHealthy(openworkBaseUrl);
-      logger.info("Healthy", { url: openworkBaseUrl }, "openwork-server");
-      tui?.updateService("openwork-server", { status: "healthy" });
+      await waitForHealthy(teamworkBaseUrl);
+      logger.info("Healthy", { url: teamworkBaseUrl }, "teamwork-server");
+      tui?.updateService("teamwork-server", { status: "healthy" });
 
-      openworkActualVersion = await verifyOpenworkServer({
-        baseUrl: openworkBaseUrl,
-        token: openworkToken,
-        hostToken: openworkHostToken,
-        expectedVersion: openworkServerBinary.expectedVersion,
+      teamworkActualVersion = await verifyTeamworkServer({
+        baseUrl: teamworkBaseUrl,
+        token: teamworkToken,
+        hostToken: teamworkHostToken,
+        expectedVersion: teamworkServerBinary.expectedVersion,
         expectedWorkspace: resolvedWorkspace,
         expectedOpencodeBaseUrl: opencodeConnectUrl,
         expectedOpencodeDirectory: resolvedWorkspace,
         expectedOpencodeUsername: opencodeUsername,
         expectedOpencodePassword: opencodePassword,
       });
-      openworkOwnerToken = await issueOpenworkOwnerToken(
-        openworkBaseUrl,
-        openworkHostToken,
-        "OpenWork owner token",
+      teamworkOwnerToken = await issueTeamworkOwnerToken(
+        teamworkBaseUrl,
+        teamworkHostToken,
+        "TeamWork owner token",
       );
-      tui?.setConnectInfo({ ownerToken: openworkOwnerToken });
+      tui?.setConnectInfo({ ownerToken: teamworkOwnerToken });
       logVerbose(
-        `openwork-server version: ${openworkActualVersion ?? "unknown"}`,
+        `teamwork-server version: ${teamworkActualVersion ?? "unknown"}`,
       );
 
       if (opencodeRouterReady && !opencodeRouterHealthInterval) {
         opencodeRouterHealthInterval = setInterval(() => {
-          fetchOpenCodeRouterHealthViaOpenwork(openworkBaseUrl, openworkToken)
+          fetchOpenCodeRouterHealthViaTeamwork(teamworkBaseUrl, teamworkToken)
             .then((health) => {
               tui?.setRouterHealth(health);
               if (health.ok) {
@@ -8448,11 +8448,11 @@ async function runStart(args: ParsedArgs) {
           `opencodeRouter version: ${opencodeRouterActualVersion ?? "unknown"}`,
         );
         try {
-          const url = `${openworkBaseUrl.replace(/\/$/, "")}/opencode-router/health`;
+          const url = `${teamworkBaseUrl.replace(/\/$/, "")}/opencode-router/health`;
           logger.info("Waiting for health", { url }, "opencode-router");
-          const health = await waitForOpenCodeRouterHealthyViaOpenwork(
-            openworkBaseUrl,
-            openworkToken,
+          const health = await waitForOpenCodeRouterHealthyViaTeamwork(
+            teamworkBaseUrl,
+            teamworkToken,
           );
           tui?.setRouterHealth(health);
           tui?.updateService("router", {
@@ -8472,7 +8472,7 @@ async function runStart(args: ParsedArgs) {
         }
         if (!opencodeRouterHealthInterval) {
           opencodeRouterHealthInterval = setInterval(() => {
-            fetchOpenCodeRouterHealthViaOpenwork(openworkBaseUrl, openworkToken)
+            fetchOpenCodeRouterHealthViaTeamwork(teamworkBaseUrl, teamworkToken)
               .then((health) => {
                 tui?.setRouterHealth(health);
                 if (health.ok) {
@@ -8483,7 +8483,7 @@ async function runStart(args: ParsedArgs) {
           }, 15_000);
         }
       } else {
-        // In host mode, opencodeRouter is started before openwork-server so we can
+        // In host mode, opencodeRouter is started before teamwork-server so we can
         // confirm health before wiring the proxy.
       }
     }
@@ -8496,7 +8496,7 @@ async function runStart(args: ParsedArgs) {
           intervalMs: workerActivityHeartbeat.intervalMs,
           activeWindowMs: workerActivityHeartbeat.activeWindowMs,
         },
-        "openwork-orchestrator",
+        "teamwork-orchestrator",
       );
       const runHeartbeat = () => {
         void postWorkerActivityHeartbeat({
@@ -8507,7 +8507,7 @@ async function runStart(args: ParsedArgs) {
           logger.warn(
             "Worker activity heartbeat failed",
             { error: error instanceof Error ? error.message : String(error) },
-            "openwork-orchestrator",
+            "teamwork-orchestrator",
           );
         });
       };
@@ -8536,16 +8536,16 @@ async function runStart(args: ParsedArgs) {
         hotReload: opencodeHotReload,
         version: opencodeActualVersion,
       },
-      openwork: {
-        baseUrl: openworkBaseUrl,
-        connectUrl: openworkConnectUrl,
-        host: openworkHost,
-        port: openworkPort,
-        collaboratorToken: openworkToken,
-        ownerToken: openworkOwnerToken,
-        token: openworkToken,
-        hostToken: openworkHostToken,
-        version: openworkActualVersion,
+      teamwork: {
+        baseUrl: teamworkBaseUrl,
+        connectUrl: teamworkConnectUrl,
+        host: teamworkHost,
+        port: teamworkPort,
+        collaboratorToken: teamworkToken,
+        ownerToken: teamworkOwnerToken,
+        token: teamworkToken,
+        hostToken: teamworkHostToken,
+        version: teamworkActualVersion,
       },
       opencodeRouter: {
         enabled: opencodeRouterEnabled,
@@ -8572,11 +8572,11 @@ async function runStart(args: ParsedArgs) {
             expectedVersion: opencodeBinary.expectedVersion,
             actualVersion: opencodeActualVersion,
           } as BinaryDiagnostics,
-          openworkServer: {
-            path: openworkServerBinary.bin,
-            source: openworkServerBinary.source,
-            expectedVersion: openworkServerBinary.expectedVersion,
-            actualVersion: openworkActualVersion,
+          teamworkServer: {
+            path: teamworkServerBinary.bin,
+            source: teamworkServerBinary.source,
+            expectedVersion: teamworkServerBinary.expectedVersion,
+            actualVersion: teamworkActualVersion,
           } as BinaryDiagnostics,
           opencodeRouter: opencodeRouterBinary
             ? ({
@@ -8598,10 +8598,10 @@ async function runStart(args: ParsedArgs) {
         {
           workspace: payload.workspace,
           opencode: payload.opencode,
-          openwork: payload.openwork,
+          teamwork: payload.teamwork,
           opencodeRouter: payload.opencodeRouter,
         },
-        "openwork-orchestrator",
+        "teamwork-orchestrator",
       );
     } else if (logFormat === "json") {
       logger.info(
@@ -8609,13 +8609,13 @@ async function runStart(args: ParsedArgs) {
         {
           workspace: payload.workspace,
           opencode: payload.opencode,
-          openwork: payload.openwork,
+          teamwork: payload.teamwork,
           opencodeRouter: payload.opencodeRouter,
         },
-        "openwork-orchestrator",
+        "teamwork-orchestrator",
       );
     } else {
-      console.log("OpenWork orchestrator running");
+      console.log("TeamWork orchestrator running");
       console.log(`Run ID: ${runId}`);
       console.log(`Workspace: ${payload.workspace}`);
       console.log(`OpenCode: ${payload.opencode.baseUrl}`);
@@ -8623,17 +8623,17 @@ async function runStart(args: ParsedArgs) {
       if (payload.opencode.username && payload.opencode.password) {
         console.log("OpenCode auth: managed credentials configured (withheld from stdout)");
       }
-      console.log(`OpenWork server: ${payload.openwork.baseUrl}`);
-      console.log(`OpenWork connect URL: ${payload.openwork.connectUrl}`);
-      console.log("OpenWork collaborator token: issued (withheld from stdout)");
+      console.log(`TeamWork server: ${payload.teamwork.baseUrl}`);
+      console.log(`TeamWork connect URL: ${payload.teamwork.connectUrl}`);
+      console.log("TeamWork collaborator token: issued (withheld from stdout)");
       console.log("  Routine remote access for shared workers.");
-      if (payload.openwork.ownerToken) {
-        console.log("OpenWork owner token: issued (withheld from stdout)");
+      if (payload.teamwork.ownerToken) {
+        console.log("TeamWork owner token: issued (withheld from stdout)");
         console.log(
           "  Use this when the remote client must answer permission prompts.",
         );
       }
-      console.log("OpenWork host admin token: issued (withheld from stdout)");
+      console.log("TeamWork host admin token: issued (withheld from stdout)");
       console.log(
         "  Internal host/admin token for approvals CLI and host-only APIs.",
       );
@@ -8651,24 +8651,24 @@ async function runStart(args: ParsedArgs) {
         if (sandboxMode !== "none") {
           // In sandbox mode the released server binary may not support the
           // Bearer-through-proxy auth that the OpenCode SDK client expects.
-          // Run a lighter set of checks: openwork-server endpoints + proxy
+          // Run a lighter set of checks: teamwork-server endpoints + proxy
           // health.  Full SDK checks (session create, SSE events) are deferred
           // until the modified server binary is released.
           await runSandboxChecks({
-            openworkUrl: openworkBaseUrl,
-            openworkToken,
-            hostToken: openworkHostToken,
+            teamworkUrl: teamworkBaseUrl,
+            teamworkToken,
+            hostToken: teamworkHostToken,
           });
         } else {
           await runChecks({
             opencodeClient,
-            openworkUrl: openworkBaseUrl,
-            openworkToken,
-            hostToken: openworkHostToken,
+            teamworkUrl: teamworkBaseUrl,
+            teamworkToken,
+            hostToken: teamworkHostToken,
             checkEvents,
           });
         }
-        logger.info("Checks ok", { checkEvents }, "openwork-orchestrator");
+        logger.info("Checks ok", { checkEvents }, "teamwork-orchestrator");
         if (!outputJson && logFormat === "pretty") {
           console.log("Checks: ok");
         }
@@ -8676,7 +8676,7 @@ async function runStart(args: ParsedArgs) {
         logger.error(
           "Checks failed",
           { error: String(error) },
-          "openwork-orchestrator",
+          "teamwork-orchestrator",
         );
         await shutdown();
         tui?.stop();
@@ -8696,7 +8696,7 @@ async function runStart(args: ParsedArgs) {
     logger.error(
       "Run failed",
       { error: error instanceof Error ? error.message : String(error) },
-      "openwork-orchestrator",
+      "teamwork-orchestrator",
     );
     process.exit(1);
   }

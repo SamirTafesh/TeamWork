@@ -50,7 +50,7 @@ describe("github connector app helpers", () => {
         }
 
         if (String(url).endsWith("/contents/.claude-plugin/marketplace.json")) {
-          if (String(url).includes("different-ai/openwork")) {
+          if (String(url).includes("SamirTafesh/TeamWork")) {
             const content = Buffer.from(JSON.stringify({ plugins: [{ name: "a" }, { name: "b" }, { name: "c" }] })).toString("base64")
             return new Response(JSON.stringify({ content, encoding: "base64" }), { status: 200 })
           }
@@ -66,7 +66,7 @@ describe("github connector app helpers", () => {
 
         return new Response(JSON.stringify({
           repositories: [
-            { default_branch: "main", full_name: "different-ai/openwork", id: 42, private: true },
+            { default_branch: "main", full_name: "SamirTafesh/TeamWork", id: 42, private: true },
             { default_branch: "dev", full_name: "different-ai/opencode", id: 99, private: false },
           ],
         }), { status: 200 })
@@ -77,12 +77,12 @@ describe("github connector app helpers", () => {
     expect(requests.map((request) => request.url)).toEqual([
       "https://api.github.com/app/installations/777/access_tokens",
       "https://api.github.com/installation/repositories",
-      "https://api.github.com/repos/different-ai/openwork/contents/.claude-plugin/marketplace.json",
+      "https://api.github.com/repos/SamirTafesh/TeamWork/contents/.claude-plugin/marketplace.json",
       "https://api.github.com/repos/different-ai/opencode/contents/.claude-plugin/marketplace.json",
       "https://api.github.com/repos/different-ai/opencode/contents/.claude-plugin/plugin.json",
     ])
     expect(repositories).toEqual([
-      { defaultBranch: "main", fullName: "different-ai/openwork", hasPluginManifest: true, id: 42, manifestKind: "marketplace", marketplacePluginCount: 3, private: true },
+      { defaultBranch: "main", fullName: "SamirTafesh/TeamWork", hasPluginManifest: true, id: 42, manifestKind: "marketplace", marketplacePluginCount: 3, private: true },
       { defaultBranch: "dev", fullName: "different-ai/opencode", hasPluginManifest: true, id: 99, manifestKind: "plugin", marketplacePluginCount: null, private: false },
     ])
   })
@@ -91,9 +91,9 @@ describe("github connector app helpers", () => {
     const app = await getGithubAppSummary({
       config: { appId: "123456", privateKey: privateKeyPem },
       fetchFn: async () => new Response(JSON.stringify({
-        html_url: "https://github.com/apps/openwork-test",
-        name: "OpenWork Test",
-        slug: "openwork-test",
+        html_url: "https://github.com/apps/teamwork-test",
+        name: "TeamWork Test",
+        slug: "teamwork-test",
       }), { status: 200 }),
     })
 
@@ -105,7 +105,7 @@ describe("github connector app helpers", () => {
       userId: "user_123",
     })
 
-    expect(buildGithubAppInstallUrl({ app, state: token })).toBe(`https://github.com/apps/openwork-test/installations/new?state=${encodeURIComponent(token)}`)
+    expect(buildGithubAppInstallUrl({ app, state: token })).toBe(`https://github.com/apps/teamwork-test/installations/new?state=${encodeURIComponent(token)}`)
     expect(verifyGithubInstallStateToken({ now: new Date("2026-04-21T19:05:00.000Z"), secret: "secret-123", token })).toMatchObject({
       orgId: "org_123",
       returnPath: "/o/test-org/dashboard/integrations/github",
@@ -151,15 +151,15 @@ describe("github connector app helpers", () => {
           return new Response(JSON.stringify({ token: "installation-token" }), { status: 201 })
         }
 
-        if (String(url).endsWith("/repos/different-ai/openwork")) {
+        if (String(url).endsWith("/repos/SamirTafesh/TeamWork")) {
           return new Response(JSON.stringify({
             default_branch: "main",
-            full_name: "different-ai/openwork",
+            full_name: "SamirTafesh/TeamWork",
             id: 42,
           }), { status: 200 })
         }
 
-        if (String(url).endsWith("/repos/different-ai/openwork/branches/main")) {
+        if (String(url).endsWith("/repos/SamirTafesh/TeamWork/branches/main")) {
           return new Response(JSON.stringify({ name: "main" }), { status: 200 })
         }
 
@@ -167,7 +167,7 @@ describe("github connector app helpers", () => {
       },
       installationId: 777,
       ref: "refs/heads/main",
-      repositoryFullName: "different-ai/openwork",
+      repositoryFullName: "SamirTafesh/TeamWork",
       repositoryId: 42,
     })
 

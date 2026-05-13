@@ -15,15 +15,15 @@ const legacyWorkspaceSchema = z.object({
   displayName: z.string().optional().nullable(),
   id: z.string(),
   name: z.string().optional().default(""),
-  openworkClientToken: z.string().optional().nullable(),
-  openworkHostToken: z.string().optional().nullable(),
-  openworkHostUrl: z.string().optional().nullable(),
-  openworkToken: z.string().optional().nullable(),
-  openworkWorkspaceId: z.string().optional().nullable(),
-  openworkWorkspaceName: z.string().optional().nullable(),
+  teamworkClientToken: z.string().optional().nullable(),
+  teamworkHostToken: z.string().optional().nullable(),
+  teamworkHostUrl: z.string().optional().nullable(),
+  teamworkToken: z.string().optional().nullable(),
+  teamworkWorkspaceId: z.string().optional().nullable(),
+  teamworkWorkspaceName: z.string().optional().nullable(),
   path: z.string().default(""),
   preset: z.string().optional().nullable(),
-  remoteType: z.enum(["openwork", "opencode"]).optional().nullable(),
+  remoteType: z.enum(["teamwork", "opencode"]).optional().nullable(),
   sandboxBackend: z.string().optional().nullable(),
   sandboxContainerName: z.string().optional().nullable(),
   sandboxRunId: z.string().optional().nullable(),
@@ -202,10 +202,10 @@ function detectRemoteHostingKind(value: string) {
 
   const hostname = new URL(normalized).hostname.toLowerCase();
   if (
-    hostname === "app.openworklabs.com" ||
-    hostname === "app.openwork.software" ||
-    hostname.endsWith(".openworklabs.com") ||
-    hostname.endsWith(".openwork.software")
+    hostname === "app.teamworklabs.com" ||
+    hostname === "app.teamwork.software" ||
+    hostname.endsWith(".teamworklabs.com") ||
+    hostname.endsWith(".teamwork.software")
   ) {
     return "cloud" as const;
   }
@@ -220,7 +220,7 @@ function legacyDesktopDataDirCandidates(explicitDir?: string) {
 
   const candidates: string[] = [];
   const home = os.homedir();
-  const names = ["com.differentai.openwork.dev", "com.differentai.openwork", "OpenWork Dev", "OpenWork"];
+  const names = ["com.differentai.teamwork.dev", "com.differentai.teamwork", "TeamWork Dev", "TeamWork"];
   if (process.platform === "darwin") {
     for (const name of names) {
       candidates.push(path.join(home, "Library", "Application Support", name));
@@ -246,14 +246,14 @@ function legacyOrchestratorDirCandidates(explicitDir?: string) {
   }
 
   const candidates: string[] = [];
-  const fromEnv = process.env.OPENWORK_DATA_DIR?.trim();
+  const fromEnv = process.env.TEAMWORK_DATA_DIR?.trim();
   if (fromEnv) {
     candidates.push(path.resolve(fromEnv));
   }
 
   const home = os.homedir();
-  for (const name of ["openwork-orchestrator-dev-react", "openwork-orchestrator-dev", "openwork-orchestrator"]) {
-    candidates.push(path.join(home, ".openwork", name));
+  for (const name of ["teamwork-orchestrator-dev-react", "teamwork-orchestrator-dev", "teamwork-orchestrator"]) {
+    candidates.push(path.join(home, ".teamwork", name));
   }
 
   return Array.from(new Set(candidates));
@@ -329,7 +329,7 @@ function summarizeMode(inMemory: boolean, databasePath: string) {
 }
 
 export function createServerPersistence(options: CreateServerPersistenceOptions): ServerPersistence {
-  const inMemory = options.inMemory ?? (isTruthy(process.env.OPENWORK_SERVER_V2_IN_MEMORY) || options.environment === "test");
+  const inMemory = options.inMemory ?? (isTruthy(process.env.TEAMWORK_SERVER_V2_IN_MEMORY) || options.environment === "test");
   const workingDirectory = resolveServerWorkingDirectory({
     environment: options.environment,
     explicitRootDir: options.workingDirectory,
@@ -387,7 +387,7 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
 
   const desktopWorkspaceFile = resolveExistingFile(
     legacyDesktopDataDirCandidates(options.legacy?.desktopDataDir),
-    "openwork-workspaces.json",
+    "teamwork-workspaces.json",
   );
   const desktopWorkspaceReport = !shouldImportLegacyWorkspaceState
     ? createEmptyReport("skipped", desktopWorkspaceFile, {
@@ -420,7 +420,7 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
                 legacyId: workspace.id,
                 name: workspace.name,
                 preset: workspace.preset ?? null,
-                source: "openwork-workspaces.json",
+                source: "teamwork-workspaces.json",
               },
             },
             status: "imported",
@@ -430,24 +430,24 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
           continue;
         }
 
-        const remoteType = workspace.remoteType === "openwork" ? "openwork" : "opencode";
-        const openworkServerBaseUrl = stripWorkspaceMount(workspace.openworkHostUrl ?? workspace.baseUrl ?? "");
-        const remoteServerBaseUrl = openworkServerBaseUrl ?? normalizeUrl(workspace.baseUrl) ?? "";
+        const remoteType = workspace.remoteType === "teamwork" ? "teamwork" : "opencode";
+        const teamworkServerBaseUrl = stripWorkspaceMount(workspace.teamworkHostUrl ?? workspace.baseUrl ?? "");
+        const remoteServerBaseUrl = teamworkServerBaseUrl ?? normalizeUrl(workspace.baseUrl) ?? "";
         if (!remoteServerBaseUrl) {
           desktopWorkspaceReport.warnings.push(`Skipped remote workspace ${workspace.id} because no valid base URL was found.`);
           continue;
         }
 
         const auth: JsonObject = {};
-        if (workspace.openworkToken?.trim()) auth.openworkToken = workspace.openworkToken.trim();
-        if (workspace.openworkClientToken?.trim()) auth.openworkClientToken = workspace.openworkClientToken.trim();
-        if (workspace.openworkHostToken?.trim()) auth.openworkHostToken = workspace.openworkHostToken.trim();
+        if (workspace.teamworkToken?.trim()) auth.teamworkToken = workspace.teamworkToken.trim();
+        if (workspace.teamworkClientToken?.trim()) auth.teamworkClientToken = workspace.teamworkClientToken.trim();
+        if (workspace.teamworkHostToken?.trim()) auth.teamworkHostToken = workspace.teamworkHostToken.trim();
 
         const record = registry.importRemoteWorkspace({
           baseUrl: normalizeUrl(workspace.baseUrl) ?? remoteServerBaseUrl,
           directory: workspace.directory?.trim() || null,
           displayName:
-            workspace.openworkWorkspaceName?.trim() ||
+            workspace.teamworkWorkspaceName?.trim() ||
             workspace.displayName?.trim() ||
             workspace.name ||
             remoteServerBaseUrl,
@@ -457,7 +457,7 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
               directory: workspace.directory ?? null,
               displayName: workspace.displayName ?? null,
               legacyId: workspace.id,
-              openworkHostUrl: workspace.openworkHostUrl ?? null,
+              teamworkHostUrl: workspace.teamworkHostUrl ?? null,
               sandboxBackend: workspace.sandboxBackend ?? null,
               sandboxContainerName: workspace.sandboxContainerName ?? null,
               sandboxRunId: workspace.sandboxRunId ?? null,
@@ -465,8 +465,8 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
           },
           remoteType,
           remoteWorkspaceId:
-            workspace.openworkWorkspaceId?.trim() ||
-            parseWorkspaceIdFromUrl(workspace.openworkHostUrl ?? null) ||
+            workspace.teamworkWorkspaceId?.trim() ||
+            parseWorkspaceIdFromUrl(workspace.teamworkHostUrl ?? null) ||
             parseWorkspaceIdFromUrl(workspace.baseUrl ?? null),
           serverAuth: Object.keys(auth).length > 0 ? auth : null,
           serverBaseUrl: remoteServerBaseUrl,
@@ -495,7 +495,7 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
 
   const orchestratorStateFile = resolveExistingFile(
     legacyOrchestratorDirCandidates(options.legacy?.orchestratorDataDir),
-    "openwork-orchestrator-state.json",
+    "teamwork-orchestrator-state.json",
   );
   const orchestratorStateReport = !shouldImportLegacyWorkspaceState
     ? createEmptyReport("skipped", orchestratorStateFile, {
@@ -578,7 +578,7 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
 
   const orchestratorAuthFile = resolveExistingFile(
     legacyOrchestratorDirCandidates(options.legacy?.orchestratorDataDir),
-    "openwork-orchestrator-auth.json",
+    "teamwork-orchestrator-auth.json",
   );
   const orchestratorAuthReport = orchestratorAuthFile
     ? createEmptyReport("skipped", orchestratorAuthFile)
@@ -612,9 +612,9 @@ export function createServerPersistence(options: CreateServerPersistenceOptions)
 
   const cloudSigninFile =
     options.legacy?.cloudSigninPath?.trim() ||
-    resolveExistingFile(legacyDesktopDataDirCandidates(options.legacy?.desktopDataDir), "openwork-cloud-signin.json");
+    resolveExistingFile(legacyDesktopDataDirCandidates(options.legacy?.desktopDataDir), "teamwork-cloud-signin.json");
   const cloudSigninReport = options.legacy?.cloudSigninJson?.trim() || cloudSigninFile
-    ? createEmptyReport("imported", cloudSigninFile ?? "env:OPENWORK_SERVER_V2_CLOUD_SIGNIN_JSON")
+    ? createEmptyReport("imported", cloudSigninFile ?? "env:TEAMWORK_SERVER_V2_CLOUD_SIGNIN_JSON")
     : createEmptyReport(
         "unavailable",
         null,

@@ -1,4 +1,4 @@
-import { WorkerTable } from "@openwork-ee/den-db/schema"
+import { WorkerTable } from "@teamwork-ee/den-db/schema"
 import { env } from "../env.js"
 import {
   deprovisionWorkerOnDaytona,
@@ -253,16 +253,16 @@ async function provisionWorkerOnRender(
   const serviceName = slug(
     `${env.render.workerNamePrefix}-${input.name}-${input.workerId.slice(0, 8)}`,
   ).slice(0, 62)
-  const orchestratorPackage = env.render.workerOpenworkVersion?.trim()
-    ? `openwork-orchestrator@${env.render.workerOpenworkVersion.trim()}`
-    : "openwork-orchestrator"
+  const orchestratorPackage = env.render.workerTeamworkVersion?.trim()
+    ? `teamwork-orchestrator@${env.render.workerTeamworkVersion.trim()}`
+    : "teamwork-orchestrator"
   const buildCommand = [
     `npm install -g ${orchestratorPackage}`,
     "node ./scripts/install-opencode.mjs",
   ].join(" && ")
   const startCommand = [
     "mkdir -p /tmp/workspace",
-    "attempt=0; while [ $attempt -lt 3 ]; do attempt=$((attempt + 1)); openwork serve --workspace /tmp/workspace --remote-access --openwork-port ${PORT:-10000} --opencode-host 127.0.0.1 --opencode-port 4096 --connect-host 127.0.0.1 --cors '*' --approval manual --allow-external --opencode-source external --opencode-bin ./bin/opencode --no-opencode-router --verbose && exit 0; echo \"openwork serve failed (attempt $attempt); retrying in 3s\"; sleep 3; done; exit 1",
+    "attempt=0; while [ $attempt -lt 3 ]; do attempt=$((attempt + 1)); teamwork serve --workspace /tmp/workspace --remote-access --teamwork-port ${PORT:-10000} --opencode-host 127.0.0.1 --opencode-port 4096 --connect-host 127.0.0.1 --cors '*' --approval manual --allow-external --opencode-source external --opencode-bin ./bin/opencode --no-opencode-router --verbose && exit 0; echo \"teamwork serve failed (attempt $attempt); retrying in 3s\"; sleep 3; done; exit 1",
   ].join(" && ")
 
   const payload = {
@@ -274,8 +274,8 @@ async function provisionWorkerOnRender(
     autoDeploy: "no",
     rootDir: env.render.workerRootDir,
     envVars: [
-      { key: "OPENWORK_TOKEN", value: input.clientToken },
-      { key: "OPENWORK_HOST_TOKEN", value: input.hostToken },
+      { key: "TEAMWORK_TOKEN", value: input.clientToken },
+      { key: "TEAMWORK_HOST_TOKEN", value: input.hostToken },
       { key: "DEN_WORKER_ID", value: input.workerId },
     ],
     serviceDetails: {

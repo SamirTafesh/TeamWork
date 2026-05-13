@@ -333,16 +333,16 @@ export async function sendDenVerificationEmail(input: {
     await sendSmtpEmail({
       template: "verification",
       email,
-      subject: "Your OpenWork verification code",
+      subject: "Your TeamWork verification code",
       text: [
-        "Your OpenWork verification code:",
+        "Your TeamWork verification code:",
         verificationCode,
         "",
         "This code expires in 10 minutes.",
         "If you did not request this code, you can ignore this email.",
       ].join("\n"),
       html: [
-        "<p>Your OpenWork verification code:</p>",
+        "<p>Your TeamWork verification code:</p>",
         `<p><strong>${escapeHtml(verificationCode)}</strong></p>`,
         "<p>This code expires in 10 minutes.</p>",
         "<p>If you did not request this code, you can ignore this email.</p>",
@@ -399,9 +399,9 @@ export async function sendDenOrganizationInvitationEmail(input: {
     await sendSmtpEmail({
       template: "organization_invite",
       email,
-      subject: `Invitation to join ${organizationName} on OpenWork`,
+      subject: `Invitation to join ${organizationName} on TeamWork`,
       text: [
-        `You are invited to join ${organizationName} on OpenWork.`,
+        `You are invited to join ${organizationName} on TeamWork.`,
         "",
         `Invited by: ${inviterDisplay}`,
         `Role: ${role}`,
@@ -409,7 +409,7 @@ export async function sendDenOrganizationInvitationEmail(input: {
         `Accept invitation: ${inviteLink}`,
       ].join("\n"),
       html: [
-        `<p>You are invited to join <strong>${escapeHtml(organizationName)}</strong> on OpenWork.</p>`,
+        `<p>You are invited to join <strong>${escapeHtml(organizationName)}</strong> on TeamWork.</p>`,
         `<p>Invited by: ${escapeHtml(inviterDisplay)}<br />Role: ${escapeHtml(role)}</p>`,
         `<p><a href="${escapeHtml(inviteLink)}">Accept invitation</a></p>`,
       ].join(""),

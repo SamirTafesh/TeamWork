@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, or } from "@openwork-ee/den-db/drizzle"
+import { and, desc, eq, inArray, isNotNull, or } from "@teamwork-ee/den-db/drizzle"
 import {
   AuthUserTable,
   LlmProviderAccessTable,
@@ -6,8 +6,8 @@ import {
   LlmProviderTable,
   MemberTable,
   TeamTable,
-} from "@openwork-ee/den-db/schema"
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid"
+} from "@teamwork-ee/den-db/schema"
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import type { Hono } from "hono"
 import { describeRoute } from "hono-openapi"
 import { z } from "zod"

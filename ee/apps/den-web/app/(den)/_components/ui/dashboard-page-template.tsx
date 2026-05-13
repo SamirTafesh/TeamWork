@@ -1,7 +1,7 @@
 "use client";
 
 import type { ElementType } from "react";
-import { PaperMeshGradient } from "@openwork/ui/react";
+import { PaperMeshGradient } from "@teamwork/ui/react";
 import { Dithering } from "@paper-design/shaders-react";
 
 /**

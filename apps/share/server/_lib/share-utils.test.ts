@@ -43,7 +43,7 @@ test("buildOgImageUrls returns typed platform variants", () => {
   const urls = buildOgImageUrls(
     {
       headers: {
-        host: "share.openworklabs.com",
+        host: "share.teamworklabs.com",
         "x-forwarded-proto": "https",
       },
       query: {},
@@ -51,12 +51,12 @@ test("buildOgImageUrls returns typed platform variants", () => {
     "01TESTPREVIEW",
   );
 
-  assert.equal(urls.default, "https://share.openworklabs.com/og/01TESTPREVIEW");
-  assert.equal(urls.twitter, "https://share.openworklabs.com/og/01TESTPREVIEW?variant=twitter");
-  assert.equal(urls.byVariant.facebook, "https://share.openworklabs.com/og/01TESTPREVIEW");
-  assert.equal(urls.byVariant.linkedin, "https://share.openworklabs.com/og/01TESTPREVIEW?variant=linkedin");
-  assert.equal(urls.byVariant.slack, "https://share.openworklabs.com/og/01TESTPREVIEW?variant=slack");
-  assert.equal(urls.byVariant.whatsapp, "https://share.openworklabs.com/og/01TESTPREVIEW?variant=whatsapp");
+  assert.equal(urls.default, "https://share.teamworklabs.com/og/01TESTPREVIEW");
+  assert.equal(urls.twitter, "https://share.teamworklabs.com/og/01TESTPREVIEW?variant=twitter");
+  assert.equal(urls.byVariant.facebook, "https://share.teamworklabs.com/og/01TESTPREVIEW");
+  assert.equal(urls.byVariant.linkedin, "https://share.teamworklabs.com/og/01TESTPREVIEW?variant=linkedin");
+  assert.equal(urls.byVariant.slack, "https://share.teamworklabs.com/og/01TESTPREVIEW?variant=slack");
+  assert.equal(urls.byVariant.whatsapp, "https://share.teamworklabs.com/og/01TESTPREVIEW?variant=whatsapp");
 });
 
 test("buildBundleUrls ignores forwarded hosts and uses the fixed default share origin", () => {
@@ -73,14 +73,14 @@ test("buildBundleUrls ignores forwarded hosts and uses the fixed default share o
       "01ABC",
     );
 
-    assert.equal(urls.shareUrl, "https://share.openworklabs.com/b/01ABC");
-    assert.equal(urls.jsonUrl, "https://share.openworklabs.com/b/01ABC/data");
-    assert.equal(urls.downloadUrl, "https://share.openworklabs.com/b/01ABC/data?download=1");
+    assert.equal(urls.shareUrl, "https://share.teamworklabs.com/b/01ABC");
+    assert.equal(urls.jsonUrl, "https://share.teamworklabs.com/b/01ABC/data");
+    assert.equal(urls.downloadUrl, "https://share.teamworklabs.com/b/01ABC/data?download=1");
   });
 });
 
 test("buildBundleUrls respects PUBLIC_BASE_URL when explicitly configured", () => {
-  withEnv("PUBLIC_BASE_URL", "https://share.staging.openworklabs.com/", () => {
+  withEnv("PUBLIC_BASE_URL", "https://share.staging.teamworklabs.com/", () => {
     const urls = buildBundleUrls(
       {
         headers: {
@@ -92,6 +92,6 @@ test("buildBundleUrls respects PUBLIC_BASE_URL when explicitly configured", () =
       "01CFG",
     );
 
-    assert.equal(urls.shareUrl, "https://share.staging.openworklabs.com/b/01CFG");
+    assert.equal(urls.shareUrl, "https://share.staging.teamworklabs.com/b/01CFG");
   });
 });

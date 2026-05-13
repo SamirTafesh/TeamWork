@@ -18,8 +18,8 @@ import { unwrap, waitForHealthy } from "../../../../app/lib/opencode";
 import {
   readOpencodeConfig,
   writeOpencodeConfig,
-  workspaceOpenworkRead,
-  workspaceOpenworkWrite,
+  workspaceTeamworkRead,
+  workspaceTeamworkWrite,
 } from "../../../../app/lib/desktop";
 import type {
   Client,
@@ -32,7 +32,7 @@ import {
   filterProviderList,
   mapConfigProvidersToList,
 } from "../../../../app/utils/providers";
-import type { OpenworkServerStore } from "../openwork-server-store";
+import type { TeamworkServerStore } from "../teamwork-server-store";
 import {
   denSessionUpdatedEvent,
   type DenSessionUpdatedDetail,
@@ -88,7 +88,7 @@ type CreateProviderAuthStoreOptions = {
   selectedWorkspaceDisplay: () => WorkspaceDisplay;
   selectedWorkspaceRoot: () => string;
   runtimeWorkspaceId: () => string | null;
-  openworkServer: OpenworkServerStore;
+  teamworkServer: TeamworkServerStore;
   setProviders: (value: ProviderListItem[]) => void;
   setProviderDefaults: (value: Record<string, string>) => void;
   setProviderConnectedIds: (value: string[]) => void;
@@ -307,29 +307,29 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     return next;
   };
 
-  const readWorkspaceOpenworkConfigRecord = async (): Promise<
+  const readWorkspaceTeamworkConfigRecord = async (): Promise<
     Record<string, unknown>
   > => {
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace =
       options.selectedWorkspaceDisplay().workspaceType === "local";
-    const openworkSnapshot = options.openworkServer.getSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const openworkCapabilities = openworkSnapshot.openworkServerCapabilities;
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkCapabilities?.config?.read;
+    const teamworkSnapshot = options.teamworkServer.getSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkCapabilities = teamworkSnapshot.teamworkServerCapabilities;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkCapabilities?.config?.read;
 
-    if (canUseOpenworkServer) {
-      const config = await openworkClient.getConfig(openworkWorkspaceId);
-      return config.openwork ?? {};
+    if (canUseTeamworkServer) {
+      const config = await teamworkClient.getConfig(teamworkWorkspaceId);
+      return config.teamwork ?? {};
     }
 
     if (isLocalWorkspace && isDesktopRuntime() && root) {
-      return (await workspaceOpenworkRead({
+      return (await workspaceTeamworkRead({
         workspacePath: root,
       })) as unknown as Record<string, unknown>;
     }
@@ -337,35 +337,35 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     return {};
   };
 
-  const writeWorkspaceOpenworkConfigRecord = async (
+  const writeWorkspaceTeamworkConfigRecord = async (
     config: Record<string, unknown>,
   ) => {
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace =
       options.selectedWorkspaceDisplay().workspaceType === "local";
-    const openworkSnapshot = options.openworkServer.getSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const openworkCapabilities = openworkSnapshot.openworkServerCapabilities;
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkCapabilities?.config?.write;
+    const teamworkSnapshot = options.teamworkServer.getSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkCapabilities = teamworkSnapshot.teamworkServerCapabilities;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkCapabilities?.config?.write;
 
-    if (canUseOpenworkServer) {
-      await openworkClient.patchConfig(openworkWorkspaceId, { openwork: config });
+    if (canUseTeamworkServer) {
+      await teamworkClient.patchConfig(teamworkWorkspaceId, { teamwork: config });
       return true;
     }
 
     if (isLocalWorkspace && isDesktopRuntime() && root) {
-      const result = await workspaceOpenworkWrite({
+      const result = await workspaceTeamworkWrite({
         workspacePath: root,
         config: config as never,
       });
       if (!result.ok) {
         throw new Error(
-          result.stderr || result.stdout || "Failed to write .opencode/openwork.json",
+          result.stderr || result.stdout || "Failed to write .opencode/teamwork.json",
         );
       }
       return true;
@@ -376,7 +376,7 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
 
   const refreshImportedCloudProviders = async () => {
     try {
-      const config = await readWorkspaceOpenworkConfigRecord();
+      const config = await readWorkspaceTeamworkConfigRecord();
       const cloudImports = readWorkspaceCloudImports(config);
       setStateField("importedCloudProviders", cloudImports.providers);
       return cloudImports.providers;
@@ -389,16 +389,16 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
   const persistImportedCloudProviders = async (
     nextProviders: Record<string, CloudImportedProvider>,
   ) => {
-    const config = await readWorkspaceOpenworkConfigRecord();
+    const config = await readWorkspaceTeamworkConfigRecord();
     const cloudImports = readWorkspaceCloudImports(config);
     const nextConfig = withWorkspaceCloudImports(config, {
       ...cloudImports,
       providers: nextProviders,
     });
-    const persisted = await writeWorkspaceOpenworkConfigRecord(nextConfig);
+    const persisted = await writeWorkspaceTeamworkConfigRecord(nextConfig);
     if (!persisted) {
       throw new Error(
-        "OpenWork server unavailable. Connect to manage imported cloud providers.",
+        "TeamWork server unavailable. Connect to manage imported cloud providers.",
       );
     }
     setStateField("importedCloudProviders", nextProviders);
@@ -408,19 +408,19 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace =
       options.selectedWorkspaceDisplay().workspaceType === "local";
-    const openworkSnapshot = options.openworkServer.getSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const openworkCapabilities = openworkSnapshot.openworkServerCapabilities;
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkCapabilities?.config?.read &&
-      typeof openworkClient.readOpencodeConfigFile === "function";
+    const teamworkSnapshot = options.teamworkServer.getSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkCapabilities = teamworkSnapshot.teamworkServerCapabilities;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkCapabilities?.config?.read &&
+      typeof teamworkClient.readOpencodeConfigFile === "function";
 
-    if (canUseOpenworkServer) {
-      return await openworkClient.readOpencodeConfigFile(openworkWorkspaceId, "project");
+    if (canUseTeamworkServer) {
+      return await teamworkClient.readOpencodeConfigFile(teamworkWorkspaceId, "project");
     }
 
     if (isLocalWorkspace && isDesktopRuntime() && root) {
@@ -434,20 +434,20 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     const root = options.selectedWorkspaceRoot().trim();
     const isLocalWorkspace =
       options.selectedWorkspaceDisplay().workspaceType === "local";
-    const openworkSnapshot = options.openworkServer.getSnapshot();
-    const openworkClient = openworkSnapshot.openworkServerClient;
-    const openworkWorkspaceId = options.runtimeWorkspaceId();
-    const openworkCapabilities = openworkSnapshot.openworkServerCapabilities;
-    const canUseOpenworkServer =
-      openworkSnapshot.openworkServerStatus === "connected" &&
-      openworkClient &&
-      openworkWorkspaceId &&
-      openworkCapabilities?.config?.write &&
-      typeof openworkClient.writeOpencodeConfigFile === "function";
+    const teamworkSnapshot = options.teamworkServer.getSnapshot();
+    const teamworkClient = teamworkSnapshot.teamworkServerClient;
+    const teamworkWorkspaceId = options.runtimeWorkspaceId();
+    const teamworkCapabilities = teamworkSnapshot.teamworkServerCapabilities;
+    const canUseTeamworkServer =
+      teamworkSnapshot.teamworkServerStatus === "connected" &&
+      teamworkClient &&
+      teamworkWorkspaceId &&
+      teamworkCapabilities?.config?.write &&
+      typeof teamworkClient.writeOpencodeConfigFile === "function";
 
-    if (canUseOpenworkServer) {
-      const result = await openworkClient.writeOpencodeConfigFile(
-        openworkWorkspaceId,
+    if (canUseTeamworkServer) {
+      const result = await teamworkClient.writeOpencodeConfigFile(
+        teamworkWorkspaceId,
         "project",
         content,
       );
@@ -499,14 +499,14 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const cloudProviderComment = (provider: Pick<DenOrgLlmProvider, "id" | "name">) =>
-    `// OpenWork Cloud import: ${provider.name
+    `// TeamWork Cloud import: ${provider.name
       .replace(/\s+/g, " ")
       .trim()} (${provider.id}). Manage this entry from Cloud settings.`;
 
   const removeCloudProviderComment = (raw: string, providerId: string) =>
     raw.replace(
       new RegExp(
-        `(^[ \t]*)// OpenWork Cloud import:.*\\n\\1(?="${escapeRegExp(providerId)}":)`,
+        `(^[ \t]*)// TeamWork Cloud import:.*\\n\\1(?="${escapeRegExp(providerId)}":)`,
         "m",
       ),
       "$1",
@@ -1140,7 +1140,7 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     const token = settings.authToken?.trim() ?? "";
     const orgId = settings.activeOrgId?.trim() ?? "";
     if (!token || !orgId) {
-      throw new Error("Sign in to OpenWork Cloud and choose an organization first.");
+      throw new Error("Sign in to TeamWork Cloud and choose an organization first.");
     }
 
     try {

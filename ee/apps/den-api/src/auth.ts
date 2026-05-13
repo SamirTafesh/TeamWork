@@ -16,8 +16,8 @@ import {
   denOrganizationStaticRoles,
 } from "./organization-access.js";
 import { seedDefaultOrganizationRoles } from "./orgs.js";
-import { createDenTypeId, normalizeDenTypeId } from "@openwork-ee/utils/typeid";
-import * as schema from "@openwork-ee/den-db/schema";
+import { createDenTypeId, normalizeDenTypeId } from "@teamwork-ee/utils/typeid";
+import * as schema from "@teamwork-ee/den-db/schema";
 import { apiKey } from "@better-auth/api-key";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { APIError } from "better-call";
@@ -51,9 +51,9 @@ export const DEN_MCP_RESOURCES = Array.from(new Set([
   ...localMcpResourceAliases(DEN_MCP_RESOURCE),
 ]));
 export const DEN_MCP_SCOPES = ["openid", "profile", "email", "offline_access", "mcp:read", "mcp:write"];
-export const DEN_MCP_TOKEN_USE_CLAIM = "https://openworklabs.com/token_use";
-export const DEN_MCP_ORG_ID_CLAIM = "https://openworklabs.com/org_id";
-export const DEN_MCP_RESOURCE_CLAIM = "https://openworklabs.com/resource";
+export const DEN_MCP_TOKEN_USE_CLAIM = "https://teamworklabs.com/token_use";
+export const DEN_MCP_ORG_ID_CLAIM = "https://teamworklabs.com/org_id";
+export const DEN_MCP_RESOURCE_CLAIM = "https://teamworklabs.com/resource";
 export const DEN_MCP_OPAQUE_ACCESS_TOKEN_PREFIX = "ow_mcp_at_";
 
 const socialProviders = {

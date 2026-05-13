@@ -1,13 +1,13 @@
 import type { UIMessage } from "ai";
 
-import type { OpenworkSessionSnapshot } from "../../../../app/lib/openwork-server";
+import type { TeamworkSessionSnapshot } from "../../../../app/lib/teamwork-server";
 import { mergeSnapshotAndLiveMessages, messageListContainsAll } from "../sync/message-merge";
 import { snapshotToUIMessages } from "../sync/usechat-adapter";
 
 export function resolveRenderedSessionSnapshot(input: {
   sessionId: string;
-  currentSnapshot: OpenworkSessionSnapshot | null | undefined;
-  cachedRendered: { sessionId: string; snapshot: OpenworkSessionSnapshot } | null | undefined;
+  currentSnapshot: TeamworkSessionSnapshot | null | undefined;
+  cachedRendered: { sessionId: string; snapshot: TeamworkSessionSnapshot } | null | undefined;
 }) {
   if (input.currentSnapshot?.session.id === input.sessionId) {
     return input.currentSnapshot;
@@ -23,7 +23,7 @@ export function resolveRenderedSessionSnapshot(input: {
 
 export function deriveRenderedSessionMessages(input: {
   transcriptState: UIMessage[] | null | undefined;
-  snapshot: OpenworkSessionSnapshot | null | undefined;
+  snapshot: TeamworkSessionSnapshot | null | undefined;
   includeLiveOnlyMessages?: boolean;
 }) {
   const liveMessages = input.transcriptState ?? [];

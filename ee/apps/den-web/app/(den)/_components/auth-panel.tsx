@@ -189,7 +189,7 @@ export function AuthPanel({
 
       {desktopAuthRequested ? (
         <div className="den-notice is-info grid gap-3 text-[13px]">
-          <p className="m-0">Finish sign-in here, then jump back into the OpenWork desktop app.</p>
+          <p className="m-0">Finish sign-in here, then jump back into the TeamWork desktop app.</p>
           {desktopRedirectUrl ? (
             <div className="grid gap-3">
               <div className="flex flex-wrap gap-3">
@@ -198,7 +198,7 @@ export function AuthPanel({
                   className="den-button-secondary w-full sm:w-auto"
                   onClick={() => window.location.assign(desktopRedirectUrl)}
                 >
-                  Open OpenWork
+                  Open TeamWork
                 </button>
                 <button
                   type="button"
@@ -218,7 +218,7 @@ export function AuthPanel({
                 ) : null}
               </div>
               <p className="m-0 text-xs leading-5 text-sky-800/80">
-                If OpenWork does not open automatically, copy the sign-in link or one-time code and paste it into the OpenWork desktop app.
+                If TeamWork does not open automatically, copy the sign-in link or one-time code and paste it into the TeamWork desktop app.
               </p>
             </div>
           ) : null}

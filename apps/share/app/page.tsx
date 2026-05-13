@@ -19,31 +19,31 @@ const rootOpenGraphImages = rootOpenGraphVariants.map((variant) => ({
   url: buildOgImageUrlFromOrigin(DEFAULT_PUBLIC_BASE_URL, "root", variant),
   width: OG_IMAGE_VARIANTS[variant].width,
   height: OG_IMAGE_VARIANTS[variant].height,
-  alt: "OpenWork Share landing page preview",
+  alt: "TeamWork Share landing page preview",
 }));
 
 export const metadata: Metadata = {
   title: "Share Your Skill",
-  description: "Upload, edit, and publish a single OpenWork skill for sharing.",
+  description: "Upload, edit, and publish a single TeamWork skill for sharing.",
   alternates: {
     canonical: DEFAULT_PUBLIC_BASE_URL
   },
   openGraph: {
     type: "website",
-    siteName: "OpenWork Share",
+    siteName: "TeamWork Share",
     title: "Share Your Skill",
-    description: "Upload, edit, and publish a single OpenWork skill for sharing.",
+    description: "Upload, edit, and publish a single TeamWork skill for sharing.",
     url: DEFAULT_PUBLIC_BASE_URL,
     images: rootOpenGraphImages,
   },
   twitter: {
     card: "summary_large_image",
     title: "Share Your Skill",
-    description: "Upload, edit, and publish a single OpenWork skill for sharing.",
+    description: "Upload, edit, and publish a single TeamWork skill for sharing.",
     images: [
       {
         url: rootTwitterImageUrl,
-        alt: "OpenWork Share landing page preview"
+        alt: "TeamWork Share landing page preview"
       }
     ]
   }

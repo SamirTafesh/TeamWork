@@ -1,4 +1,4 @@
-# OpenWork Host (Docker)
+# TeamWork Host (Docker)
 
 ## Den local stack (Docker)
 
@@ -20,7 +20,7 @@ What it does:
 - Starts **MySQL** for the Den service
 - Starts **Den control plane** on port 8788 inside Docker with `PROVISIONER_MODE=stub`
 - Runs **Den migrations** automatically before the API starts
-- Starts the **OpenWork Cloud web app** on port 3005 inside Docker
+- Starts the **TeamWork Cloud web app** on port 3005 inside Docker
 - Points the web app's auth + API proxy routes at the local Den service
 - Prints randomized host URLs so multiple stacks can run side by side
 
@@ -37,7 +37,7 @@ The seed is local/dev-only, idempotent for the `acme-robotics-demo` org, and doe
 Default demo login:
 
 - Email: `alex@acme.test`
-- Password: `OpenWorkDemo123!`
+- Password: `TeamWorkDemo123!`
 
 For the Docker stack with randomized MySQL ports, source the printed runtime env file first and pass `DEN_MYSQL_URL` as `DATABASE_URL`:
 
@@ -69,22 +69,22 @@ Optional env vars (via `.env` or `export`):
 
 If you are iterating on Den locally and do not need the full Dockerized web stack, use the hybrid path instead:
 
-From the OpenWork repo root:
+From the TeamWork repo root:
 
 ```bash
 pnpm dev:den
 ```
 
-Or from the OpenWork enterprise root:
+Or from the TeamWork enterprise root:
 
 ```bash
-pnpm --dir _repos/openwork dev:den
+pnpm --dir _repos/teamwork dev:den
 ```
 
 What it does:
 - Starts only **MySQL** in Docker
 - Runs **Den controller** locally in watch mode
-- Runs **OpenWork Cloud web app** locally in Next.js dev mode
+- Runs **TeamWork Cloud web app** locally in Next.js dev mode
 - Reuses the existing local-dev wiring in `scripts/dev-web-local.sh`
 
 This is usually the fastest path for UI/auth/control-plane iteration because it avoids rebuilding the Docker web image on each boot.
@@ -108,26 +108,26 @@ pnpm dev:den:mysql:down
 
 ## Pre-baked Micro-Sandbox Image
 
-For micro-sandbox work, use the pre-baked image that compiles `openwork` and `openwork-server` from source and downloads the pinned `opencode` binary during `docker build`.
+For micro-sandbox work, use the pre-baked image that compiles `teamwork` and `teamwork-server` from source and downloads the pinned `opencode` binary during `docker build`.
 
 Build it from the repo root:
 
 ```bash
-./scripts/build-microsandbox-openwork-image.sh
+./scripts/build-microsandbox-teamwork-image.sh
 ```
 
 Run it locally:
 
 ```bash
 docker run --rm -p 8787:8787 \
-  -e OPENWORK_CONNECT_HOST=127.0.0.1 \
-  openwork-microsandbox:dev
+  -e TEAMWORK_CONNECT_HOST=127.0.0.1 \
+  teamwork-microsandbox:dev
 ```
 
 Defaults:
-- `OPENWORK_TOKEN=microsandbox-token`
-- `OPENWORK_HOST_TOKEN=microsandbox-host-token`
-- `OPENWORK_APPROVAL_MODE=auto`
+- `TEAMWORK_TOKEN=microsandbox-token`
+- `TEAMWORK_HOST_TOKEN=microsandbox-host-token`
+- `TEAMWORK_APPROVAL_MODE=auto`
 
 Verification:
 - Health: `curl http://127.0.0.1:8787/health`
@@ -135,21 +135,21 @@ Verification:
 - Docker health: `docker inspect --format '{{json .State.Health}}' <container>`
 
 Useful overrides:
-- `OPENWORK_TOKEN` — set your own client bearer token
-- `OPENWORK_HOST_TOKEN` — set your own host/admin token
-- `OPENWORK_CONNECT_HOST` — host name embedded in the printed connect URL
+- `TEAMWORK_TOKEN` — set your own client bearer token
+- `TEAMWORK_HOST_TOKEN` — set your own host/admin token
+- `TEAMWORK_CONNECT_HOST` — host name embedded in the printed connect URL
 - `DOCKER_PLATFORM` — optional platform passed to `docker build`
 
 ---
 
 ## Production container
 
-This is a minimal packaging template to run the OpenWork Host contract in a single container.
+This is a minimal packaging template to run the TeamWork Host contract in a single container.
 
 It runs:
 
 - `opencode serve` (engine) bound to `127.0.0.1:4096` inside the container
-- `openwork-server` published on `0.0.0.0:8787` via an explicit `--remote-access` launch path (the only published surface)
+- `teamwork-server` published on `0.0.0.0:8787` via an explicit `--remote-access` launch path (the only published surface)
 
 ### Local run (compose)
 
@@ -167,20 +167,20 @@ Then open:
 
 Recommended env vars:
 
-- `OPENWORK_TOKEN` (client token)
-- `OPENWORK_HOST_TOKEN` (host/owner token)
+- `TEAMWORK_TOKEN` (client token)
+- `TEAMWORK_HOST_TOKEN` (host/owner token)
 
 Optional:
 
-- `OPENWORK_APPROVAL_MODE=auto|manual`
-- `OPENWORK_APPROVAL_TIMEOUT_MS=30000`
+- `TEAMWORK_APPROVAL_MODE=auto|manual`
+- `TEAMWORK_APPROVAL_TIMEOUT_MS=30000`
 
 Persistence:
 
 - Workspace is mounted at `/workspace`
-- Host data dir is mounted at `/data` (OpenCode caches + OpenWork server config/tokens)
+- Host data dir is mounted at `/data` (OpenCode caches + TeamWork server config/tokens)
 
 ### Notes
 
-- OpenCode is not exposed directly; access it via the OpenWork proxy (`/opencode/*`).
+- OpenCode is not exposed directly; access it via the TeamWork proxy (`/opencode/*`).
 - For PaaS, replace `./workspace:/workspace` with a volume or a checkout strategy (git clone on boot).

@@ -23,7 +23,7 @@ const monoStyle: CSSProperties = {
   color: "#64748b",
 };
 
-function OpenWorkLogo(): ReactElement {
+function TeamWorkLogo(): ReactElement {
   return (
     <svg width="40" height="34" viewBox="0 0 1024 866" fill="none">
       <path
@@ -120,7 +120,7 @@ function OgImage({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <OpenWorkLogo />
+            <TeamWorkLogo />
             <div
               style={{
                 display: "flex",

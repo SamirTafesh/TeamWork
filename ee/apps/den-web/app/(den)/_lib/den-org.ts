@@ -1,4 +1,4 @@
-import { normalizeDesktopAppRestrictions, type DesktopAppRestrictions } from "@openwork/types/den/desktop-app-restrictions";
+import { normalizeDesktopAppRestrictions, type DesktopAppRestrictions } from "@teamwork/types/den/desktop-app-restrictions";
 
 export type DenDesktopAppRestrictions = DesktopAppRestrictions;
 
@@ -150,7 +150,7 @@ export const DEN_ROLE_PERMISSION_OPTIONS = {
   ac: ["create", "read", "update", "delete"],
 } as const;
 
-export const PENDING_ORG_INVITATION_STORAGE_KEY = "openwork:web:pending-org-invitation";
+export const PENDING_ORG_INVITATION_STORAGE_KEY = "teamwork:web:pending-org-invitation";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

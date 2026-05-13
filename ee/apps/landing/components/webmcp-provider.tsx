@@ -18,7 +18,7 @@ const destinations: Record<string, string> = {
   download: "/download",
   pricing: "/pricing",
   enterprise: "/enterprise",
-  cloud: "https://app.openworklabs.com",
+  cloud: "https://app.teamworklabs.com",
   docs: "/docs",
   trust: "/trust",
   feedback: "/feedback",
@@ -49,7 +49,7 @@ const pricingSummary = {
         "Skill Hub Manager",
         "Bring your own LLM keys, distributed to your team",
       ],
-      cta: { label: "Start team plan", href: "https://app.openworklabs.com/checkout" },
+      cta: { label: "Start team plan", href: "https://app.teamworklabs.com/checkout" },
     },
     {
       id: "enterprise",
@@ -68,19 +68,19 @@ const pricingSummary = {
 }
 
 const downloadLinks = {
-  page: "https://openworklabs.com/download",
-  githubReleases: "https://github.com/different-ai/openwork/releases/latest",
+  page: "https://teamworklabs.com/download",
+  githubReleases: "https://github.com/SamirTafesh/TeamWork/releases/latest",
   platforms: {
     macos: {
-      page: "https://openworklabs.com/download#macos",
+      page: "https://teamworklabs.com/download#macos",
       note: "Electron Apple Silicon (.dmg) and Intel (.dmg) builds resolved from the latest GitHub release.",
     },
     windows: {
-      page: "https://openworklabs.com/download#windows",
+      page: "https://teamworklabs.com/download#windows",
       note: "Electron x64 .exe installer resolved from the latest GitHub release.",
     },
     linux: {
-      page: "https://openworklabs.com/download#linux",
+      page: "https://teamworklabs.com/download#linux",
       note: "Electron AppImage and tar.gz builds for x64 and arm64.",
     },
   },
@@ -90,7 +90,7 @@ const tools: Tool[] = [
   {
     name: "navigate_to",
     description:
-      "Navigate the current tab to a key section of openworklabs.com. Use this when the user expresses intent to view pricing, download, enterprise, cloud, docs, trust, or feedback.",
+      "Navigate the current tab to a key section of teamworklabs.com. Use this when the user expresses intent to view pricing, download, enterprise, cloud, docs, trust, or feedback.",
     inputSchema: {
       type: "object",
       properties: {
@@ -134,7 +134,7 @@ const tools: Tool[] = [
   {
     name: "get_pricing_summary",
     description:
-      "Return OpenWork's pricing tiers, what each includes, and the CTA destination. Read-only; does not navigate.",
+      "Return TeamWork's pricing tiers, what each includes, and the CTA destination. Read-only; does not navigate.",
     inputSchema: {
       type: "object",
       properties: {},

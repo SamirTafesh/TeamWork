@@ -238,8 +238,10 @@ export function AuthPanel({
           }
           if (next === "dashboard" || next === "join-org") {
             const target = await resolveUserLandingRoute();
-            if (target && !isSamePathname(pathname, target)) {
-              router.replace(target);
+            const fallbackTarget = next === "dashboard" ? "/dashboard" : "/organization";
+            const destination = target ?? fallbackTarget;
+            if (!isSamePathname(pathname, destination)) {
+              router.replace(destination);
             }
           } else if (next === "checkout" && !isSamePathname(pathname, "/checkout")) {
             router.replace("/checkout");

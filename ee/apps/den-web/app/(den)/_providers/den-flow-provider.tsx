@@ -229,6 +229,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
   const onboardingAutoLaunchKeyRef = useRef<string | null>(null);
   const socialSignupHandledRef = useRef<string | null>(null);
   const pendingWorkersRequestRef = useRef<Promise<{ response: Response; payload: unknown }> | null>(null);
+  const sessionRefreshRequestIdRef = useRef(0);
 
   const selectedWorker = workers.find((item) => item.workerId === workerLookupId) ?? null;
   const activeWorker =
@@ -386,6 +387,10 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     const token = getToken(payload);
     if (token) {
       setAuthToken(token);
+      if (typeof window !== "undefined") {
+        // Persist immediately so navigation after sign-in does not race the state effect.
+        window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+      }
     }
 
     let authenticatedUser: AuthUser | null = null;
@@ -912,12 +917,16 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
   }
 
   async function refreshSession(quiet = false) {
+    const requestId = ++sessionRefreshRequestIdRef.current;
     const headers = new Headers();
     if (authToken) {
       headers.set("Authorization", `Bearer ${authToken}`);
     }
 
     const { response, payload } = await requestJson("/v1/me", { method: "GET", headers }, 12000);
+    if (requestId !== sessionRefreshRequestIdRef.current) {
+      return null;
+    }
 
     if (!response.ok) {
       setUser(null);
@@ -1128,7 +1137,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
         }
         return null;
       }
-      return await finalizeEmailPasswordSignIn(authMode, trimmedEmail);
+      return await finalizeEmailPasswordSignIn(authMode, trimmedEmail, payload);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown network error";
       setAuthError(message);

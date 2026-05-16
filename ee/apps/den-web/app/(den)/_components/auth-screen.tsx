@@ -2,7 +2,7 @@
 
 import { PaperMeshGradient } from "@teamwork/ui/react";
 import { Dithering } from "@paper-design/shaders-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { isSamePathname } from "../_lib/client-route";
 import { getMcpOAuthSelectOrganizationRoute } from "../_lib/mcp-oauth-route";
@@ -34,7 +34,6 @@ function LoadingPanel({ title, body }: { title: string; body: string }) {
 }
 
 export function AuthScreen() {
-  const router = useRouter();
   const pathname = usePathname();
   const routingRef = useRef(false);
   const { user, sessionHydrated, desktopAuthRequested, resolveUserLandingRoute } = useDenFlow();
@@ -47,7 +46,7 @@ export function AuthScreen() {
 
     const oauthRoute = typeof window === "undefined" ? null : getMcpOAuthSelectOrganizationRoute(window.location.search);
     if (oauthRoute && !isSamePathname(pathname, oauthRoute)) {
-      router.replace(oauthRoute);
+      window.location.assign(oauthRoute);
       return;
     }
 
@@ -55,13 +54,13 @@ export function AuthScreen() {
     void resolveUserLandingRoute()
       .then((target) => {
         if (target && !isSamePathname(pathname, target)) {
-          router.replace(target);
+          window.location.assign(target);
         }
       })
       .finally(() => {
         routingRef.current = false;
       });
-  }, [hasResolvedSession, pathname, resolveUserLandingRoute, router]);
+  }, [hasResolvedSession, pathname, resolveUserLandingRoute]);
 
   if (!sessionHydrated) {
     return (

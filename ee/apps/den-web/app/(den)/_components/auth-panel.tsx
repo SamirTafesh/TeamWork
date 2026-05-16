@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { isSamePathname } from "../_lib/client-route";
 import type { AuthMode } from "../_lib/den-flow";
@@ -93,7 +93,6 @@ export function AuthPanel({
   signInContent?: Partial<PanelContent>;
   verificationContent?: Partial<PanelContent>;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const prefillRef = useRef<string | null>(null);
   const [copiedDesktopField, setCopiedDesktopField] = useState<"link" | "code" | null>(null);
@@ -233,7 +232,7 @@ export function AuthPanel({
             : await submitAuth(event);
           const oauthRoute = typeof window === "undefined" ? null : getMcpOAuthSelectOrganizationRoute(window.location.search);
           if (next && oauthRoute) {
-            router.replace(oauthRoute);
+            window.location.assign(oauthRoute);
             return;
           }
           if (next === "dashboard" || next === "join-org") {
@@ -241,10 +240,10 @@ export function AuthPanel({
             const fallbackTarget = next === "dashboard" ? "/dashboard" : "/organization";
             const destination = target ?? fallbackTarget;
             if (!isSamePathname(pathname, destination)) {
-              router.replace(destination);
+              window.location.assign(destination);
             }
           } else if (next === "checkout" && !isSamePathname(pathname, "/checkout")) {
-            router.replace("/checkout");
+            window.location.assign("/checkout");
           }
         }}
       >

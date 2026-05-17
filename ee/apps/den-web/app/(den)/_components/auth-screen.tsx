@@ -36,8 +36,9 @@ function LoadingPanel({ title, body }: { title: string; body: string }) {
 export function AuthScreen() {
   const pathname = usePathname();
   const routingRef = useRef(false);
-  const { user, sessionHydrated, desktopAuthRequested, resolveUserLandingRoute } = useDenFlow();
+  const { user, sessionHydrated, hasAuthToken, desktopAuthRequested, resolveUserLandingRoute } = useDenFlow();
   const hasResolvedSession = sessionHydrated && Boolean(user) && !desktopAuthRequested;
+  const awaitingSessionRecovery = sessionHydrated && !user && hasAuthToken && !desktopAuthRequested;
 
   useEffect(() => {
     if (!hasResolvedSession || routingRef.current) {
@@ -62,10 +63,13 @@ export function AuthScreen() {
       });
   }, [hasResolvedSession, pathname, resolveUserLandingRoute]);
 
-  if (!sessionHydrated) {
+  if (!sessionHydrated || awaitingSessionRecovery) {
     return (
       <section className="den-page flex w-full items-center py-4 lg:min-h-[calc(100vh-2.5rem)]">
-        <LoadingPanel title="Checking your session." body="Loading your Cloud account state..." />
+        <LoadingPanel
+          title={awaitingSessionRecovery ? "Restoring your session." : "Checking your session."}
+          body={awaitingSessionRecovery ? "Finalizing authentication..." : "Loading your Cloud account state..."}
+        />
       </section>
     );
   }

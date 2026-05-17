@@ -56,7 +56,7 @@ export function OrgDashboardProvider({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, sessionHydrated, refreshWorkers, workersLoadedOnce } = useDenFlow();
+  const { user, sessionHydrated, hasAuthToken, refreshWorkers, workersLoadedOnce } = useDenFlow();
   const [orgDirectory, setOrgDirectory] = useState<DenOrgSummary[]>([]);
   const [orgContext, setOrgContext] = useState<DenOrgContext | null>(null);
   const [orgBusy, setOrgBusy] = useState(false);
@@ -465,12 +465,15 @@ export function OrgDashboardProvider({
     }
 
     if (!user) {
+      if (hasAuthToken) {
+        return;
+      }
       router.replace("/?mode=sign-in");
       return;
     }
 
     void refreshOrgData();
-  }, [orgSlug, router, sessionHydrated, user?.id]);
+  }, [hasAuthToken, orgSlug, router, sessionHydrated, user?.id]);
 
   const value: OrgDashboardContextValue = {
     orgSlug: activeOrg?.slug ?? orgSlug ?? null,

@@ -57,7 +57,7 @@ function clearPendingOrgDraft() {
 
 export function OrganizationScreen() {
   const router = useRouter();
-  const { user, sessionHydrated, signOut, billingSummary } = useDenFlow();
+  const { user, sessionHydrated, hasAuthToken, signOut, billingSummary } = useDenFlow();
   const [orgs, setOrgs] = useState<DenOrgSummary[]>([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +88,9 @@ export function OrganizationScreen() {
   useEffect(() => {
     if (!sessionHydrated) return;
     if (!user) {
+      if (hasAuthToken) {
+        return;
+      }
       router.replace("/?mode=sign-in");
       return;
     }
@@ -121,7 +124,7 @@ export function OrganizationScreen() {
     return () => {
       isMounted = false;
     };
-  }, [sessionHydrated, user, router]);
+  }, [hasAuthToken, sessionHydrated, user, router]);
 
   useEffect(() => {
     if (!user?.email) {

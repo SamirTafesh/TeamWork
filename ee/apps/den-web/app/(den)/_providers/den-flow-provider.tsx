@@ -80,6 +80,7 @@ type DenFlowContextValue = {
   authError: string | null;
   user: AuthUser | null;
   sessionHydrated: boolean;
+  hasAuthToken: boolean;
   desktopAuthRequested: boolean;
   desktopAuthScheme: string;
   desktopRedirectUrl: string | null;
@@ -230,6 +231,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
   const socialSignupHandledRef = useRef<string | null>(null);
   const pendingWorkersRequestRef = useRef<Promise<{ response: Response; payload: unknown }> | null>(null);
   const sessionRefreshRequestIdRef = useRef(0);
+  const sessionRecoveryAttemptRef = useRef(0);
 
   const selectedWorker = workers.find((item) => item.workerId === workerLookupId) ?? null;
   const activeWorker =
@@ -1834,6 +1836,31 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
   }, [authToken]);
 
   useEffect(() => {
+    if (!sessionHydrated) {
+      return;
+    }
+
+    if (user || !authToken) {
+      sessionRecoveryAttemptRef.current = 0;
+      return;
+    }
+
+    if (sessionRecoveryAttemptRef.current >= 3) {
+      return;
+    }
+
+    sessionRecoveryAttemptRef.current += 1;
+    const delayMs = 400 * sessionRecoveryAttemptRef.current;
+    const timer = window.setTimeout(() => {
+      void refreshSession(true);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [authToken, sessionHydrated, user?.id]);
+
+  useEffect(() => {
     if (!user) {
       setWorkers([]);
       setWorkersLoadedOnce(false);
@@ -2086,6 +2113,7 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
     authError,
     user,
     sessionHydrated,
+    hasAuthToken: Boolean(authToken),
     desktopAuthRequested,
     desktopAuthScheme,
     desktopRedirectUrl,

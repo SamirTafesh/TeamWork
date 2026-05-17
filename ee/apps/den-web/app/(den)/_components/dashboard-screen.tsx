@@ -162,6 +162,7 @@ export function DashboardScreen({ showSidebar = true }: { showSidebar?: boolean 
   const {
     user,
     sessionHydrated,
+    hasAuthToken,
     onboardingPending,
     onboardingDecisionBusy,
     resolveUserLandingRoute,
@@ -206,6 +207,9 @@ export function DashboardScreen({ showSidebar = true }: { showSidebar?: boolean 
       return;
     }
     if (!user) {
+      if (hasAuthToken) {
+        return;
+      }
       router.replace("/?mode=sign-in");
       return;
     }
@@ -218,7 +222,7 @@ export function DashboardScreen({ showSidebar = true }: { showSidebar?: boolean 
         router.replace(target);
       }
     });
-  }, [onboardingPending, resolveUserLandingRoute, router, sessionHydrated, user]);
+  }, [hasAuthToken, onboardingPending, resolveUserLandingRoute, router, sessionHydrated, user]);
 
   if (!sessionHydrated || !user || onboardingDecisionBusy) {
     return (

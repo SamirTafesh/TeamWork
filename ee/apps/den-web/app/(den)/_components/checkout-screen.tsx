@@ -41,6 +41,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
   const {
     user,
     sessionHydrated,
+    hasAuthToken,
     billingSummary: realBillingSummary,
     billingBusy,
     billingCheckoutBusy,
@@ -70,7 +71,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
     : realBillingSummary;
 
   useEffect(() => {
-    if (!sessionHydrated || resuming || user || mockMode) {
+    if (!sessionHydrated || resuming || user || mockMode || hasAuthToken) {
       return;
     }
 
@@ -78,7 +79,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
     if (!isSamePathname(pathname, "/")) {
       router.replace("/?mode=sign-in");
     }
-  }, [mockMode, pathname, resuming, router, sessionHydrated, user]);
+  }, [hasAuthToken, mockMode, pathname, resuming, router, sessionHydrated, user]);
 
   useEffect(() => {
     if (!sessionHydrated || !user || handledReturnRef.current || !customerSessionToken) {

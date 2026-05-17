@@ -124,6 +124,54 @@ function readBearerToken(headers: Headers): string | null {
   return token || null
 }
 
+function readSessionCookieToken(headers: Headers): string | null {
+  const cookieHeader = headers.get("cookie")?.trim() ?? ""
+  if (!cookieHeader) {
+    return null
+  }
+
+  const cookieNames = new Set([
+    "__Secure-better-auth.session_token",
+    "__Host-better-auth.session_token",
+    "better-auth.session_token",
+  ])
+
+  for (const chunk of cookieHeader.split(";")) {
+    const trimmed = chunk.trim()
+    if (!trimmed) {
+      continue
+    }
+
+    const separatorIndex = trimmed.indexOf("=")
+    if (separatorIndex <= 0) {
+      continue
+    }
+
+    const name = trimmed.slice(0, separatorIndex).trim()
+    if (!cookieNames.has(name)) {
+      continue
+    }
+
+    const rawValue = trimmed.slice(separatorIndex + 1).trim()
+    if (!rawValue) {
+      continue
+    }
+
+    try {
+      const decoded = decodeURIComponent(rawValue)
+      if (decoded) {
+        return decoded
+      }
+    } catch {
+      // Keep raw cookie value if it is not URI-encoded.
+    }
+
+    return rawValue
+  }
+
+  return null
+}
+
 async function getSessionFromBearerToken(token: string): Promise<AuthSessionLike> {
   const normalizedToken = token.trim()
   const tokenCandidates = (() => {
@@ -215,11 +263,16 @@ export async function getRequestSession(headers: Headers): Promise<AuthSessionLi
   }
 
   const bearerToken = readBearerToken(headers)
-  if (!bearerToken) {
+  if (bearerToken) {
+    return getSessionFromBearerToken(bearerToken)
+  }
+
+  const cookieToken = readSessionCookieToken(headers)
+  if (!cookieToken) {
     return null
   }
 
-  return getSessionFromBearerToken(bearerToken)
+  return getSessionFromBearerToken(cookieToken)
 }
 
 async function getRequestApiKeySession(headers: Headers, session: AuthSessionLike): Promise<DenApiKeySession | null> {

@@ -1,4 +1,4 @@
-import { and, eq, gt } from "@teamwork-ee/den-db/drizzle"
+import { and, eq, gt, inArray } from "@teamwork-ee/den-db/drizzle"
 import { AuthSessionTable, AuthUserTable } from "@teamwork-ee/den-db/schema"
 import { normalizeDenTypeId } from "@teamwork-ee/utils/typeid"
 import { createHmac, timingSafeEqual } from "node:crypto"
@@ -125,6 +125,24 @@ function readBearerToken(headers: Headers): string | null {
 }
 
 async function getSessionFromBearerToken(token: string): Promise<AuthSessionLike> {
+  const normalizedToken = token.trim()
+  const tokenCandidates = (() => {
+    if (!normalizedToken) {
+      return []
+    }
+
+    const values = new Set<string>([normalizedToken])
+    const dotIndex = normalizedToken.indexOf(".")
+    if (dotIndex > 0) {
+      values.add(normalizedToken.slice(0, dotIndex))
+    }
+    return Array.from(values)
+  })()
+
+  if (tokenCandidates.length === 0) {
+    return null
+  }
+
   const rows = await db
     .select({
       session: {
@@ -151,7 +169,12 @@ async function getSessionFromBearerToken(token: string): Promise<AuthSessionLike
     })
     .from(AuthSessionTable)
     .innerJoin(AuthUserTable, eq(AuthSessionTable.userId, AuthUserTable.id))
-    .where(and(eq(AuthSessionTable.token, token), gt(AuthSessionTable.expiresAt, new Date())))
+    .where(and(
+      tokenCandidates.length === 1
+        ? eq(AuthSessionTable.token, tokenCandidates[0])
+        : inArray(AuthSessionTable.token, tokenCandidates),
+      gt(AuthSessionTable.expiresAt, new Date()),
+    ))
     .limit(1)
 
   const row = rows[0]

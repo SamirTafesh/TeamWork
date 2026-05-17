@@ -245,11 +245,11 @@ export async function getRequestSession(headers: Headers): Promise<AuthSessionLi
     return internalMcpSession
   }
 
-  let cookieSession: AuthSessionLike
+  let cookieSession: AuthSessionLike = null
   try {
     cookieSession = await auth.api.getSession({ headers })
   } catch {
-    return null
+    cookieSession = null
   }
 
   if (cookieSession?.user?.id) {

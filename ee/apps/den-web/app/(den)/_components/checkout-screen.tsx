@@ -76,7 +76,7 @@ export function CheckoutScreen({ customerSessionToken }: { customerSessionToken:
 
     setRedirectMessage("Redirecting to sign in...");
     if (!isSamePathname(pathname, "/")) {
-      router.replace("/");
+      router.replace("/?mode=sign-in");
     }
   }, [mockMode, pathname, resuming, router, sessionHydrated, user]);
 

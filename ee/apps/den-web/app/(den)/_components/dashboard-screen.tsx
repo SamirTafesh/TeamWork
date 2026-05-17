@@ -206,7 +206,7 @@ export function DashboardScreen({ showSidebar = true }: { showSidebar?: boolean 
       return;
     }
     if (!user) {
-      router.replace("/");
+      router.replace("/?mode=sign-in");
       return;
     }
     if (!onboardingPending) {

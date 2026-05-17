@@ -88,7 +88,7 @@ export function OrganizationScreen() {
   useEffect(() => {
     if (!sessionHydrated) return;
     if (!user) {
-      router.replace("/");
+      router.replace("/?mode=sign-in");
       return;
     }
 

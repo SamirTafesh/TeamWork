@@ -56,7 +56,7 @@ export function OrgDashboardProvider({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, sessionHydrated, signOut, refreshWorkers, workersLoadedOnce } = useDenFlow();
+  const { user, sessionHydrated, refreshWorkers, workersLoadedOnce } = useDenFlow();
   const [orgDirectory, setOrgDirectory] = useState<DenOrgSummary[]>([]);
   const [orgContext, setOrgContext] = useState<DenOrgContext | null>(null);
   const [orgBusy, setOrgBusy] = useState(false);
@@ -465,8 +465,7 @@ export function OrgDashboardProvider({
     }
 
     if (!user) {
-      void signOut();
-      router.replace("/");
+      router.replace("/?mode=sign-in");
       return;
     }
 

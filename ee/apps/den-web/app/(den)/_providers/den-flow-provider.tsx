@@ -923,18 +923,40 @@ export function DenFlowProvider({ children }: { children: ReactNode }) {
       headers.set("Authorization", `Bearer ${authToken}`);
     }
 
-    const { response, payload } = await requestJson("/v1/me", { method: "GET", headers }, 12000);
+    let response: Response;
+    let payload: unknown;
+    try {
+      const result = await requestJson("/v1/me", { method: "GET", headers }, 12000);
+      response = result.response;
+      payload = result.payload;
+    } catch (error) {
+      if (requestId !== sessionRefreshRequestIdRef.current) {
+        return null;
+      }
+      if (!quiet) {
+        setAuthError(error instanceof Error ? error.message : "Could not refresh the current session.");
+      }
+      return null;
+    }
+
     if (requestId !== sessionRefreshRequestIdRef.current) {
       return null;
     }
 
     if (!response.ok) {
-      setUser(null);
-      if (response.status === 401 && authToken) {
-        setAuthToken(null);
+      const unauthorized = response.status === 401 || response.status === 403;
+      if (unauthorized) {
+        setUser(null);
+        if (authToken) {
+          setAuthToken(null);
+        }
       }
       if (!quiet) {
-        setAuthError("No active session found. Sign in first.");
+        setAuthError(
+          unauthorized
+            ? "No active session found. Sign in first."
+            : getErrorMessage(payload, `Session check failed with ${response.status}.`),
+        );
       }
       return null;
     }
